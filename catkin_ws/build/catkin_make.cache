@@ -1,2 +1,0 @@
-finder_bringup
--DCATKIN_DEVEL_PREFIX=/home/mavro/FinderV3/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/mavro/FinderV3/catkin_ws/install -G Unix Makefiles
