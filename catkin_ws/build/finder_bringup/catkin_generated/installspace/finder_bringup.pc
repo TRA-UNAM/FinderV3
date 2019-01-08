@@ -1,0 +1,8 @@
+prefix=/home/mavro/FinderV3/catkin_ws/install
+
+Name: finder_bringup
+Description: Description of finder_bringup
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/mavro/FinderV3/catkin_ws/install/lib 
+Requires: 
