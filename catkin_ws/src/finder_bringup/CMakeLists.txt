@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(finder_bringup)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+ add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -11,6 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
+  #move_base_msgs
+  nav_msgs
+  tf
+  nodelet
 )
 
 ## System dependencies are found with CMake's conventions
@@ -103,9 +108,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES finder_bringup
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  INCLUDE_DIRS include
+  LIBRARIES finder_bringup
+  CATKIN_DEPENDS roscpp rospy std_msgs nodelet
 #  DEPENDS system_lib
 )
 
@@ -116,7 +121,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+ include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -124,6 +129,10 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/finder_bringup.cpp
 # )
+ add_library(Serial_soft   src/Serial_soft.cpp )
+ add_library(Messenger   src/Messenger.cpp )
+ add_dependencies(Messenger ${catkin_EXPORTED_TARGETS})
+ add_dependencies(Serial_soft ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -134,6 +143,25 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/finder_bringup_node.cpp)
+
+add_executable(encoder src/encoder.cpp)
+add_executable(joy2twist src/joy2twist.cpp)
+
+add_executable(joy2twist_brazo src/joy2twist_brazo.cpp)
+
+add_executable(twist2motor src/twist2motor.cpp)
+
+add_executable(diff_odom src/diff_odom.cpp)
+add_executable(pid_control src/pid_control.cpp)
+add_executable(vel_ctrl src/vel_ctrl.cpp)
+
+add_executable(serial src/Serial_main.cpp)
+ add_dependencies(serial ${catkin_EXPORTED_TARGETS})
+
+add_executable(serial_class src/Serial_class.cpp)
+ add_dependencies(serial_class ${catkin_EXPORTED_TARGETS})
+
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,6 +177,28 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+ target_link_libraries(Serial_soft   ${catkin_LIBRARIES}  )
+ target_link_libraries(Messenger    ${catkin_LIBRARIES} ) 
+ target_link_libraries(serial   ${catkin_LIBRARIES} Messenger Serial_soft)
+ target_link_libraries(serial_class   ${catkin_LIBRARIES} Messenger Serial_soft)
+ #target_link_libraries(teleoperation_base   ${catkin_LIBRARIES} )
+ target_link_libraries(encoder   ${catkin_LIBRARIES} )
+ target_link_libraries(joy2twist ${catkin_LIBRARIES})
+ 
+  target_link_libraries(joy2twist_brazo ${catkin_LIBRARIES})
+ 
+# target_link_libraries(control_motor ${catkin_LIBRARIES})
+  target_link_libraries(twist2motor ${catkin_LIBRARIES})
+  target_link_libraries(diff_odom ${catkin_LIBRARIES})
+  target_link_libraries(pid_control ${catkin_LIBRARIES})
+  target_link_libraries(vel_ctrl ${catkin_LIBRARIES})
+
+
+
+
+
+
 
 #############
 ## Install ##
