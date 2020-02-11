@@ -149,8 +149,6 @@ add_executable(joy2twist src/joy2twist.cpp)
 
 add_executable(joy2twist_brazo src/joy2twist_brazo.cpp)
 
-add_executable(twist2motor src/twist2motor.cpp)
-
 add_executable(diff_odom src/diff_odom.cpp)
 add_executable(pid_control src/pid_control.cpp)
 add_executable(vel_ctrl src/vel_ctrl.cpp)
@@ -189,7 +187,6 @@ add_executable(serial_class src/Serial_class.cpp)
   target_link_libraries(joy2twist_brazo ${catkin_LIBRARIES})
  
 # target_link_libraries(control_motor ${catkin_LIBRARIES})
-  target_link_libraries(twist2motor ${catkin_LIBRARIES})
   target_link_libraries(diff_odom ${catkin_LIBRARIES})
   target_link_libraries(pid_control ${catkin_LIBRARIES})
   target_link_libraries(vel_ctrl ${catkin_LIBRARIES})
