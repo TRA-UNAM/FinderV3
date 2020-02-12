@@ -10,6 +10,6 @@
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/urdf.rviz"/>
 
 	<node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
-	<!--<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>-->
+	<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>
 
 </launch>
