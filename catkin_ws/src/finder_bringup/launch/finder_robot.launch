@@ -48,6 +48,5 @@
 
 	<node name="twist2motor" pkg="finder_base" type="twist2motor" output="screen"/>
 	<node name="base_node" pkg="finder_base" type="base_node.py" output="screen"/>
-	<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>
 
 </launch>
