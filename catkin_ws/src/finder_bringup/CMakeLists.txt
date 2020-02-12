@@ -146,8 +146,6 @@ include_directories(
 
 add_executable(encoder src/encoder.cpp)
 
-add_executable(joy2twist_brazo src/joy2twist_brazo.cpp)
-
 add_executable(diff_odom src/diff_odom.cpp)
 add_executable(pid_control src/pid_control.cpp)
 add_executable(vel_ctrl src/vel_ctrl.cpp)
@@ -181,8 +179,6 @@ add_executable(serial_class src/Serial_class.cpp)
  target_link_libraries(serial_class   ${catkin_LIBRARIES} Messenger Serial_soft)
  #target_link_libraries(teleoperation_base   ${catkin_LIBRARIES} )
  target_link_libraries(encoder   ${catkin_LIBRARIES} )
- 
-  target_link_libraries(joy2twist_brazo ${catkin_LIBRARIES})
  
 # target_link_libraries(control_motor ${catkin_LIBRARIES})
   target_link_libraries(diff_odom ${catkin_LIBRARIES})

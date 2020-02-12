@@ -1,15 +1,5 @@
 <launch>
 
-	<param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
-	<!-- Setting gui parameter to true for display joint sliders -->
-	<param name="use_gui" value="true"/>
-
-	<!-- Starting Joint state publisher node which will publish the joint values /-->
-	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/urdf.rviz"/>
-
-	<node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
 	<node name="joy2twist" pkg="joystick_teleop" type="joy2twist" output="screen"/>
 
 	<node name="l_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
@@ -58,6 +48,5 @@
 
 	<node name="twist2motor" pkg="finder_base" type="twist2motor" output="screen"/>
 	<node name="base_node" pkg="finder_base" type="base_node.py" output="screen"/>
-	<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>
 
 </launch>

@@ -136,6 +136,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/joystick_teleop_node.cpp)
 add_executable(joy2twist src/joy2twist.cpp)
+add_executable(joy2twist_brazo src/joy2twist_brazo.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +153,7 @@ add_executable(joy2twist src/joy2twist.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(joy2twist ${catkin_LIBRARIES})
+target_link_libraries(joy2twist_brazo ${catkin_LIBRARIES})
 
 #############
 ## Install ##

@@ -317,7 +317,7 @@ void PID_control::update()
 	if(out > range_vel){out=range_vel;}
 	if(out < -range_vel){out=-range_vel;}
 	//ROS_DEBUG("vel: %0.2f tar: %0.2f err:%0.2f kisum: %0.2f left_out: %0.2f ticks:%d",vel,left_ang_des,error_vel,kisum_vel,left_out,ticks_since_target);		
-	
+/*	
 	ROS_INFO_STREAM("Vel" << vel);
 	ROS_INFO_STREAM("Tar" << ang_des);
 
@@ -328,7 +328,7 @@ void PID_control::update()
 
 	ROS_INFO_STREAM("out" << out);
 	ROS_INFO_STREAM("ticks" << ticks_since_target);
-
+*/
 		//end of pid
 	ticks_since_target+=1;
 		
