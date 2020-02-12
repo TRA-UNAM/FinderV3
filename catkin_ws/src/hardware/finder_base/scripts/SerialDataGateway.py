@@ -46,7 +46,7 @@ class SerialDataGateway(object):
 				stringIO=StringIO()
 				
 			else:
-				stringIO.write(data)
+				stringIO.write(unicode(data))
 	def Write(self,data):
 		info="Writing to serial port: %s" %data 
 #		rospy.loginfo(info)
