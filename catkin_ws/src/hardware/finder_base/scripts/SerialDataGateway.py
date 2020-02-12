@@ -33,7 +33,7 @@ class SerialDataGateway(object):
 		stringIO=StringIO()
 		while self._KeepRunning:
 
-			data=str(self._Serial.read(), 'utf-8')
+			data=str(self._Serial.read())
 			#rospy.loginfo(data)
 			if data=='\r':
 				pass
