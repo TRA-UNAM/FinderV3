@@ -1,6 +1,6 @@
 <launch>
 
-	<param name="robot_description" command="$(find xacro)/xacro.py $(find finder_description)/urdf/finder.xacro"/>
+	<param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
 	<!-- Setting gui parameter to true for display joint sliders -->
 	<param name="use_gui" value="true"/>
 
@@ -9,10 +9,10 @@
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/urdf.rviz"/>
 
-	<node name="joy_node" pkg="joy" type="joy_node"/>
+	<node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
 	<node name="joy2twist" pkg="joystick_teleop" type="joy2twist" output="screen"/>
 
-	<node pkg="finder_bringup" type="vel_ctrl" name="l_vel" output="screen">
+	<node name="l_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
 
 		<remap from ="lec" to="left_lec"/> 
 		<remap from ="offset" to="left_offset"/> 
@@ -34,30 +34,30 @@
 
 	</node>
 
-	<node pkg="finder_bringup" type="vel_ctrl" name="r_vel" output="screen">
+	<node name="r_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
 
-<remap from ="lec" to="right_lec"/> 
-<remap from ="offset" to="right_offset"/> 
-<remap from ="pos_des" to="right_vel_des"/>
+		<remap from ="lec" to="right_lec"/> 
+		<remap from ="offset" to="right_offset"/> 
+		<remap from ="pos_des" to="right_vel_des"/>
 
-<remap from ="ang" to="right_pos"/> 
-<remap from ="vel" to="right_vel"/> 
-<remap from ="out" to="right_out"/>
+		<remap from ="ang" to="right_pos"/> 
+		<remap from ="vel" to="right_vel"/> 
+		<remap from ="out" to="right_out"/>
 
-<rosparam param ="kp_vel">30</rosparam>
-<rosparam param ="ki_vel">0.1</rosparam>
-<rosparam param ="kd_vel">0</rosparam>
-<rosparam param ="km_vel">20</rosparam>
-<rosparam param ="umbral_vel">0.2</rosparam>
-<rosparam param ="range_vel">150</rosparam>
-<rosparam param ="kierr_vel">0.2</rosparam>
-<rosparam param ="kimax_vel">100</rosparam>
-<rosparam param ="kisum_vel">0</rosparam>
+		<rosparam param ="kp_vel">30</rosparam>
+		<rosparam param ="ki_vel">0.1</rosparam>
+		<rosparam param ="kd_vel">0</rosparam>
+		<rosparam param ="km_vel">20</rosparam>
+		<rosparam param ="umbral_vel">0.2</rosparam>
+		<rosparam param ="range_vel">150</rosparam>
+		<rosparam param ="kierr_vel">0.2</rosparam>
+		<rosparam param ="kimax_vel">100</rosparam>
+		<rosparam param ="kisum_vel">0</rosparam>
 
-</node>
+	</node>
 
-	<node pkg="finder_base" type="twist2motor" name="twist2motor" output="screen"/>
-	<node pkg="finder_base" type="base_node.py" name="base_node" output="screen"/>
-	<node pkg="odometry" type="odometry.py" name="odometry_node" output="screen"/>
+	<node name="twist2motor" pkg="finder_base" type="twist2motor" output="screen"/>
+	<node name="base_node" pkg="finder_base" type="base_node.py" output="screen"/>
+	<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>
 
 </launch>
