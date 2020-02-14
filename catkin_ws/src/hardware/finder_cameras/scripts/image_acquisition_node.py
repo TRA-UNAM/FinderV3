@@ -18,11 +18,11 @@ def image_acquisition_node():
 	pub = rospy.Publisher('/hardware/cam', Image, queue_size=10)
 	rospy.init_node('image_acquisition_node', anonymous=True)
 	#Frecuencia de muestreo de imagenes
-	rate = rospy.Rate(10) # 10 fps
+	rate = rospy.Rate(30) # 10 fps
 	#inicializacion de mensaje vacio
 	img = Image()
 	count=0
-	cv2.namedWindow("ads", 1)
+	#cv2.namedWindow("ads", 1)
         while not rospy.is_shutdown():
 		#Se obtiene una imagen de la camara y se guarda en el mensaje
 		cmp, image = cap.read()
@@ -31,11 +31,11 @@ def image_acquisition_node():
 		#image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		#cv2.imshow('ads',image2)
 		img = bridge.cv2_to_imgmsg(image, "bgr8")
-                print(count)
+                #print(image.shape)
                 if count == 10000: break
                 pub.publish(img)
                 count+=1
-                #rate.sleep()
+                rate.sleep()
 
 
 if __name__ == '__main__':

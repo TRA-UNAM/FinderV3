@@ -2,24 +2,32 @@
 import rospy
 import cv2
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 bridge = CvBridge()
 image = []
 fondo = []
+import numpy as np
 
 def callback(img):
 	global image
-	image = bridge.imgmsg_to_cv2(img,"bgr8")
+	np_arr = np.fromstring(img.data, np.uint8)
+	image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
 def movement_detection_node():
 	global image
-	rospy.init_node('movement_detection_node', anonymous=True)
-	rospy.Subscriber('/hardware/cam', Image, callback)
-	pub = rospy.Publisher('/movimiento', Image, queue_size=10)
-	rate = rospy.Rate(20)
+	rospy.init_node('movement_detection_node')
+	rospy.Subscriber('/usb_cam/image_raw/compressed', CompressedImage, callback)
+	pub = rospy.Publisher('/movimiento', CompressedImage, queue_size=10)
+	#pub = rospy.Publisher('/movimiento', Image, queue_size=10)
+	rate = rospy.Rate(5)
+	rate.sleep()
 	fondo = image
-	while fondo == []:
+	#print('entrando al loop')
+	while fondo == [] and not rospy.is_shutdown():
+		#print(fondo)
 		fondo = image
+	#print('fuera del loop')
 	fondo = cv2.cvtColor(fondo, cv2.COLOR_BGR2GRAY)
 	fondo = cv2.GaussianBlur(fondo,(5,5),0)
 	rate.sleep()
@@ -51,8 +59,21 @@ def movement_detection_node():
 			(x, y, we, hi) = cv2.boundingRect(c)
 			# Dibujamos el rectangulo del bounds
 			cv2.rectangle(frame, (x, y), (x + we, y + hi), (0, 255, 0), 2)
-		showimg = bridge.cv2_to_imgmsg(frame, "mono8")
-		pub.publish(showimg)
+
+		#showimg = bridge.cv2_to_imgmsg(img, "bgr8")
+		#pub.publish(showimg)
+		scale_percent = 1 # percent of original size
+		width = int(img.shape[1] * scale_percent / 100)
+		height = int(img.shape[0] * scale_percent / 100)
+		dim = (width, height)
+		resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
+		#msg = CompressedImage()
+		#msg.header.stamp = rospy.Time.now()
+		#msg.format = "jpeg"
+		#msg.data = np.array(cv2.imencode('.jpeg', resized)[1]).tostring()
+		msg = bridge.cv2_to_compressed_imgmsg(resized)
+		pub.publish(msg)
 		rate.sleep()
 		fondo = gray
 

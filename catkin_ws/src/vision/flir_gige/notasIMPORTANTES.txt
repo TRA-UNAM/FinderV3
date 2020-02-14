@@ -1,0 +1,4 @@
+Para compilar este nodo...
+ 1ro Se debe de tener compilado el paquete 'camera_base'
+ 
+ 
