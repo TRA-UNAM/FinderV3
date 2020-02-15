@@ -17,8 +17,8 @@ def callback(img):
 def movement_detection_node():
 	global image
 	rospy.init_node('movement_detection_node')
-	rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
-	#pub = rospy.Publisher('/movimiento', CompressedImage, queue_size=10)
+	#rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
+	pub = rospy.Publisher('/movimiento', CompressedImage, queue_size=10)
 	pub = rospy.Publisher('/movimiento', Image, queue_size=10)
 	rate = rospy.Rate(5)
 	rate.sleep()
@@ -60,22 +60,16 @@ def movement_detection_node():
 			# Dibujamos el rectangulo del bounds
 			cv2.rectangle(frame, (x, y), (x + we, y + hi), (0, 255, 0), 2)
 
-		showimg = bridge.cv2_to_imgmsg(frame, "mono8")
-		pub.publish(showimg)
-
-		#scale_percent = 100 # percent of original size
-		#width = int(img.shape[1] * scale_percent / 100)
-		#height = int(img.shape[0] * scale_percent / 100)
-		#dim = (width, height)
-		#resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+		#showimg = bridge.cv2_to_imgmsg(frame, "mono8")
+		#pub.publish(showimg)
 
 		#msg = CompressedImage()
 		#msg.header.stamp = rospy.Time.now()
 		#msg.format = "jpeg"
-		#msg.data = np.array(cv2.imencode('.jpeg', resized)[1]).tostring()
+		#msg.data = np.array(cv2.imencode('.jpeg', image)[1]).tostring()
 
-		#msg = bridge.cv2_to_compressed_imgmsg(frame)
-		#pub.publish(msg)
+		msg = bridge.cv2_to_compressed_imgmsg(image,dst_format='jpg')
+		pub.publish(msg)
 		rate.sleep()
 		fondo = gray
 

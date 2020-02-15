@@ -133,7 +133,7 @@ class Launchpad_Class(object):
 		self._Counter=self._Counter+1
 		self._SerialPublisher.publish(String(str(self._Counter)+", in:"+line))
 		#print ('line: ',line)
-#		rospy.loginfo(line)
+#		rospy.loginfo('si entra a la funcion')
 
 		if(len(line)>0):
 			lineParts=line.split('\t')

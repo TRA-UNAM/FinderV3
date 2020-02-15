@@ -4,30 +4,30 @@ import cv2
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
+import numpy as np
 bridge = CvBridge()
 image = []
 fondo = []
-import numpy as np
 
 def callback(img):
 	global image
-	np_arr = np.fromstring(img.data, np.uint8)
-	image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+	print('cachando')
+	np_arr = np.fromstring(im.data, np.uint8)
+	image_np = cv2.imdecode(np_arr, cv2.CV_LOAD_IMAGE_COLOR)
+	image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+	print('cachado!!')
 
 def movement_detection_node():
 	global image
-	rospy.init_node('movement_detection_node')
-	rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
-	#pub = rospy.Publisher('/movimiento', CompressedImage, queue_size=10)
+	rospy.init_node('movement_detection_node', anonymous=True)
+	rospy.Subscriber('/usb_cam/image_raw', CompressedImage, callback)
 	pub = rospy.Publisher('/movimiento', Image, queue_size=10)
-	rate = rospy.Rate(5)
-	rate.sleep()
+	rate = rospy.Rate(20)
 	fondo = image
-	#print('entrando al loop')
-	while fondo == [] and not rospy.is_shutdown():
-		#print(fondo)
+	print('entrando al loop')
+	while fondo == []:
+		print('en el loop')
 		fondo = image
-	#print('fuera del loop')
 	fondo = cv2.cvtColor(fondo, cv2.COLOR_BGR2GRAY)
 	fondo = cv2.GaussianBlur(fondo,(5,5),0)
 	rate.sleep()
@@ -44,7 +44,7 @@ def movement_detection_node():
 		#Erosionamos el umbral para quitar ruido
 		umbral = cv2.erode(umbral, None, iterations=5)
 		# Dilatamos el umbral para tapar agujeros
-		umbral = cv2.dilate(umbral, None, iterations=20)
+		umbral = cv2.dilate(umbral, None, iterations=40)
 		# Copiamos el umbral para detectar los contornos
 		contornosimg = umbral.copy()
 
@@ -59,23 +59,8 @@ def movement_detection_node():
 			(x, y, we, hi) = cv2.boundingRect(c)
 			# Dibujamos el rectangulo del bounds
 			cv2.rectangle(frame, (x, y), (x + we, y + hi), (0, 255, 0), 2)
-
-		showimg = bridge.cv2_to_imgmsg(frame, "mono8")
+		showimg = bridge.cv2_to_imgmsg(img, "bgr8")
 		pub.publish(showimg)
-
-		#scale_percent = 100 # percent of original size
-		#width = int(img.shape[1] * scale_percent / 100)
-		#height = int(img.shape[0] * scale_percent / 100)
-		#dim = (width, height)
-		#resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-
-		#msg = CompressedImage()
-		#msg.header.stamp = rospy.Time.now()
-		#msg.format = "jpeg"
-		#msg.data = np.array(cv2.imencode('.jpeg', resized)[1]).tostring()
-
-		#msg = bridge.cv2_to_compressed_imgmsg(frame)
-		#pub.publish(msg)
 		rate.sleep()
 		fondo = gray
 
