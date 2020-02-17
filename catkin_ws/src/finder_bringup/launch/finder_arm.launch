@@ -1,7 +1,7 @@
 <launch>
 
 	<node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
-        <node name="joy2twist" pkg="joystick_teleop" type="joy2twist" output="screen"/>	
+        <node name="joy2twist_brazo" pkg="joystick_teleop" type="joy2twist_brazo" output="screen"/>
 
 	<node name="brazo_node" pkg="finder_arm" type="brazo_node.py" output="screen"/>
 
