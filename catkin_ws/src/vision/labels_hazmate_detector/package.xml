@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>c_pattern_detector</name>
+  <name>labels_hazmate_detector</name>
   <version>0.0.0</version>
-  <description>The c_pattern_detector package</description>
+  <description>The labels_hazmate_detector package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/c_pattern_detector</url> -->
+  <!-- <url type="website">http://wiki.ros.org/labels_hazmate_detector</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -45,14 +45,11 @@
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>avision_msjs</build_depend>
-  
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>avision_msjs</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
