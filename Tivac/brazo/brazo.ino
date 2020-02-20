@@ -6,7 +6,6 @@
 //#include "Encoder.h"
 #include <SPI.h>
 #include <Wire.h>
-#include "Talon.h"
 #include <Servo.h>
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*Estructura del programa
@@ -91,6 +90,8 @@ Loop
 
 #define pinCytronDir PC_5
 #define pinCytronPwm PC_4
+#define pinCytronBaseDir PB_3
+#define pinCytronBasePwm PF_3
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //(pinpwm1,pinpwm2,umbral, maxpwmsense)
@@ -103,9 +104,7 @@ Loop
 //OSMCClass LEFT(PB_0,PB_5,PE_4,1,127);
 //OSMCClass RIGHT(PB_4,PB_1,PA_5,1,127);
 
-Servo base;
 //umbral,max
-TalonClass BASE(2,50);
 
 // Redefinimos para la Nueva placa 
 
@@ -209,13 +208,15 @@ pinMode(pincsn3,OUTPUT);
 
 void SetupMotors()
 {
-  //Para los OSMC
- base.attach(PB_3);
-
   pinMode(pinCytronPwm,OUTPUT);
   pinMode(pinCytronDir,OUTPUT);
   digitalWrite(pinCytronDir,LOW);
   digitalWrite(pinCytronPwm,LOW);
+
+  pinMode(pinCytronBasePwm,OUTPUT);
+  pinMode(pinCytronBaseDir,OUTPUT);
+  digitalWrite(pinCytronBaseDir,LOW);
+  digitalWrite(pinCytronBasePwm,LOW);
 }
 
 void SetupReset()
@@ -427,7 +428,10 @@ is split. 1 to 127 controls channel 1 and 128 to 255(or -1 to -127) controls cha
 value 0 will stop both channels. Any other values will control speed and direction of the specific
 channel.
 */
-base.writeMicroseconds(1500+base_out);
+int base_temp;
+if(base_out>0){digitalWrite(pinCytronBaseDir, HIGH); base_temp=map(base_out,0,500,0,127);}
+if(base_out<0){digitalWrite(pinCytronBaseDir, LOW); base_temp=map(-base_out,0,500,0,127);}
+analogWrite(pinCytronBasePwm,base_temp);
 //Serial.print("Set_motors");
 /*if (endstp_shoulder==true)
 {
