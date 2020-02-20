@@ -1,0 +1,4 @@
+Help on built-in function drawMatches:
+
+ddrraawwMMaattcchheess(...)
+    drawMatches(img1, keypoints1, img2, keypoints2, matches1to2, outImg[, matchColor[, singlePointColor[, matchesMask[, flags]]]]) -> outImg

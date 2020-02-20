@@ -18,8 +18,8 @@ image=[]
 def qr_barcode_detection_node():
 	global image
 	prev_data = '.'
-        rospy.init_node('movement_detection_node')
-        rospy.Subscriber('/camera2/usb_cam2/image_raw/compressed', CompressedImage, callback)
+        rospy.init_node('qr_detection_node')
+        rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
 	qr_pub = rospy.Publisher('/qr_barcode_results', String, queue_size=10)
 	#fps
 	rate = rospy.Rate(1)

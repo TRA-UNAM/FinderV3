@@ -10,7 +10,7 @@ image = []
 fondo = []
 
 #Imagen con numeros para colocar en la imagen (en la misma carpeta) y obtener una mascara
-numeros = cv2.imread('Numeros.jpg')
+numeros = cv2.imread('Numeros.png')
 mask_inv = cv2.threshold(cv2.cvtColor(numeros, cv2.COLOR_BGR2GRAY), 200, 255, cv2.THRESH_BINARY)[1]
 #mask_inv = cv2.erode(mask_inv, None, iterations=10)
 mask = cv2.bitwise_not(mask_inv)
@@ -18,7 +18,7 @@ mask = cv2.bitwise_not(mask_inv)
 def movement_detection_node():
 	global image
 	rospy.init_node('movement_detection_node')
-	rospy.Subscriber('/camera2/usb_cam2/image_raw/compressed', CompressedImage, callback)
+	rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
 	pub = rospy.Publisher('/movimiento', CompressedImage, queue_size=10)
 	#pub = rospy.Publisher('/movimiento', Image, queue_size=10)
 	#fps
@@ -45,7 +45,7 @@ def movement_detection_node():
 		#Diferencia entre imagen anterior y reciente
 		resta = cv2.absdiff(fondo, gris)
 		# La imagen se pasa a blanco y negro con un umbral
-		umbral = cv2.threshold(resta, 25, 255, cv2.THRESH_BINARY)[1]
+		umbral = cv2.threshold(resta, 10, 255, cv2.THRESH_BINARY)[1]
 		#Erosionamos el umbral para quitar ruido
 		umbral = cv2.erode(umbral, None, iterations=2)
 		# Dilatamos el umbral para tapar agujeros
@@ -76,6 +76,8 @@ def movement_detection_node():
 		#	cuenta_frames = 0
 		#	buffer_obj = 0
 
+		if(num_targets > 9):
+			num_targets = 9
 		#Imprime el numero de objetos reconocidos en la imagen
 		img = print_num(img,num_targets)
 
@@ -103,8 +105,8 @@ def callback(img):
 def print_num(original,num=0):
 	new_img = original.copy()
 	#Dimensiones de cada numero en la imagen
-	rows = 100
-	cols = 100
+	rows = 68
+	cols = 50
 	#Dimensiones de la imagen original
 	rows_o, cols_o, ncha = original.shape
 	#Mascara del numero a colocar
@@ -113,14 +115,14 @@ def print_num(original,num=0):
 	#Cuadro del numero a colocar
 	numero_act = numeros[0:rows,num*cols:(num*cols)+cols]
 	#Region Of Interest (ROI) para que el numero este' en la esquina inferior derecha
-	roi = new_img[rows_o-rows:rows_o,cols_o-cols:cols_o]
+	roi = new_img[rows_o-rows-20:rows_o-20,cols_o-cols-20:cols_o-20]
 	#Obtener la region donde estara el numero, con espacio para el numero
 	roi_clear = cv2.bitwise_and(roi,roi,mask = mask_inv_n)
 	#Obtener region del numero de la imagen
 	num_imag = cv2.bitwise_and(numero_act,numero_act,mask = mask_n)
 	#Se coloca el numero en la ROI y se coloca en la imagne completa
 	dst = cv2.add(roi_clear,num_imag)
-	new_img[rows_o-rows:rows_o,cols_o-cols:cols_o] = dst
+	new_img[rows_o-rows-20:rows_o-20,cols_o-cols-20:cols_o-20] = dst
 	return new_img
 
 def codificar_descod(img):

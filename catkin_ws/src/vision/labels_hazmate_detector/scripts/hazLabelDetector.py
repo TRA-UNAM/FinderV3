@@ -311,7 +311,8 @@ def surfAlgorit(imgpat, imgsear):
   seagrey = cv2.cvtColor(imgsear, cv2.COLOR_BGR2GRAY)
   
   # Iniciacion del metodo, bajo el limite del determinante de la matriz de Harris
-  detector = cv2.SURF(hessian_threshold)
+  #detector = cv2.SURF(hessian_threshold)
+  detector = cv2.ORB_create(hessian_threshold)
   
   # Extraciion caracteristicas de la imagen candidato y la patron
   skeypoints,sdescriptors = detector.detectAndCompute(seagrey,None)
@@ -344,9 +345,11 @@ def surfAlgorit(imgpat, imgsear):
     # Iniciacion del vector para guardar als respuestas del matching
     responses = np.arange(len(skeypoints), dtype = np.float32)
     # Iniciacion del metodo de kNearest para realizar la comparacion de imagenes
-    knn = cv2.KNearest()
+    #knn = cv2.KNearest()
+    knn = cv2.ml.KNearest_create()
     # Entrenemaiento del metodo
-    knn.train(samples,responses)
+    # knn.train(samples,responses)
+    knn.train(samples,cv2.ml.ROW_SAMPLE,responses)
     # Inicio del contador de puntos conicidentes
     nPoints = 0
 
@@ -355,7 +358,8 @@ def surfAlgorit(imgpat, imgsear):
       descriptor = np.array(descriptor, dtype = np.float32).reshape((1, rowsize))
       # Calculo de las distancias entre los puntos clave de la iamgen patron y los de la
       # imagen en analisis
-      retval, results, neigh_resp, dists = knn.find_nearest(descriptor, 1)
+      #retval, results, neigh_resp, dists = knn.find_nearest(descriptor, 1)
+      retval, results, neigh_resp, dists = knn.findNearest(descriptor, 1)
       dist =  dists[0][0]
 
       # Calificacion de aceptacion de los puntos de coincidencia encontrados
@@ -459,7 +463,7 @@ def sendResult(req):
     label2 = 'nothing'
     label3 = 'nothing'
     label4 = 'nothing'
-  cv2.imwrite("/home/finder-remoto/Finder/catkin_et/src/roswww/www/img/labelDetected"+label1+label2+label3+label4+".jpg",imgPlot)
+  #cv2.imwrite("/home/finder-remoto/Finder/catkin_et/src/roswww/www/img/labelDetected"+label1+label2+label3+label4+".jpg",imgPlot)
 
   return imgLabelsResponse(aux,label1,label2,label3,label4)
 
@@ -473,7 +477,7 @@ def labelDetector(imgSrc, roiArea):
 
   # Conversion de espacio de color BGR -> YCrCb
   yuvImg = cv2.cvtColor(imgSrc, cv2.COLOR_BGR2YCR_CB)
-  #cv2.imshow("window_tester_2", yuvImg)
+  cv2.imshow("window_tester_2", yuvImg)
 
   # Aplicacion de filtro para suavizar bordes
   yuvImg = prevColorFilter(yuvImg)
@@ -591,11 +595,11 @@ def callback(data):
   # Suaviazado con ventana tipo Gaussiana de bordes en la imagen
   #imgwg = cv2.GaussianBlur(imgwg, (5,5), 0)
   imgwg = cv2.bilateralFilter(imgwg, 5, 150, 150)
-  cv2.imshow('GrayImageWork', imgwg)
+  #cv2.imshow('GrayImageWork', imgwg)
   # Calculo de contornos por el algoritmo de Canny
   edges = cv2.Canny(imgwg, thlc, thhc)
   #edges = cv2.GaussianBlur(edges, (5,5), 0)
-  cv2.imshow('Contours detected', edges)
+  #cv2.imshow('Contours detected', edges)
   
   # Busqueda de la region de interes a analizar. La lista almacena los datos
   # de la bandera que aprueba el uso, el centroide de la roi detectada y los puntos
@@ -612,7 +616,7 @@ def callback(data):
     # Metodo de identificacion de etiquetas
     labelDetector( roi.copy(), cent[0][7] )
 
-    #cv2.imshow('Roi', roi)
+    cv2.imshow('Roi', roi)
 
   #cv2.imshow('Video search', imgSrc)
   cv2.waitKey(1)
@@ -630,7 +634,7 @@ def main(args):
   # #Iniciacion del subscriptor al bus de la camara
   image_cam = rospy.Subscriber("/camera2/usb_cam2/image_raw",Image,callback)
   #image_sub2 = rospy.Subscriber("usb_cam1/image_raw",Image,callback)
-  
+
   try:
     rospy.spin()
   except KeyboardInterrupt:

@@ -255,11 +255,17 @@ def callback(data):
 
   # Deteccion de circulos con base en la macara binaria obtenida del color negro
   #circlei = cv2.HoughCircles(yuvMask,cv.CV_HOUGH_GRADIENT,1,20,param1=100,param2=30,minRadius=0,maxRadius=0)
-  circlei = cv2.HoughCircles(yuvMask,cv2.CV_HOUGH_GRADIENT,1,20,param1=100,param2=30,minRadius=0,maxRadius=0)
+  #circlei = cv2.HoughCircles(yuvMask,cv2.CV_HOUGH_GRADIENT,1,20,param1=100,param2=30,minRadius=0,maxRadius=0)
+  circlei = cv2.HoughCircles(yuvMask,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=30,minRadius=0,maxRadius=0)
   imguno = yuvMask
+  try:
+    circ_band = circlei.any() != None
+  except:
+    circ_band = False
 
   # cuando detecta circulos en la mascara YUV
-  if circlei!=None:
+  if circ_band:
+    print('hay algo')
     circlei=sorted(circlei[0],key=lambda x:x[2],reverse=True)   # ordena los circulos encontrados de mayor a menor radio 
         
     mask0 = np.ones(yuvMask.shape,np.uint8)                    # crea una mascara
@@ -290,7 +296,7 @@ def callback(data):
         mask = cv2.bitwise_not(mask )
         cv2.drawContours(mask,[cnt],0,0,-1)                   # dibuja en mask el contorno actual
         #circlei = cv2.HoughCircles(mask,cv.CV_HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
-	circlei = cv2.HoughCircles(mask,cv2.CV_HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
+	circlei = cv2.HoughCircles(mask,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
 
         # si el contorno detectado tiene la forma circular, entonces busca la abertura
         if circlei!=None:
@@ -329,8 +335,8 @@ def main(args):
   srvLabel = rospy.Service('img_cpattern_result', imgCpattern, sendResult)
   
   # Iniciacion del nodo suscriptor al bus que transporta los frames de la camara
-  sus = rospy.Subscriber("usb_cam1/image_raw", Image, callback)
-
+  #sus = rospy.Subscriber("usb_cam1/image_raw", Image, callback)
+  sus = rospy.Subscriber("/camera2/usb_cam2/image_raw", Image, callback)
   try:
     rospy.spin()
   except KeyboardInterrupt:
