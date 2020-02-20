@@ -59,7 +59,7 @@ class Launchpad_Class(object):
 
 #########################################
 		rospy.loginfo("starting with serialport:"+port+"baudrate:"+str(baudRate))
-		self._SerialDataGateway=SerialDataGateway(port,baudRate,self._HandleReceivedLine)
+		self._SerialDataGateway=SerialDataGateway(port,baudRate)
 		rospy.loginfo("started serial communication")
 		
 ###########################################
@@ -129,14 +129,14 @@ class Launchpad_Class(object):
                 self._WriteSerial(str.encode(speed_message))
 
 
-	def _HandleReceivedLine(self,line):	
+	def _HandleReceivedLine(self):	
 		self._Counter=self._Counter+1
-		self._SerialPublisher.publish(String(str(self._Counter)+", in:"+line))
+		self._SerialPublisher.publish(String(str(self._Counter)+", in:"+self._line))
 		#print ('line: ',line)
 #		rospy.loginfo('si entra a la funcion')
 
-		if(len(line)>0):
-			lineParts=line.split('\t')
+		if(len(self._line)>0):
+			lineParts=self._line.split('\t')
 			try:
 				if(lineParts[0]=='e'):
 					self._left_encoder_value=int(lineParts[2])

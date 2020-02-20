@@ -6,7 +6,7 @@ from io import StringIO
 import time
 import rospy
 
-def _OnLineReceived(self):
+def _OnLineReceived(line):
 	print(line)
 	
 class SerialDataGateway(object):
@@ -40,6 +40,7 @@ class SerialDataGateway(object):
 			if data=='\n':
 				strin=stringIO.getvalue()
 				#print("strin: ", strin)
+				self._line=strin
 				self.ReceivedLineHandler(strin)
 #				rospy.loginfo(stringIO)
 				stringIO.close()
