@@ -224,7 +224,7 @@ void RobotDriver::update()
 		yaw.data=int(joy_yaw);		
 		
 		//aqui convertir los valores de las variables del joystick a velocidad angular y velocidad en x, el mapeo es de xy a r, theta, del plano a coordenadas polares
-		temp_linear=sqrt(joy_h*joy_h+joy_v*joy_v);
+		/*temp_linear=sqrt(joy_h*joy_h+joy_v*joy_v);
 		temp_angular=atan2(joy_v,joy_h)*180/PI;
 		
 		if(temp_linear>0.2 && temp_angular>=0)
@@ -236,7 +236,9 @@ void RobotDriver::update()
 		if(temp_angular<0 )
 		{base_cmd.linear.x=-sqrt(joy_h*joy_h+joy_v*joy_v);}
 		if(temp_angular>=0)
-		{base_cmd.linear.x=sqrt(joy_h*joy_h+joy_v*joy_v);}
+		{base_cmd.linear.x=sqrt(joy_h*joy_h+joy_v*joy_v);}*/
+		base_cmd.linear.x = joy_v * 0.9;
+		base_cmd.angular.z = joy_h * -2.5;
 
 /////////////////////////////////////////////////////////////////////////////
 //Aqui se convierte de xy cartesiano al espacio en 3d, hay que definir los botones que cambian el plano de uso
