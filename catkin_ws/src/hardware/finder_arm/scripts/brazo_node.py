@@ -52,7 +52,7 @@ class Launchpad_Class(object):
 #########################################
 #Asignamos valores del puerto y baudios de la stellaris
 #		port=rospy.get_param("~port","/dev/ttyACM0")
-		port=rospy.get_param("~port","/dev/ttyACM0")
+		port=rospy.get_param("~port","/dev/ttyACM2")
 		baudRate=int(rospy.get_param("~baudRate",115200))
 
 #########################################
