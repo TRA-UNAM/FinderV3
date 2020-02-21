@@ -1,0 +1,8 @@
+<launch>
+
+	<node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
+    <node name="joy2twist_brazo" pkg="joystick_teleop" type="joy2twist_brazo" output="screen"/>
+
+	
+
+</launch>
