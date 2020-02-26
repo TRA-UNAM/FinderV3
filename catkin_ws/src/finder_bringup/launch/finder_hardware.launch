@@ -1,12 +1,57 @@
 <launch>
 
-	<param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
-	<!-- Setting gui parameter to true for display joint sliders -->
-	<param name="use_gui" value="true"/>
+	
 
-	<!-- Starting Joint state publisher node which will publish the joint values /-->
-	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/urdf.rviz"/>
+	<node name="l_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
+
+		<remap from ="lec" to="left_lec"/> 
+		<remap from ="offset" to="left_offset"/> 
+		<remap from ="pos_des" to="left_vel_des"/>
+
+		<remap from ="ang" to="left_pos"/> 
+		<remap from ="vel" to="left_vel"/> 
+		<remap from ="out" to="left_out"/>
+
+		<rosparam param ="kp_vel">30</rosparam>
+		<rosparam param ="ki_vel">0.1</rosparam>
+		<rosparam param ="kd_vel">0</rosparam>
+		<rosparam param ="km_vel">20</rosparam>
+		<rosparam param ="umbral_vel">0.2</rosparam>
+		<rosparam param ="range_vel">150</rosparam>
+		<rosparam param ="kierr_vel">0.2</rosparam>
+		<rosparam param ="kimax_vel">100</rosparam>
+		<rosparam param ="kisum_vel">0</rosparam>
+
+	</node>
+
+	<node name="r_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
+
+		<remap from ="lec" to="right_lec"/> 
+		<remap from ="offset" to="right_offset"/> 
+		<remap from ="pos_des" to="right_vel_des"/>
+
+		<remap from ="ang" to="right_pos"/> 
+		<remap from ="vel" to="right_vel"/> 
+		<remap from ="out" to="right_out"/>
+
+		<rosparam param ="kp_vel">30</rosparam>
+		<rosparam param ="ki_vel">0.1</rosparam>
+		<rosparam param ="kd_vel">0</rosparam>
+		<rosparam param ="km_vel">20</rosparam>
+		<rosparam param ="umbral_vel">0.2</rosparam>
+		<rosparam param ="range_vel">150</rosparam>
+		<rosparam param ="kierr_vel">0.2</rosparam>
+		<rosparam param ="kimax_vel">100</rosparam>
+		<rosparam param ="kisum_vel">0</rosparam>
+
+	</node>
+
+	<node name="twist2motor" pkg="finder_base" type="twist2motor" output="screen"/>
+	<node name="base_node" pkg="finder_base" type="base_node.py" output="screen"/>
+	<node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+			<param name="serial_port" type="string" value="/dev/ttyACM1" />
+			<param name="frame_id" type="string" value="laser_link" />
+	</node>
+	<node name="brazo_node" pkg="finder_arm" type="brazo_node.py" output="screen"/>
 
 </launch>
