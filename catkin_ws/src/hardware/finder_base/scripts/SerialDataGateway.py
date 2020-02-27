@@ -2,7 +2,7 @@
 
 import threading
 import serial
-from io import StringIO
+from cStringIO import StringIO
 import time
 import rospy
 
@@ -33,21 +33,18 @@ class SerialDataGateway(object):
 		stringIO=StringIO()
 		while self._KeepRunning:
 
-			data=str(self._Serial.read())
+			data=self._Serial.read()
 			#rospy.loginfo(data)
 			if data=='\r':
 				pass
 			if data=='\n':
-				strin=stringIO.getvalue()
-				#print("strin: ", strin)
-				self._line=strin
-				self.ReceivedLineHandler(strin)
+				self.ReceivedLineHandler(stringIO.getvalue())
 #				rospy.loginfo(stringIO)
 				stringIO.close()
 				stringIO=StringIO()
 				
 			else:
-				stringIO.write(unicode(data))
+				stringIO.write(data)
 	def Write(self,data):
 		info="Writing to serial port: %s" %data 
 #		rospy.loginfo(info)
