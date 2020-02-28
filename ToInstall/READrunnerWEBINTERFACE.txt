@@ -1,0 +1,8 @@
+roscore
+rosrun web_video_server web_video_server
+roslaunch rosbridge_server rosbridge_websocket.launch
+./prevComand.sh
+roslaunch usb_cam usb_cam-test.launch 
+
+
+
