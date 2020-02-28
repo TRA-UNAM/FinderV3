@@ -24,3 +24,7 @@ cd ~/
 echo "done"
 
 sudo apt-get install ros-melodic-cv-camera
+
+#File to install the eBUS_SDK for thermal camera (Preguntar a Nacho sobre el proceso completo)
+cd ~/FinderV3/ToInstall/
+sudo ./eBUS_SDK_4.1.7.3988_Ubuntu-14.04-x86_64.run
