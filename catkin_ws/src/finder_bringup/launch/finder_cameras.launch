@@ -9,7 +9,7 @@
     <param name="io_method" value="mmap"/>
   </node>
   <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
-    <remap from="image" to="/camera1/usb_cam1/image_raw"/>
+    <remap from="image" to="/camera0/usb_cam0/image_raw"/>
     <param name="autosize" value="true" />
   </node>
  </group>
@@ -54,7 +54,7 @@
     <param name="io_method" value="mmap"/>
   </node>
   <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
-    <remap from="image" to="/camera3/usb_cam0/image_raw"/>
+    <remap from="image" to="/camera3/usb_cam3/image_raw"/>
     <param name="autosize" value="true" />
   </node>
  </group>
@@ -69,7 +69,7 @@
     <param name="io_method" value="mmap"/>
   </node>
   <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
-    <remap from="image" to="/camera4/usb_cam0/image_raw"/>
+    <remap from="image" to="/camera4/usb_cam4/image_raw"/>
     <param name="autosize" value="true" />
   </node>
  </group>
