@@ -183,8 +183,8 @@ void RobotDriver::update()
 		//aqui convertir los valores de las variables del joystick a velocidad angular y velocidad en x, el mapeo es de xy a r, theta, del plano a coordenadas polares
 		//temp_linear=sqrt(joy_h*joy_h+joy_v*joy_v);
 		//temp_angular=atan2(joy_v,joy_h)*180/PI;
-		base_cmd.linear.x = joy_v * 0.9;
-		base_cmd.angular.z = joy_h * -2.5;
+		base_cmd.linear.x = joy_v * 0.3;
+		base_cmd.angular.z = joy_h * -1.5;
 
 		/*if(temp_linear>0.2 && temp_angular>=0)
 		{base_cmd.angular.z=atan2(joy_v,joy_h)-PI/2;}
