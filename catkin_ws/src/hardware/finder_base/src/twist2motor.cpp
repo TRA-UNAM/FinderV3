@@ -67,7 +67,7 @@ void TwistToMotors::init_variables()
 
 	dx = dy = dr =0;
 
-	w = 0.5 ;
+	w = 0.4 ;
 	rate = 50;
 	timeout_ticks = 5;
 
@@ -148,7 +148,7 @@ dr viene en valores de 0 a la derecha, 180 a la izquierda 90 hacia adelante
 
         // dx = (l + r) / 2
         // dr = (r - l) / w
-if( dr < -1.4 || dr > 1.4   )
+/*-if( dr < -1.4 || dr > 1.4   )
 {
 //if dr>1.4 turn left, the
 	right = ((dr * w /2));
@@ -160,7 +160,9 @@ else
 	right =map_vel*( ( 1.0 * dx ) + (dr * w /2));
 	left = map_vel*(( 1.0 * dx ) - (dr * w /2));
 }
-
+*/
+	right = ( 1.0 * dx ) + (dr * w /2);
+	left = ( 1.0 * dx ) - (dr * w /2);
 //	ROS_INFO_STREAM("right = " << right << "\t" << "left = " << left << "dr"<< dr);
 
 
@@ -176,7 +178,7 @@ else
 
 	ticks_since_target += 1;
 
-	ros::spinOnce();
+	//-ros::spinOnce();
 
 
 }
