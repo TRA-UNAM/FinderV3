@@ -123,9 +123,9 @@ PID_control::PID_control()
 	ROS_INFO("started PID_node");
 
 
-	wheel_sub=n.subscribe("lec",10,&PID_control::leftencoderCb,this);
+	wheel_sub=n.subscribe("wheel",10,&PID_control::leftencoderCb,this);
 	offsetSub=n.subscribe("offset",10,&PID_control::offsetCb,this);
-	pos_desSub=n.subscribe("pos_des",10,&PID_control::desCb,this);
+	pos_desSub=n.subscribe("wheel_vtarget",10,&PID_control::desCb,this);
 	
 	ang_pub=n.advertise<std_msgs::Float32>("ang",20);
 	vel_pub=n.advertise<std_msgs::Float32>("vel",20);
