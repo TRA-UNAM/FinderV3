@@ -63,12 +63,12 @@ class Launchpad_Class(object):
 		
 ###########################################
 #publisher y suscribers
-		self._Left_Encoder=rospy.Publisher('left_lec',Int16,queue_size=10)
+		self._Left_Encoder=rospy.Publisher('lwheel',Int16,queue_size=10)
 		
 		self._SerialPublisher=rospy.Publisher('serial_base',String,queue_size=10)
 		self.deltat=0
 		self.lastUpdate=0
-		self._Right_Encoder=rospy.Publisher('right_lec',Int16,queue_size=10)
+		self._Right_Encoder=rospy.Publisher('rwheel',Int16,queue_size=10)
 		
 		self._Flipper1_Reset=rospy.Publisher('flipper1_reset',Int16,queue_size=10)
 		
@@ -83,8 +83,8 @@ class Launchpad_Class(object):
 		self._Flipper3_Encoder=rospy.Publisher('flip3_lec',Int16,queue_size=10)
 		self._Flipper4_Encoder=rospy.Publisher('flip4_lec',Int16,queue_size=10)
 		
-		self._left_motor_speed=rospy.Subscriber('left_out',Int16,self._Update_Left_Speed)
-		self._right_motor_speed=rospy.Subscriber('right_out',Int16,self._Update_Right_Speed)
+		self._left_motor_speed=rospy.Subscriber('left_wheel_speed',Int16,self._Update_Left_Speed)
+		self._right_motor_speed=rospy.Subscriber('right_wheel_speed',Int16,self._Update_Right_Speed)
 		self._flipper1_speed=rospy.Subscriber('flipper1_out',Int16,self._Update_Flipper1_Speed)
 		self._flipper2_speed=rospy.Subscriber('flipper2_out',Int16,self._Update_Flipper2_Speed)
 		self._flipper3_speed=rospy.Subscriber('flipper3_out',Int16,self._Update_Flipper3_Speed)
