@@ -4,13 +4,13 @@
 
 	<node name="l_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
 
-		<remap from ="lec" to="left_lec"/> 
+		<remap from ="wheel" to="lwheel"/> 
 		<remap from ="offset" to="left_offset"/> 
-		<remap from ="pos_des" to="left_vel_des"/>
+		<remap from ="wheel_vtarget" to="lwheel_vtarget"/>
 
 		<remap from ="ang" to="left_pos"/> 
 		<remap from ="vel" to="left_vel"/> 
-		<remap from ="out" to="left_out"/>
+		<remap from ="out" to="left_wheel_speed"/>
 
 		<rosparam param ="kp_vel">30</rosparam>
 		<rosparam param ="ki_vel">0.1</rosparam>
@@ -26,13 +26,13 @@
 
 	<node name="r_vel" pkg="finder_bringup" type="vel_ctrl" output="screen">
 
-		<remap from ="lec" to="right_lec"/> 
+		<remap from ="wheel" to="rwheel"/> 
 		<remap from ="offset" to="right_offset"/> 
-		<remap from ="pos_des" to="right_vel_des"/>
+		<remap from ="wheel_vtarget" to="rwheel_vtarget"/>
 
 		<remap from ="ang" to="right_pos"/> 
 		<remap from ="vel" to="right_vel"/> 
-		<remap from ="out" to="right_out"/>
+		<remap from ="out" to="right_wheel_speed"/>
 
 		<rosparam param ="kp_vel">30</rosparam>
 		<rosparam param ="ki_vel">0.1</rosparam>
