@@ -52,9 +52,9 @@ TwistToMotors::TwistToMotors()
 	
 	cmd_vel_sub = n.subscribe("base_controller/command",10, &TwistToMotors::twistCallback, this);
 	
-	pub_lmotor = n.advertise<std_msgs::Float32>("left_vel_des", 50);
+	pub_lmotor = n.advertise<std_msgs::Float32>("lwheel_vtarget", 50);
 
-	pub_rmotor = n.advertise<std_msgs::Float32>("right_vel_des", 50);
+	pub_rmotor = n.advertise<std_msgs::Float32>("rwheel_vtarget", 50);
 	
 
 
