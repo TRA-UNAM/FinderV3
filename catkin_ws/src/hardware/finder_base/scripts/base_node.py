@@ -139,6 +139,7 @@ class Launchpad_Class(object):
 			try:
 				if(lineParts[0]=='e'):
 					self._left_encoder_value=int(lineParts[2])
+					self._left_encoder_value=(self._left_encoder_value*-1)+1023
 					self._right_encoder_value=int(lineParts[1])					
 					self._flipper1_encoder_value=int(lineParts[3])
 					self._flipper2_encoder_value=int(lineParts[4])					

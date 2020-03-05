@@ -56,7 +56,7 @@ class PidVelocity():
         self.prev_encoder = 0
         
         ### get parameters #### 
-        self.Kp = rospy.get_param('~Kp',30)
+        self.Kp = rospy.get_param('~Kp',100)
         self.Ki = rospy.get_param('~Ki',0)
         self.Kd = rospy.get_param('~Kd',0)
         self.out_min = rospy.get_param('~out_min',-100)

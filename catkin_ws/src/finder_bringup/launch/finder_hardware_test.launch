@@ -8,7 +8,7 @@
 		<remap from ="wheel_vtarget" to="lwheel_vtarget"/>
 		<remap from ="wheel_vel" to="lwheel_vel"/> 
 
-		<rosparam param ="kp">30</rosparam>
+		<rosparam param ="kp">100</rosparam>
 		<rosparam param ="ki">0</rosparam>
 		<rosparam param ="kd">0</rosparam>
 		<rosparam param="out_min">-100</rosparam>
@@ -24,7 +24,7 @@
 		<remap from ="wheel_vtarget" to="rwheel_vtarget"/>
 		<remap from ="wheel_vel" to="rwheel_vel"/> 
 
-		<rosparam param ="kp">30</rosparam>
+		<rosparam param ="kp">100</rosparam>
 		<rosparam param ="ki">0</rosparam>
 		<rosparam param ="kd">0</rosparam>
 		<rosparam param="out_min">-100</rosparam>
