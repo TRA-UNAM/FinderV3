@@ -254,13 +254,13 @@ if((LAHstick < sens && LAHstick > -sens) && !LBbutton && !RBbutton)
 
 
 if(DpadV > sens || DpadV < -sens)
-{joy_v=DpadV*0.5;}
+{joy_v=DpadV*0.8;}
 
 if(DpadV < sens && DpadV> -sens && !(LAVstick > sens || LAVstick < -sens))
 {joy_v=0;}
 
 if(DpadH > sens || DpadH < -sens)
-{joy_h=-DpadH*0.5;}
+{joy_h=-DpadH*0.8;}
 
 if(DpadH < sens && DpadH > -sens && !(LAHstick > sens || LAHstick < -sens))
 {joy_h=0;}
