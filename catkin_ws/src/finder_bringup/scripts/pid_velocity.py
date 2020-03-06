@@ -56,7 +56,7 @@ class PidVelocity():
         self.prev_encoder = 0
         
         ### get parameters #### 
-        self.Kp = rospy.get_param('~Kp',100)
+        self.Kp = rospy.get_param('~Kp',150)
         self.Ki = rospy.get_param('~Ki',0)
         self.Kd = rospy.get_param('~Kd',0)
         self.out_min = rospy.get_param('~out_min',-100)
@@ -64,7 +64,7 @@ class PidVelocity():
         self.rate = rospy.get_param('~rate',30)
         self.rolling_pts = rospy.get_param('~rolling_pts',2)
         self.timeout_ticks = rospy.get_param('~timeout_ticks',4)
-        self.ticks_per_meter = rospy.get_param('ticks_meter', 3069)#14860
+        self.ticks_per_meter = rospy.get_param('ticks_meter', 14860)#14860
         self.vel_threshold = rospy.get_param('~vel_threshold', 0.1)
         self.encoder_min = rospy.get_param('encoder_min', 0)
         self.encoder_max = rospy.get_param('encoder_max', 1023)
