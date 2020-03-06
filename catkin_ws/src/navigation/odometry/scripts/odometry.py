@@ -7,9 +7,9 @@ from geometry_msgs.msg import Twist
 
 def cmd_vel_callback(data):
 	global robot_x, robot_y, robot_t	
-	robot_x += 0.01*data.linear.x*math.cos(robot_t)
-	robot_y += 0.01*data.linear.x*math.sin(robot_t)
-	robot_t += 0.01*data.angular.z
+	robot_x += 0.05*data.linear.x*math.cos(robot_t)
+	robot_y += 0.05*data.linear.x*math.sin(robot_t)
+	robot_t += 0.05*data.angular.z
 
 def main():
 	rospy.init_node('odom_node', anonymous=True)
