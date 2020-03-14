@@ -1,0 +1,15 @@
+<launch>
+
+	<param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
+	<!-- Setting gui parameter to true for display joint sliders -->
+	<param name="use_gui" value="true"/>
+
+	<!-- Starting Joint state publisher node which will publish the joint values /-->
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find odometry)/imu_tf_config.rviz"/>
+
+	<!-- Node to send transform from imu_link to base_link -->
+	<node name="imu_tf_node" pkg="odometry" type="imu_tf.py" output="screen"/>
+
+</launch>
