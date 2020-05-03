@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--Taller de Robotica Abierta
+	Modified on April 2020 by Eli Baron from:
+	FinDER robot xacro file 
+	developed by Cesar Pineda 
+	December 2016 - January 2017
+NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se podra convertir a URDF.-->
+<!-- Rojo= X, Verde=Y y Azul= Z (color de los ejes en Rviz)-->
+<robot name="finder_base"  xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find finder_description)/robot/finder_base.gazebo.xacro"/>
+  <xacro:include filename="$(find finder_description)/robot/common_properties.xacro"/>
+
+	<!-- Macro para "mandar llamar" a las mallas *.obj -->
+	<xacro:macro name="default_geometry" params="cad_dir:=package://finder_description/mallas cad_file extension:=obj">
+        	<geometry>
+		<!-- Typically, STL/DAE/OBJ model units are in mm, but RViz units are in m, hence models must be scaled down by 1000-->
+            		<mesh filename="${cad_dir}/${cad_file}.${extension}" scale="0.001 0.001 0.001"/>
+        	</geometry>
+    	</xacro:macro>
+
+	<!--General porpuse variables-->
+	<xacro:property name="pi" value = "3.14159265359"/>
+	<property name="deg_to_rad" value="0.01745329251994329577"/>
+
+	<!--Inertial matrix macro-->
+   	<xacro:macro name="inertial_matrix" params="mass">
+    		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+      			<mass value="${mass}"/>
+        		<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="1.0"/>
+  		</inertial>
+   	</xacro:macro>
+
+	<!--Macro para crear los eslabones y "mandar llamar" a los brazos laterales del chasis-->
+	<xacro:macro name = "lateral_arms" params="name cad_name origin">
+		<link name = "${name}">
+			<xacro:inertial_matrix mass="0.3"/>
+			<visual>
+				<xacro:default_geometry cad_file = "${cad_name}"/>
+				<origin xyz= "${origin}"/>
+			</visual>
+			<collision>
+				<xacro:default_geometry cad_file = "${cad_name}"/>
+				<origin xyz= "${origin}"/>
+    			</collision>
+		</link>
+	</xacro:macro>
+
+	<!--Macro para crear las juntas de los brazos laterales con el chasis-->
+	<xacro:macro name = "arms_joints" params="name child origin">
+		<joint name = "${name}" type="revolute">
+			<parent link = "traction"/>
+			<child	link = "${child}"/>
+			<origin xyz ="${origin}"/>
+			<axis xyz = "1 0 0"/>
+			<limit effort="30.0" velocity="0.2" lower="${-pi}" upper="${pi}"/>
+		</joint>
+	</xacro:macro>
+
+	<!--parameters for geometries in collision tags-->
+	<!--Cylinder parameters-->
+	<property name="cylinder_len" value ="0.087"/>
+	<property name="cylinder_rad" value ="0.0187"/>
+
+<!--//////////////////////////  base link //////////////////-->
+	<link name = "base_link"/>
+
+	<link name = "traction">
+		<xacro:inertial_matrix mass="5.0"/>
+		<visual>
+			<xacro:default_geometry cad_file = "chasis"/>
+			<origin xyz= "0 0 0"/>
+		</visual>
+		<collision>
+			<xacro:default_geometry cad_file = "chasis"/>
+			<origin xyz= "0 0 0"/>
+    		</collision>
+	</link>
+
+	<!--Esta transformacion se hace para que los datos del SLAM correspondan a la correcta orientacion del robot-->
+	<joint name = "adjustment" type="fixed">
+		<parent link = "base_link"/>
+		<child	link = "traction"/>
+		<origin rpy="0 0 ${pi/2}"/>
+	</joint>
+
+<!--////////////////// juntas de los brazos laterales del chasis //////////////////-->
+	<!-- junta del brazo frontal derecho -->
+	<xacro:arms_joints name="right_front_flipper_joint" child="right_front_arm" origin="-0.3264 -0.30255 0.1556"/>
+
+	<!-- junta del brazo frontal izquierdo -->
+	<xacro:arms_joints name="left_front_flipper_joint" child="left_front_arm" origin="0.3264 -0.30255 0.1556"/>
+
+	<!-- junta del brazo trasero derecho -->
+	<xacro:arms_joints name="right_back_flipper_joint" child="right_back_arm" origin="-0.3264 0.30255 0.1556"/>
+
+	<!-- junta del brazo trasero izquierdo -->
+	<xacro:arms_joints name="left_back_flipper_joint" child="left_back_arm" origin="0.3264 0.30255 0.1556"/>
+
+<!--////////////// brazos laterales del chasis ////////////////////-->
+	<!-- brazo frontal derecho chasis -->
+	<xacro:lateral_arms name="right_front_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
+
+	<!-- brazo frontal izquierdo chasis -->
+	<xacro:lateral_arms name="left_front_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
+
+	<!-- brazo trasero derecho chasis -->
+	<xacro:lateral_arms name="right_back_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
+
+	<!-- brazo trasero izquierdo chasis -->
+	<xacro:lateral_arms name="left_back_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
+
+	<link name = "laser_link">
+		<visual>
+      			<origin xyz="0 0 0.0" rpy="0 0 0"/>
+      			<geometry>
+        		<box size="0.05 0.05 0.08"/>
+      			</geometry>
+      			<material name="red"/>
+    		</visual>
+
+    		<collision>
+      			<origin xyz="0.0 0 0.0" rpy="0 0 0"/>
+      			<geometry>
+        		<box size="0.05 0.05 0.08"/>
+      			</geometry>
+    		</collision>
+
+    		<inertial>
+     			<mass value="0.114" />
+      			<origin xyz="0 0 0" />
+      			<inertia ixx="0.001" ixy="0.0" ixz="0.0"
+               iyy="0.001" iyz="0.0"
+               izz="0.001" />
+    		</inertial>
+	</link>
+
+	<joint name="base_to_laser_joint" type="fixed">
+      		<parent link="base_link"/>
+      		<child link="laser_link"/>
+      		<origin xyz="0.4 0 0.27"/>
+    	</joint>
+	
+</robot>
