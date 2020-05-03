@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+	<include file="$(find finder_gazebo)/launch/spawn_urdf_xacro.launch">
+		<arg name="x" value="0.0"/>
+		<arg name="y" value="0.0"/>
+		<arg name="z" value="0.0"/>
+		<arg name="robot_name" value="finder_base"/>
+	</include>
+	<include file="$(find finder_gazebo)/launch/finder_base_control.launch"/>
+</launch>
