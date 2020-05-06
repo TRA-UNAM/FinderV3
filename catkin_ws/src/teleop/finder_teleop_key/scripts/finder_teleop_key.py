@@ -70,9 +70,15 @@ Left_back_flipper:
 
     g
 
+arm_base_rotation:   
+     
+1       3
+    
+
 w/x : increase/decrease linear velocity 
 a/d : increase/decrease angular velocity
 o/i, o/l, i/k, t/g : increse/decrease angular position
+1/3 :rotate left/right
 space key, s : force stop
 
 CTRL-C to quit
@@ -174,6 +180,7 @@ if __name__=="__main__":
     status1=0
     status2=0
     status3=0
+    status4=0
     target_linear_vel   = 0.0
     target_angular_vel  = 0.0
     control_linear_vel  = 0.0
@@ -182,12 +189,14 @@ if __name__=="__main__":
     control_angular_flipper1 = 0.0
     control_angular_flipper2 = 0.0
     control_angular_flipper3 = 0.0
+    control_angular_flipper4 = 0.0
     LIN_VEL_STEP_SIZE=0.1
     ANG_VEL_STEP_SIZE=0.2
     target_angular_flipper0=0.0
     target_angular_flipper1 =0.0
     target_angular_flipper2=0.0
     target_angular_flipper3=0.0
+    target_angular_flipper4=0.0
     ANG_FLIPPER_STEP_SIZE=0.1
     global pos
     name=["right_front_flipper","left_front_flipper","right_back_flipper","left_back_flipper","base_rotation","shoulder_rotation","elbow_rotation","roll_rotation","pitch_rotation","roll_rotation_2","gripper_rotation"]
@@ -274,6 +283,20 @@ if __name__=="__main__":
                 print("Left_back_flipper "+angs(target_angular_flipper3))
                 control_angular_flipper3 = makeSimpleProfile(control_angular_flipper3, target_angular_flipper3, (ANG_FLIPPER_STEP_SIZE))
                 pos[3]=control_angular_flipper3
+            #Brazo, con rotacion en z
+            elif key == '1' :
+                target_angular_flipper4= checkAngularLimitFlipper(target_angular_flipper4 + ANG_FLIPPER_STEP_SIZE)
+                status4 = status4 + 0.1
+                print("arm_base_rotation "+angs(target_angular_flipper4))
+                control_angular_flipper4 = makeSimpleProfile(control_angular_flipper4, target_angular_flipper4, (ANG_FLIPPER_STEP_SIZE))
+                pos[4]=control_angular_flipper4
+
+            elif key == '3' :
+                target_angular_flipper4= checkAngularLimitFlipper(target_angular_flipper4 - ANG_FLIPPER_STEP_SIZE)
+                status4 = status4 + 0.1
+                print("arm_base_rotation "+angs(target_angular_flipper4))
+                control_angular_flipper4 = makeSimpleProfile(control_angular_flipper4, target_angular_flipper4, (ANG_FLIPPER_STEP_SIZE))
+                pos[4]=control_angular_flipper4
 
             elif key == ' ' or key == 's' :
                 target_linear_vel   = 0.0

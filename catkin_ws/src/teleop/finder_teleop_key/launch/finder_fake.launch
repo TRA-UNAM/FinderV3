@@ -4,19 +4,22 @@
   <!-- Setting gui parameter to true for display joint sliders -->
   <arg name="urdf_file" default="$(find xacro)/xacro '$(find finder_description)/urdf/finder.xacro'"/>
   <!-- Setting gui parameter to true for display joint sliders -->
-  <param name="use_gui" value="true"/>
+	<param name="use_gui" value="true"/>
 
   <!-- start fake node -->
   <node pkg="finder_fake" type="finder_fake_node_test.py" name="finder_fake_node" output="screen"/>
   
   <!-- start the robot_state_publisher -->
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
-    <param name="publish_frequency" type="double" value="50.0"/>
+  
   </node>
+  <param name="publish_frequency" type="double" value="50.0"/>
+  <!-- start the joint_state_publisher -->
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen"/>
 
   <!-- start rviz to visualize the robot model -->
   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find finder_fake)/rviz/finder_fake.rviz"/>
 
-  <node name="finder_teleop" pkg="finder_teleop_key" type="finder_teleop_key.py" output="screen"/>
+  <!--node name="finder_teleop" pkg="finder_teleop_key" type="finder_teleop_key.py" output="screen"/-->
 
 </launch>
