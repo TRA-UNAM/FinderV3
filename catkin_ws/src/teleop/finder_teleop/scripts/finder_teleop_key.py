@@ -82,7 +82,12 @@ Arm_base_rotation:
 Arm_Shoulder_rotation:   
     2 
 
-    0   
+    0 
+
+Arm_Elbow_rotation:   
+    8 
+
+    5   
 
 roll rotation:   
      
@@ -105,9 +110,9 @@ Gripper rotation:
 
 w/x : increase/decrease linear velocity 
 a/d : increase/decrease angular velocity
-o/i, o/l, i/k, t/g : up / down
+r/f, o/l, i/k, t/g : up / down
 1/3 :rotate arm base sentido de giro <-- / -->
-2/0, -/+ :rotation shoulder sentido de giro ^ /sentido de giro v
+2/0, 5/8, -/+ :rotation shoulder sentido de giro ^ /sentido de giro v
 4/6, 7/9 :rotation roll sentido de giro <-- / -->
 u/j :gripper rotation sentido de giro ^ /sentido de giro v
 
