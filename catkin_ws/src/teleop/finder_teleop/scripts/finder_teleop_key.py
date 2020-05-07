@@ -234,8 +234,8 @@ if __name__=="__main__":
     control_angular_flipper6= 0.0
     control_angular_flipper7= 0.0
     control_angular_flipper8= 0.0
-    control_angular_flipper9= 0.0
-    control_angular_flipper10= 0.0
+    control_angular_flipper9= 1.6
+    control_angular_flipper10= 1.6
     #Varaibles para definir los pasos
     LIN_VEL_STEP_SIZE=0.1
     ANG_VEL_STEP_SIZE=0.2
@@ -250,12 +250,12 @@ if __name__=="__main__":
     target_angular_flipper6=0.0
     target_angular_flipper7=0.0
     target_angular_flipper8=0.0
-    target_angular_flipper9=0.0
-    target_angular_flipper10=0.0
+    target_angular_flipper9=1.6
+    target_angular_flipper10=1.6
     #Variables que guardan lso datos a publicar en el topico /joint_state
     global pos
     name=["right_front_flipper","left_front_flipper","right_back_flipper","left_back_flipper","base_rotation","shoulder_rotation","elbow_rotation","roll_rotation","pitch_rotation","roll_rotation_2","gripper_rotation"]
-    pos=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    pos=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.6,1.6]
     vel=[]
     effort=[]
     seq=0    
