@@ -59,6 +59,13 @@ archivo .bashrc:
 # Usage
 ## Simulation
 ### Simulation using Fake Node
+These instructions refer to run the simulation on RViz. In order to run that execute the command 
+
+`roslaunch finder_ fake finder_fake.launch`
+
+If the simulation was successfully launched, execute the following command to teleoperate the robot with the keyboard:  
+
+`rosrun finder_teleop finder_teleop_key.py`
 
 ### Simulation using Gazebo
 These instructions refer to run the simulation on gazebo **using the gazebo_ros package**, which is installed by default with every ROS distribution. More info here: http://gazebosim.org/tutorials?tut=ros_overview
