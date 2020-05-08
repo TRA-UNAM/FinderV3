@@ -36,10 +36,10 @@
 	<xacro:gazebo_ref link_name="left_front_arm"/>
 	<xacro:gazebo_ref link_name="right_back_arm"/>
 	<xacro:gazebo_ref link_name="left_back_arm"/>-->
-  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="10.0" mu1="10.5" mu2="10.5" color="White"/>
-  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="10.0" mu1="10.5" mu2="10.5" color="White"/>
-  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="10.0" mu1="10.5" mu2="10.5" color="White"/>
-  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="10.0" mu1="10.05" mu2="10.5" color="White"/>
+  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="White"/>
+  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="White"/>
+  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="White"/>
+  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="White"/>
 
 	<xacro:tran joint="right_front_flipper_joint"/>
 	<xacro:tran joint="left_front_flipper_joint"/>
