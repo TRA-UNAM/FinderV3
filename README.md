@@ -1,2 +1,18 @@
-# FinderV3
-Finder repository, it includes microcontrollers programs and sim packages
+ FinDER v3 Robot repository
+ 
+ # Table of Contents
+ * [Requirements]
+ * [Installation]
+ * [Usage]
+  * [Simulation]
+    * [Simulation using Fake Node]
+    * [Simulation using Gazebo]
+
+#Requirements
+
+#Installation
+
+#Usage
+##Simulation
+###Simulation using Fake Node
+###Simulation using Gazebo
