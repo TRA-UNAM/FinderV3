@@ -1,18 +1,18 @@
- FinDER v3 Robot repository
+ # FinDER v3 Robot repository
  
  # Table of Contents
- * [Requirements]
+ * [Requirements](#requirements)
  * [Installation]
  * [Usage]
   * [Simulation]
     * [Simulation using Fake Node]
     * [Simulation using Gazebo]
 
-#Requirements
+# Requirements
 
-#Installation
+# Installation
 
-#Usage
-##Simulation
-###Simulation using Fake Node
-###Simulation using Gazebo
+# Usage
+## Simulation
+### Simulation using Fake Node
+### Simulation using Gazebo
