@@ -5,8 +5,8 @@
  * [Installation](#instalation)
  * [Usage](#usage)
   * [Simulation](#simulation)
-    * [Simulation using Fake Node](#sim-using-fake-node)
-    * [Simulation using Gazebo](#sim-using-gazebo)
+    * [Simulation using Fake Node](#simulation-using-fake-node)
+    * [Simulation using Gazebo](#simulation-using-gazebo)
 
 # Requirements
 - ROS
@@ -54,21 +54,21 @@ archivo .bashrc:
 These instructions refer to run the simulation on gazebo **using the gazebo_ros package**, which is installed by default with every ROS distribution. More info here: http://gazebosim.org/tutorials?tut=ros_overview
 
 **1. Simulate in empty world**
- Execute the command:
- `roslaunch finder_gazebo finder_empty_world.launch`
- to test the FinDERv3 robot in the gazebo default environment.
+Execute the command:
+`roslaunch finder_gazebo finder_empty_world.launch`
+to test the FinDERv3 robot in the gazebo default environment.
  
 **2. Simulate in the Turtelbot3 maze**
- Execute the command:
- `roslaunch finder_gazebo finder_stage_4.launch`
- to test the FinDERv3 robot in the turtlebot3 maze.
+Execute the command:
+`roslaunch finder_gazebo finder_stage_4.launch`
+to test the FinDERv3 robot in the turtlebot3 maze.
  
 **3. Simulate in a test world**
- Execute the command:
- `roslaunch finder_gazebo finder_world_test.launch`
- to test the FinDERv3 robot in a world with rough terrain.
+Execute the command:
+`roslaunch finder_gazebo finder_world_test.launch`
+to test the FinDERv3 robot in a world with rough terrain.
  
  **Drive the FinDER v3 Robot**
- Execute the following command to teleoperate the robot with the keyboard:
- `rosrun finder_teleop finder_teleop_key.py`
+Execute the following command to teleoperate the robot with the keyboard:
+`rosrun finder_teleop finder_teleop_key.py`
  
