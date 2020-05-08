@@ -59,7 +59,7 @@ archivo .bashrc:
 # Usage
 ## Simulation
 ### Simulation using Fake Node
-These instructions refer to run the simulation on RViz. In order to run that execute the command 
+These instructions refer to run the simulation on RViz **using the finder_fake package**. In order to run that execute the command 
 
 `roslaunch finder_ fake finder_fake.launch`
 
