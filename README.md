@@ -65,20 +65,27 @@ These instructions refer to run the simulation on gazebo **using the gazebo_ros 
 
 #### 1. Simulate in empty world
 Execute the command:
+
 `roslaunch finder_gazebo finder_empty_world.launch`
+
 to test the FinDERv3 robot in the gazebo default environment.
  
 #### 2. Simulate in the Turtelbot3 maze
 Execute the command:
+
 `roslaunch finder_gazebo finder_stage_4.launch`
+
 to test the FinDERv3 robot in the turtlebot3 maze.
  
 #### 3. Simulate in a test world
 Execute the command:
+
 `roslaunch finder_gazebo finder_world_test.launch`
+
 to test the FinDERv3 robot in a world with rough terrain.
  
 #### Drive the FinDER v3 Robot
 Execute the following command to teleoperate the robot with the keyboard:
+
 `rosrun finder_teleop finder_teleop_key.py`
  
