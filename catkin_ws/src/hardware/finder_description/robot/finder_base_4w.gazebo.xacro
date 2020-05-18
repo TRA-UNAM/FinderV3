@@ -66,7 +66,7 @@
     </plugin>
   </gazebo>
 
-  <gazebo reference="laser_link">
+  <gazebo reference="base_laser">
     <material>Gazebo/Red</material>
     <sensor type="ray" name="hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -77,8 +77,8 @@
           <horizontal>
             <samples>720</samples>
             <resolution>1</resolution>
-            <min_angle>-1.5707</min_angle>
-            <max_angle>1.5707</max_angle>
+            <min_angle>-2.0943</min_angle>
+            <max_angle>2.0943</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -97,7 +97,7 @@ the true reading. -->
       </ray>
       <plugin name="gazebo_ros_hokuyo_controller" filename="libgazebo_ros_laser.so">
         <topicName>scan</topicName>
-        <frameName>laser_link</frameName> <!-- base_scan -->
+        <frameName>base_laser</frameName> <!-- base_scan -->
       </plugin>
     </sensor>
   </gazebo>
