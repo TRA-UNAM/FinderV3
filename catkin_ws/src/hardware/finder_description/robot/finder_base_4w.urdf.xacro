@@ -254,7 +254,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 	<!-- brazo trasero izquierdo chasis -->
 	<xacro:lateral_arms name="left_back_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
 
-	<link name = "laser_link">
+	<link name = "base_laser">
 		<visual>
       			<origin xyz="0 0 0.0" rpy="0 0 0"/>
       			<geometry>
@@ -281,7 +281,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 
 	<joint name="base_to_laser_joint" type="fixed">
       		<parent link="base_link"/>
-      		<child link="laser_link"/>
+      		<child link="base_laser"/>
       		<origin xyz="0.4 0 0.27"/>
     	</joint>
 	

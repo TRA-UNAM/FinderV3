@@ -41,7 +41,7 @@
 	<xacro:tran joint="right_back_flipper_joint"/>
 	<xacro:tran joint="left_back_flipper_joint"/>
 
-  <gazebo reference="laser_link">
+  <gazebo reference="base_laser">
     <material>Gazebo/Red</material>
     <sensor type="ray" name="hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -72,7 +72,7 @@ the true reading. -->
       </ray>
       <plugin name="gazebo_ros_hokuyo_controller" filename="libgazebo_ros_laser.so">
         <topicName>scan</topicName>
-        <frameName>laser_link</frameName> <!-- base_scan -->
+        <frameName>base_laser</frameName> <!-- base_scan -->
       </plugin>
     </sensor>
   </gazebo>

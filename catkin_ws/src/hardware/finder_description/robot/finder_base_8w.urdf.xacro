@@ -180,6 +180,94 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
     </visual>
   </link>
 
+  <link name="right_front_m_wheel_link">
+    <!--<xacro:inertial_matrix mass="0.5"/>-->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.000730417916667" ixy="0.0" ixz="0.0" iyy="0.000730417916667" iyz="0.0" izz="0.0006275025"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <link name="left_front_m_wheel_link">
+    <!--<xacro:inertial_matrix mass="0.5"/>-->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.000730417916667" ixy="0.0" ixz="0.0" iyy="0.000730417916667" iyz="0.0" izz="0.0006275025"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <link name="right_rear_m_wheel_link">
+    <!--<xacro:inertial_matrix mass="0.5"/>-->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.000730417916667" ixy="0.0" ixz="0.0" iyy="0.000730417916667" iyz="0.0" izz="0.0006275025"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <link name="left_rear_m_wheel_link">
+    <!--<xacro:inertial_matrix mass="0.5"/>-->
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.000730417916667" ixy="0.0" ixz="0.0" iyy="0.000730417916667" iyz="0.0" izz="0.0006275025"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.0501" length="0.1"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
+
   <link name = "left_belt_link">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -221,28 +309,56 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 <joint name = "right_front_wheel_joint" type="continuous">
   <parent link = "chasis_link"/>
   <child link = "right_front_wheel_link"/>
-  <origin xyz="-0.1959875 -0.201 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="-0.19575 -0.2005 0.0501" rpy="0 ${pi/2} 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "left_front_wheel_joint" type="continuous">
   <parent link = "chasis_link"/>
   <child link = "left_front_wheel_link"/>
-  <origin xyz="0.1959875 -0.201 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.19575 -0.2005 0.0501" rpy="0 ${pi/2} 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "right_rear_wheel_joint" type="continuous">
   <parent link = "chasis_link"/>
   <child link = "right_rear_wheel_link"/>
-  <origin xyz="-0.1959875 0.201 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="-0.19575 0.2005 0.0501" rpy="0 ${pi/2} 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "left_rear_wheel_joint" type="continuous">
   <parent link = "chasis_link"/>
   <child link = "left_rear_wheel_link"/>
-  <origin xyz="0.1959875 0.201 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.19575 0.2005 0.0501" rpy="0 ${pi/2} 0"/>
+  <axis xyz="0 0 1"/>
+</joint>
+
+<joint name = "right_front_m_wheel_joint" type="continuous">
+  <parent link = "chasis_link"/>
+  <child link = "right_front_m_wheel_link"/>
+  <origin xyz="-0.19575 -0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <axis xyz="0 0 1"/>
+</joint>
+
+<joint name = "left_front_m_wheel_joint" type="continuous">
+  <parent link = "chasis_link"/>
+  <child link = "left_front_m_wheel_link"/>
+  <origin xyz="0.19575 -0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <axis xyz="0 0 1"/>
+</joint>
+
+<joint name = "right_rear_m_wheel_joint" type="continuous">
+  <parent link = "chasis_link"/>
+  <child link = "right_rear_m_wheel_link"/>
+  <origin xyz="-0.19575 0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <axis xyz="0 0 1"/>
+</joint>
+
+<joint name = "left_rear_m_wheel_joint" type="continuous">
+  <parent link = "chasis_link"/>
+  <child link = "left_rear_m_wheel_link"/>
+  <origin xyz="0.19575 0.0675 0.0501" rpy="0 ${pi/2} 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
@@ -290,7 +406,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 	<!-- brazo trasero izquierdo chasis -->
 	<xacro:lateral_arms name="left_back_arm" cad_name="brazo_der_frontal" origin="0.3264 0.30255 -0.0629"/>
 
-	<link name = "laser_link">
+	<link name = "base_laser">
 		<visual>
       			<origin xyz="0 0 0.0" rpy="0 0 0"/>
       			<geometry>
@@ -309,7 +425,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 
 	<joint name="base_to_laser_joint" type="fixed">
       		<parent link="base_link"/>
-      		<child link="laser_link"/>
+      		<child link="base_laser"/>
       		<origin xyz="0.4 0 0.311"/>
     	</joint>
 	

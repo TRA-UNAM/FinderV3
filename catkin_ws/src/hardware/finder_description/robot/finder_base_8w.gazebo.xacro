@@ -36,10 +36,10 @@
 	<xacro:gazebo_ref link_name="left_front_arm"/>
 	<xacro:gazebo_ref link_name="right_back_arm"/>
 	<xacro:gazebo_ref link_name="left_back_arm"/>-->
-  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="orange"/>
-  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="orange"/>
-  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="orange"/>
-  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="0.5" mu2="2.8" color="orange"/>
+  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
+  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
+  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
+  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
 
 <xacro:gazebo_ref link_name="chasis_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="grey"/>
 <xacro:gazebo_ref link_name="left_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="white"/>
@@ -70,7 +70,7 @@
     </plugin>
   </gazebo>
 
-  <gazebo reference="laser_link">
+  <gazebo reference="base_laser">
     <material>Gazebo/Red</material>
     <sensor type="ray" name="hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -81,8 +81,8 @@
           <horizontal>
             <samples>720</samples>
             <resolution>1</resolution>
-            <min_angle>-1.5707</min_angle>
-            <max_angle>1.5707</max_angle>
+            <min_angle>-2.0943</min_angle>
+            <max_angle>2.0943</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -101,7 +101,7 @@ the true reading. -->
       </ray>
       <plugin name="gazebo_ros_hokuyo_controller" filename="libgazebo_ros_laser.so">
         <topicName>scan</topicName>
-        <frameName>laser_link</frameName> <!-- base_scan -->
+        <frameName>base_laser</frameName> <!-- base_scan -->
       </plugin>
     </sensor>
   </gazebo>
