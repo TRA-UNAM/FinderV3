@@ -1,27 +1,13 @@
 <launch>
-  <!-- Setting gui parameter to true for display joint sliders -->
-  <!--<param name="use_gui" value="true"/>-->
 
-  <!-- Starting Joint state publisher node which will publish the joint values /-->
-  <!--<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />-->
-
-  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-  <!--<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>-->
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="/joint_states" to="/finder_base/joint_states"/>
+  </node>
 
   <!-- SLAM gmapping -->
   <node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan" output="screen">
-    <param name="map_update_interval" value="1.0" />
-    <param name="maxUrange" value="5.4"/>
-    <param name="linearUpdate" value="0.3"/>
-    <param name="angularUpdate" value="0.2"/>
-    <param name="xmin" value="-50"/>
-    <param name="ymin" value="-20"/>
-    <param name="xmax" value="50"/>
-    <param name="ymax" value="20"/>
-    <param name="maxRange" value="5.5"/>
-    <param name="minimumScore" value="0.0"/>
+    <rosparam file="$(find finder_bringup)/params/gmapping_params.yaml" command="load"/>
   </node>
 
   <!-- rviz -->
