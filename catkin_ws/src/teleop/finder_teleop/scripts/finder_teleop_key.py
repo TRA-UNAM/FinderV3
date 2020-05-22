@@ -30,6 +30,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Float32
 import sys, select, os
 if os.name == 'nt':
   import msvcrt
@@ -64,7 +65,7 @@ Right_front_flipper:
 Left_front_flipper:   
     r 
 
-    t
+    f
 
 Right_back_flipper:   
     i
@@ -225,7 +226,18 @@ if __name__=="__main__":
 
     rospy.init_node('finder_teleop_key')
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    pub2=rospy.Publisher('/joint_states', JointState, queue_size=10)
+    pub1=rospy.Publisher('/flipper1_out', Float32, queue_size=1)
+    pub2=rospy.Publisher('/flipper2_out', Float32, queue_size=1)
+    pub3=rospy.Publisher('/flipper3_out', Float32, queue_size=1)
+    pub4=rospy.Publisher('/flipper4_out', Float32, queue_size=1)
+    pub5=rospy.Publisher('/base_rotation_out',Float32,queue_size=1)
+    pub6=rospy.Publisher('/shoulder_rotation_out',Float32,queue_size=1)
+    pub7=rospy.Publisher('/elbow_rotation_out',Float32,queue_size=1)
+    pub8=rospy.Publisher('/roll_rotation_out',Float32,queue_size=1)
+    pub9=rospy.Publisher('/pitch_rotation_out',Float32,queue_size=1)
+    pub10=rospy.Publisher('/roll_rotation_2_out',Float32,queue_size=1)
+    pub11=rospy.Publisher('/gripper_rotation_out',Float32,queue_size=1)
+    
     
     #--------------------Variable que controla la alerta del mensaje--------------------
     status=0
@@ -273,13 +285,8 @@ if __name__=="__main__":
     target_angular_flipper8=0.0
     target_angular_flipper9=1.6
     target_angular_flipper10=1.6
-    #--------------------Variables que guardan los datos a publicar en el topico /joint_state--------------------
-    global pos
-    name=["right_front_flipper","left_front_flipper","right_back_flipper","left_back_flipper","base_rotation","shoulder_rotation","elbow_rotation","roll_rotation","pitch_rotation","roll_rotation_2","gripper_rotation"]
     pos=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.6,1.6]
-    vel=[]
-    effort=[]
-    seq=0    
+  
 
     #--------------------Aqui es donde se declaran todas las operaciones al presionar una de las teclas dentro del menu --------------------
     try:
@@ -515,18 +522,19 @@ if __name__=="__main__":
             twist.linear.x = control_linear_vel; twist.linear.y = 0.0; twist.linear.z = 0.0
             control_angular_vel = makeSimpleProfile(control_angular_vel, target_angular_vel, (ANG_VEL_STEP_SIZE/2.0))
             twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = control_angular_vel
-            pub.publish(twist)
-
-            #--------------------Se crea un objeto de la clase joint state que contendra el mensaje para las juntas--------------------
-            joint_state=JointState()
-            joint_state.header.seq=seq+1
-            joint_state.header.frame_id=''
-            joint_state.header.stamp=rospy.get_rostime()
-            joint_state.name=name
-            joint_state.position=pos
-            joint_state.velocity=vel
-            joint_state.effort=effort
-            pub2.publish(joint_state)
+            pub.publish(twist)     
+            pub1.publish(pos[0])
+            pub2.publish(pos[1])
+            pub3.publish(pos[2])
+            pub4.publish(pos[3])
+            pub5.publish(pos[4])
+            pub6.publish(pos[5])
+            pub7.publish(pos[6])
+            pub8.publish(pos[7])
+            pub9.publish(pos[8])
+            pub10.publish(pos[9])
+            pub11.publish(pos[10])
+           
 
     #--------------------Manejo de excepciones--------------------
     except:
@@ -537,6 +545,6 @@ if __name__=="__main__":
         twist = Twist()
         twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0
         twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
-        pub.publish(twist)
+        
     if os.name != 'nt':
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
