@@ -1,72 +1,104 @@
 <?xml version="1.0"?>
-<robot name="finder_base_4w_sim" xmlns:xacro="http://ros.org/wiki/xacro">
-    <xacro:arg name="laser_visual" default="true"/>
+<robot name="finder_base" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="laser_visual" default="true"/>
 
-	<!-- gazebo tag macro -->
-	<xacro:macro name="gazebo_ref" params="link_name kp kd mu1 mu2 color">
-		<gazebo reference="${link_name}">
-			<kp>${kp}</kp>	<!-- static contact stifness -->
-			<kd>${kd}</kd>	<!-- dynamic contact stifness -->
-			<mu1>${mu1}</mu1>	<!-- static friction coeficient -->
-			<mu2>${mu2}</mu2>	<!-- dynamic friction coeficient -->
-			<material>Gazebo/${color}</material>
-		</gazebo>
-	</xacro:macro>
+  <!-- gazebo tag macro -->
+  <xacro:macro name="gazebo_ref" params="link_name kp kd mu1 mu2 color">
+    <gazebo reference="${link_name}">
+	<kp>${kp}</kp>	<!-- static contact stifness -->
+	<kd>${kd}</kd>	<!-- dynamic contact stifness -->
+	<mu1>${mu1}</mu1>	<!-- static friction coeficient -->
+	<mu2>${mu2}</mu2>	<!-- dynamic friction coeficient -->
+	<material>Gazebo/${color}</material>
+    </gazebo>
+  </xacro:macro>
 
-	<xacro:macro name="tran" params="joint">
-    		<transmission name="${joint}_tran">
-        		<type>transmission_interface/SimpleTransmission</type>
-        		<joint name="${joint}">
-            			<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        		</joint>
-       			<actuator name="${joint}_motor">
-            			<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-           			<mechanicalReduction>1</mechanicalReduction>
-        		</actuator>
-    		</transmission>
-	</xacro:macro>
+  <xacro:macro name="tran" params="joint">
+    <transmission name="${joint}_tran">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${joint}">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${joint}_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
 
-	<gazebo>
-        	<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-			<robotNamespace>/finder_base</robotNamespace>
-        	</plugin>
-    	</gazebo>
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/finder_base</robotNamespace>
+    </plugin>
+  </gazebo>
 	
-	<!--<xacro:gazebo_ref link_name="right_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
-	<xacro:gazebo_ref link_name="left_front_arm"/>
-	<xacro:gazebo_ref link_name="right_back_arm"/>
-	<xacro:gazebo_ref link_name="left_back_arm"/>-->
-  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
-  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
-  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
-  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="125" mu2="128" color="orange"/>
+  <xacro:gazebo_ref link_name="right_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="left_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="left_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
 
-<xacro:gazebo_ref link_name="chasis_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="grey"/>
-<xacro:gazebo_ref link_name="left_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="white"/>
-<xacro:gazebo_ref link_name="right_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="white"/>
+  <xacro:gazebo_ref link_name="chasis_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="Grey"/>
+  <xacro:gazebo_ref link_name="left_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="White"/>
 
-	<xacro:tran joint="right_front_flipper_joint"/>
-	<xacro:tran joint="left_front_flipper_joint"/>
-	<xacro:tran joint="right_back_flipper_joint"/>
-	<xacro:tran joint="left_back_flipper_joint"/>
+  <xacro:tran joint="right_front_flipper_joint"/>
+  <xacro:tran joint="left_front_flipper_joint"/>
+  <xacro:tran joint="right_back_flipper_joint"/>
+  <xacro:tran joint="left_back_flipper_joint"/>
 
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
       <updateRate>25.0</updateRate>
       <robotNamespace>/</robotNamespace>
       <leftFrontJoint>left_front_wheel_joint</leftFrontJoint>
       <rightFrontJoint>right_front_wheel_joint</rightFrontJoint>
       <leftRearJoint>left_rear_wheel_joint</leftRearJoint>
       <rightRearJoint>right_rear_wheel_joint</rightRearJoint>
-      <wheelSeparation>0.401</wheelSeparation>
+      <wheelSeparation>0.3915</wheelSeparation>
       <wheelDiameter>0.1002</wheelDiameter>
-      <robotBaseFrame>base_link</robotBaseFrame>
       <torque>20</torque>
-      <topicName>cmd_vel</topicName>
+      <broadcastTF>true</broadcastTF>
+    </plugin>
+  </gazebo>
+
+<!-- second controller for the 4 middle-wheels -->
+  <gazebo>
+    <plugin name="skid_steer_drive_controller_2" filename="libgazebo_ros_skid_steer_drive.so">
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
-      <broadcastTF>1</broadcastTF>
+      <robotBaseFrame>base_link</robotBaseFrame>
+      <updateRate>25.0</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <leftFrontJoint>left_front_m_wheel_joint</leftFrontJoint>
+      <rightFrontJoint>right_front_m_wheel_joint</rightFrontJoint>
+      <leftRearJoint>left_rear_m_wheel_joint</leftRearJoint>
+      <rightRearJoint>right_rear_m_wheel_joint</rightRearJoint>
+      <wheelSeparation>0.3915</wheelSeparation>
+      <wheelDiameter>0.1002</wheelDiameter>
+      <torque>20</torque>
+      <broadcastTF>true</broadcastTF>
+    </plugin>
+  </gazebo>
+
+<!-- plug-in for publish the joint states of the 8 wheels -->
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>left_front_wheel_joint, right_front_wheel_joint, left_rear_wheel_joint, right_rear_wheel_joint, left_front_m_wheel_joint, right_front_m_wheel_joint, left_rear_m_wheel_joint, right_rear_m_wheel_joint</jointName>
+      <robotNamespace>/finder_base</robotNamespace>
+      <updateRate>25.0</updateRate>
     </plugin>
   </gazebo>
 
@@ -79,15 +111,15 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>720</samples>
-            <resolution>1</resolution>
-            <min_angle>-2.0943</min_angle>
-            <max_angle>2.0943</max_angle>
+            <samples>240</samples> <!-- with 360deg/1024steps, 240degrees are 682 steps -->
+            <resolution>1.0</resolution> <!-- 0.352 degree, 360deg/1024 steps -->
+            <min_angle>-2.094395</min_angle> <!-- -120 degrees -->
+            <max_angle>2.094395</max_angle>
           </horizontal>
         </scan>
         <range>
-          <min>0.120</min>
-          <max>3.5</max>
+          <min>0.10</min>
+          <max>5.6</max>
           <resolution>0.015</resolution>
         </range>
         <noise>
@@ -105,5 +137,47 @@ the true reading. -->
       </plugin>
     </sensor>
   </gazebo>
+
+  <!-- tag for simulating the camera1 -->
+  <gazebo reference="camera1_link">
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+          <pose>0 0 0 0 0.5 0</pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>400</width>
+          <height>400</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>finder_base/camera1</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera1_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo> 
 
 </robot>
