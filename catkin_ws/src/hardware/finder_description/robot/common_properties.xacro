@@ -41,4 +41,12 @@
   <material name="white">
     <color rgba="1.0 1.0 1.0 1.0"/>
   </material>
+
+  <material name="pale_goldenrod">
+    <color rgba="${238/255} ${232/255} ${170/255} 1.0"/>
+  </material>
+
+  <material name="silver">
+    <color rgba="${192/255} ${192/255} ${192/255} 1.0"/>
+  </material>
 </robot>
