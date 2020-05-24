@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
+
+  <!-- start fake node -->
+  <node pkg="finder_fake" type="finder_fake_node_test.py" name="finder_fake_node" output="screen"/>
+  
+  <!-- start the robot_state_publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+  <param name="publish_frequency" type="double" value="50.0"/>
+  </node>
+
+  <!-- start rviz to visualize the robot model -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find finder_fake)/rviz/finder_fake.rviz"/>
+
+
+</launch>

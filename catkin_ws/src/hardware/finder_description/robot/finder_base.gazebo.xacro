@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot name="finder_base_sim" xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:arg name="laser_visual" default="true"/>
+
+	<!-- gazebo tag macro -->
+	<xacro:macro name="gazebo_ref" params="link_name">
+		<gazebo reference="${link_name}">
+			<kp>1000.0</kp>	<!-- static contact stifness -->
+			<kd>1000.0</kd>	<!-- dynamic contact stifness -->
+			<mu1>10.0</mu1>	<!-- static friction coeficient -->
+			<mu2>10.0</mu2>	<!-- dynamic friction coeficient -->
+		</gazebo>
+	</xacro:macro>
+
+	<xacro:macro name="tran" params="joint">
+    		<transmission name="${joint}_tran">
+        		<type>transmission_interface/SimpleTransmission</type>
+        		<joint name="${joint}">
+            			<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        		</joint>
+       			<actuator name="${joint}_motor">
+            			<hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+           			<mechanicalReduction>1</mechanicalReduction>
+        		</actuator>
+    		</transmission>
+	</xacro:macro>
+
+	<gazebo>
+        	<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+			<robotNamespace>/finder_base</robotNamespace>
+        	</plugin>
+    	</gazebo>
+	
+	<xacro:gazebo_ref link_name="right_front_arm"/>
+	<xacro:gazebo_ref link_name="left_front_arm"/>
+	<xacro:gazebo_ref link_name="right_back_arm"/>
+	<xacro:gazebo_ref link_name="left_back_arm"/>
+
+	<xacro:tran joint="right_front_flipper_joint"/>
+	<xacro:tran joint="left_front_flipper_joint"/>
+	<xacro:tran joint="right_back_flipper_joint"/>
+	<xacro:tran joint="left_back_flipper_joint"/>
+
+  <gazebo reference="base_laser">
+    <material>Gazebo/Red</material>
+    <sensor type="ray" name="hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>$(arg laser_visual)</visualize>
+      <update_rate>5</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.0943</min_angle>
+            <max_angle>2.0943</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.120</min>
+          <max>5.6</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+<!-- from ROS cookbook: Noise parameters based on published spec for Hokuyo laser achieving "+-30mm" accuracy at range < 10m. A mean of 0.0m
+and stddev of 0.01m will put 99.7% of samples within 0.03m of
+the true reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>base_laser</frameName> <!-- base_scan -->
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
