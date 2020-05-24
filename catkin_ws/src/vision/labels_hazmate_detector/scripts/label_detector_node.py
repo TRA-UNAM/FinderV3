@@ -5,10 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import pickle
+import sys
 from std_msgs.msg import String
+from std_msgs.msg import Int16MultiArray
+from std_msgs.msg import Bool
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
+#import LabelDetection
+
 bridge = CvBridge()
 image = []
 fondo = []
@@ -23,158 +28,187 @@ orb = cv2.ORB_create()
 #Parametros para el comparador FLANN(Fast Library for Approximate Nearest Neighbour)
 FLANN_INDEX_LSH = 6
 index_params= dict(algorithm = FLANN_INDEX_LSH,
-                   table_number = 6, # 12
-                   key_size = 12,     # 20
-                   multi_probe_level = 1) #2
+	table_number = 6, # 12
+  key_size = 12,     # 20
+	multi_probe_level = 1) #2
 search_params = dict(checks=50)
+
 #Instancia el comparador que obtendra' matches entre las imagenes
 flann = cv2.FlannBasedMatcher(index_params,search_params)
 
-#Imagenes a identificar (database)
-with open('database_full.pkl','rb') as database_full:
-        database_full = pickle.load(database_full)
+#Imagenes a identificar (database) en el directorio del scriptO
+with open(sys.path[0] + '/database_full.pkl','rb') as database_full:
+  database_full = pickle.load(database_full)
 database = database_full[0]
 kp_database = []
 name_database = database_full[1]
 des_database = database_full[2]
+database_full = []
 
+####Ejemplo de como se extraen keypoints al crear la base de datos (en create_database.py)
 #img1 = cv2.imread('hlabel/dan_when_weh1.JPG')
 #img2 = cv2.imread('hlabel/organ_peroxh.JPG')
 #database = [img1, img2]
-
-
 #Busca KeyPoints y Descriptores en la database
 #kp1, des1 = orb.detectAndCompute(img1,None)
 #kp2, des2 = orb.detectAndCompute(img2,None)
 #kp_database = [kp1, kp2]
 #des_database  = [des1, des2]
 
+#Bandera que indica si realizar el reconocimiento
+flag = False
+
+#Threshold para filtrar blanco y negro solamente
+lower_white = np.array([140,140,140])
+upper_white = np.array([255,255,255])
+lower_black = np.array([0,0,0])
+upper_black = np.array([120,120,120])
+
 def callback(img):
-        global image
-        np_arr = np.fromstring(img.data, np.uint8)
-        image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+  global image
+  #np_arr = np.fromstring(img.data, np.uint8)
+  #image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)	image
+  image = bridge.imgmsg_to_cv2(img, "bgr8")
+
+def flag_callback(currentFlag):
+  global flag
+  flag = currentFlag.data
 
 def label_detection_node():
-        global image
-        rospy.init_node('label_detection_node')
-        rospy.Subscriber('/camera0/usb_cam0/image_raw/compressed', CompressedImage, callback)
-        pub = rospy.Publisher('/detected_labels', String, queue_size=10)
+  global image
+  global flag
+  rospy.init_node('label_detection_node')
+  #rospy.Subscriber('/camera4/usb_cam4/image_raw/compressed', CompressedImage, callback)
+  rospy.Subscriber('/camera0/usb_cam0/image_raw', Image, callback)
+  rospy.Subscriber('/vision/label_flag', Bool, flag_callback)
+  pub = rospy.Publisher('/vision/detected_labels', Int16MultiArray, queue_size=1)
 	#fps
-	rate = rospy.Rate(1)
-	#print(kp1[1])
-	#print(des1[1])
-	#print(len(kp1))
-	#print(len(des1))
-	rate.sleep()
-        while not rospy.is_shutdown():
-		#Obtencion y pre procesado
-		imgc = image.copy()
-		imgwg = cv2.cvtColor(imgc, cv2.COLOR_BGR2GRAY)
-		clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
-		imgwg = clahe.apply(imgwg)
-		imgwg = cv2.bilateralFilter(imgwg, 5, 150, 150)
-		#Busca ejes con el algoritmo de canny
-		edges = cv2.Canny(imgwg, thlc, thhc)
-		# Busca informacion sobre cuadrados contenidos en la imagen
-		# x,y,w,h, area por cada cuadrado
-		#print('la wa partir')
-		cent,totR = findRoi(edges.copy(), imgc)
-		#print('centros')
-		#print(cent)
-		#roi = [None] * 5
-		roi = np.empty(10, dtype=object)
-		#kpc = [None] * 10
-		kp_roi = np.empty(10, dtype=object)
-		#desc = [None] * 10
-		des_roi = np.empty(10, dtype=object)
+  rate = rospy.Rate(1)
+  while not rospy.is_shutdown():
+  	#Loop para que no inicie si no hay imagen en la camara
+    while image == []:
+      rate.sleep()
+      if rospy.is_shutdown():
+        break
+    if flag:
+      #Obtencion y pre procesado
+      imgc = image.copy()
+      #imgc = cv2.bilateralFilter(imgc, 5, 150, 150)
+      #Imagen con mascara de color blanco
+      whiteMask = cv2.inRange(imgc, lower_white, upper_white)
+      imgW = cv2.cvtColor(cv2.bitwise_and(imgc, imgc, mask = whiteMask),cv2.COLOR_BGR2GRAY)
+      #Imagen con mascara de color negro
+      blackMask = cv2.inRange(imgc, lower_black, upper_black)
+      imgB = cv2.cvtColor(cv2.bitwise_and(255-imgc, 255-imgc, mask = blackMask),cv2.COLOR_BGR2GRAY)
+      #Imagen en escala de grises con filtro
+      imgwg = cv2.cvtColor(imgc, cv2.COLOR_BGR2GRAY)
+      clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+      imgwg = clahe.apply(imgwg)
 
-		#Cuenta de los matches de cada recuadro encontrado
-		#Cuenta del mejor match y registro de cual fue
-		totM = np.empty(10, dtype=object)
-		bestM = np.empty(10, dtype=object)
-		matches = np.empty([len(cent),len(des_database)], dtype=object)
+      #cv2.imshow("white",imgW)
+      #cv2.imshow("black",imgB)
+      #Busca ejes con el algoritmo de canny
+      edges1 = cv2.Canny(imgW , thlc, thhc)
+      edges2 = cv2.Canny(imgB , thlc, thhc)
+      edges3 = cv2.Canny(imgwg, thlc, thhc)
+      #cv2.imshow("cannyColor",edges2)
+      #cv2.imshow("canny",edges2)
+      #cv2.waitKey()
+      # Busca informacion sobre cuadrados contenidos en la imagen
+      # x,y,w,h, area por cada cuadrado
+      cent1, totR1 = findRoi(edges1.copy(), imgc)
+      cent2, totR2 = findRoi(edges2.copy(), imgc)
+      cent3, totR3 = findRoi(edges3.copy(), imgc)
 
-		if len(cent):
-			#Crea una roi por cada uno de recuadros mas grandes
-			for i in range (totR):
-				#print(i)
-				roi[i] = imgc[ ( cent[i][3] ):( cent[i][3]+cent[i][5] ), ( cent[i][2] ):( cent[i][2]+cent[i][4] ) ]
-			# find the keypoints and descriptors with ORB
-			#print('la wa checar..')
+      #cent,totR = findRoi(edges.copy(), imgc)
+      cent = cent1 + cent2 + cent3
+      #cent = np.concatenate((cent1, cent2, cent3),axis=1)
+      totR = totR1 + totR2 + totR3
 
-			#Barrido de todas las ROI
-			for roi_index in range (len(cent)):
-				#Inicializacion del numero de matches y del mejor match
-				bestM[roi_index] = 0
-				totM[roi_index] = 0
-				#Obtencion de KeyPoints de la ROI
-				kp_roi[roi_index], des_roi[roi_index] = orb.detectAndCompute(roi[roi_index],None)
-				#Comparativa (matches) de los KeyPoints de la ROI con la base de datos
-				for database_index in range(len(des_database)):
-					matches[roi_index,database_index] = flann.knnMatch(des_roi[roi_index],des_database[database_index],k=2)
-					#Recorre cada punto que hizo match de la ROI con la imagen de la database actual, y verifica que haya al menos uno
-					#variable para guardar el numero de matches con la imagen actual
-					totM_temp = 0
-					for poss_match in enumerate(matches[roi_index,database_index]):
-						if len(poss_match[1]) > 1:
-							#Aumenta el numero de matches correctos si la distancia entre los puntos es menor a un valor
-							if poss_match[1][0].distance < 0.7*poss_match[1][1].distance:
-								totM_temp = totM_temp + 1
-					#Termina de calcular los matches para una imagen y compara si es la imagen con mas match
-					if totM_temp > totM[roi_index]:
-						totM[roi_index] = totM_temp
-						bestM[roi_index] = database_index
-				#Termina de calcular los match de una ROI con la database completa
-				#Obtuvo el mejor match y su indice
-				if totM[roi_index] < 20:
-					totM[roi_index] = None
-					bestM[roi_index] = None
-				if bestM[roi_index] is not None:
-					Found_label = String()
-					Found_label.data = name_database[bestM[roi_index]]
-					pub.publish(Found_label)
-					#cv2.imshow('Roi%d'%roi_index,roi[roi_index])
-					cv2.imshow(name_database[bestM[roi_index]],database[bestM[roi_index]])
-					cv2.waitKey(1)
-					print(name_database[bestM[roi_index]])
-			#Termina de evaluar las ROI
-			#print('Total de coincidencias')
-			#print(totM)
-			#print(bestM)
+      roi = np.empty(30, dtype=object)
+      kp_roi = np.empty(30, dtype=object)
+      des_roi = np.empty(30, dtype=object)
 
-#		if totM[0] is not None:
-#			#cv2.imshow('Roi1',roi[0])
-#			cv2.imshow('image1',database[bestM[0]])
-#			cv2.waitKey(1)
-#                if totM[1] is not None:
-#			#cv2.imshow('Roi2',roi[1])
-#			cv2.imshow('image2',database[bestM[1]])
-#			cv2.waitKey(1)
+      #Matches totales de cada ROI
+      totM = np.empty(30, dtype=object)
+      #Indice de la imagen con mas datos de la ROI
+      bestM = np.empty(30, dtype=object)
+      #Los matches de cada ROI con cada imagen de la base de datos
+      matches = np.empty([len(cent),len(des_database)], dtype=object)
 
-		rate.sleep()
-		cv2.destroyAllWindows()
+    	#Cuenta de los matches de cada recuadro encontrado
+    	#Cuenta del mejor match y registro de cual fue
+      if len(cent):
+        #Crea una roi por cada uno de recuadros mas grandes
+        for i in range (totR):
+    			#print(i)
+          roi[i] = imgc[ ( cent[i][3] ):( cent[i][3]+cent[i][5] ), ( cent[i][2] ):( cent[i][2]+cent[i][4] ) ]
+        #find the keypoints and descriptors with ORB
+
+    		#Barrido de todas las ROI
+        for roi_index in range (len(cent)):
+          #Inicializacion del numero de matches y del mejor match
+          bestM[roi_index] = 0
+          totM[roi_index] = 0
+    			#Obtencion de KeyPoints de la ROI
+          kp_roi[roi_index], des_roi[roi_index] = orb.detectAndCompute(roi[roi_index],None)
+    			#Comparativa (matches) de los KeyPoints de la ROI con la base de datos
+          for database_index in range(len(des_database)):
+            matches[roi_index,database_index] = flann.knnMatch(des_roi[roi_index],des_database[database_index],k=2)
+    				#Variable para guardar el numero de matches con la imagen actual
+            totM_temp = 0
+
+            #Recorre cada punto que hizo match de la ROI con la imagen de la database actual, y verifica que haya al menos uno
+            for poss_match in enumerate(matches[roi_index,database_index]):
+              if len(poss_match[1]) > 1:
+    						#Aumenta el numero de matches correctos si la distancia entre los puntos es menor a un valor
+                if poss_match[1][0].distance < 0.7*poss_match[1][1].distance:
+                  totM_temp = totM_temp + 1
+    				#Termina de calcular los matches para una imagen y compara si es la imagen con mas match
+            if totM_temp > totM[roi_index]:
+              totM[roi_index] = totM_temp
+              bestM[roi_index] = database_index
+          #Termina de calcular los match de una ROI con la database completa
+          #Obtuvo el mejor match y su indice
+          if totM[roi_index] < 20:
+            totM[roi_index] = None
+            bestM[roi_index] = None
+    			#if bestM[roi_index] is not None:
+
+        #Aqui termino' de comprobar todas las ROI
+        #Procede a elegir las 4 mejores
+
+        #Arreglo con los indices de las 4 imagenes con mas matches, separados por ';'
+        bestMatches = np.empty(4, dtype=object)
+        #Numero de imagenes encontradas de mayor a menor
+        totalImages = 0
+        #Numero maximo de matches en la iteracion actual
+        best = 0
+        #Seleccionara' las 4 con mas matches (no repetidas)
+        while totalImages < 4 and len(bestM):
+          current = 0
+          for roi_index in range (len(bestM)):
+            if bestM[roi_index] != None:
+              if totM[roi_index] >= totM[current]:
+                current = roi_index
+          if (bestM[current]) != None:
+            if not bestM[current] in bestMatches:
+              bestMatches[totalImages] = bestM[current]
+              totalImages += 1
+            bestM[current] = None
+            totM[current] = None
+          else:
+            while totalImages < 4:
+              bestMatches[totalImages] = 255
+              totalImages += 1
+        Found_labels = Int16MultiArray()
+        Found_labels.data = bestMatches
+        pub.publish(Found_labels)
 
 
-
-
-#				kpc[j], desc[j] = orb.detectAndCompute(roi[j],None)
-#				matches[j] = flann.knnMatch(desc[j],des1,k=2)
-#				#print(matches[1])
-#				for i in enumerate(matches[j]):
-#					#print(i[0])
-#					if len(i[1]) > 1:
-#               				if i[1][0].distance < 0.7*i[1][1].distance:
-#							matchesMask[i[0]]=[1,0]
-#							totM[j] = totM[j] + 1
-
-#		draw_params = dict(matchColor = (0,255,0),singlePointColor = (255,0,0),matchesMask = matchesMask,flags = cv2.DrawMatchesFlags_DEFAULT)
-		#if roi[0] is not None:
-		#	img3 = cv2.drawMatchesKnn(img1,kp1,roi[0],kpc[0],matches[:20],None,draw_params)
-		#	plt.imshow(img3),plt.show()
-		#plt.imshow(img3),plt.show()
-
-		# Draw first 10 matches.
-		#img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:20],None,flags = 2)
+    else:
+      print('flag off')
+    rate.sleep()
 
 # Busqueda de la region de interes, para aplicar metodos de reconocimiento.
 # La funcion consiste en un buscador de contornos similares a rectangulos y
@@ -238,6 +272,7 @@ def findRoi(img, imgt):
       #print(approx[2,0][1])
 
       # Calculo del angulo de los lados
+      # para implementar transformacion morfologica
       if float(approx[1,0][1]-approx[0,0][1]) == 0:
 	ang_a = 90
       else:
@@ -279,12 +314,12 @@ def findRoi(img, imgt):
     cont_count = cont_count + 1
     if cont_count == 10:
 	break
-  print ('No. of rects: %d'%(totR))
+  #print ('No. of rects: %d'%(totR))
   return centers,totR
 
 
 if __name__ == '__main__':
-        try:
-                label_detection_node()
-        except rospy.ROSInterruptException:
-                pass
+  try:
+    label_detection_node()
+  except rospy.ROSInterruptException:
+    pass
