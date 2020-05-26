@@ -1,20 +1,22 @@
 <launch>
 
-	<param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/urdf/finder.xacro"/>
 
-	<!-- Starting Joint state publisher node which will publish the joint values /-->
-	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-	<!-- Setting gui parameter to true for display joint sliders -->
-	<param name="use_gui" value="true"/>
+  <!-- Starting Joint state publisher node which will publish the joint values /-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <!-- Setting gui parameter to true for display joint sliders -->
+    <param name="use_gui" value="true"/>
 
-	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/nav2d.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/nav2d.rviz"/>
 
-	<!--<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>-->
-	<node name="map_server" pkg="map_server" type="map_server" output="screen"
+  <!--<node name="odometry_node" pkg="odometry" type="odometry.py" output="screen"/>-->
+
+  <node name="map_server" pkg="map_server" type="map_server" output="screen"
         args="$(find maps)/maps/map_circuit2_test03.yaml"/>
-  	<node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/scan">
+
+  <node name="loc_amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/scan">
     <param name="odom_alpha1" value="0.6"/>
     <param name="odom_alpha2" value="0.6"/>
     <param name="odom_alpha3" value="0.6"/>
@@ -28,8 +30,9 @@
     <param name="update_min_a" value="0.3"/>
     <param name="laser_min_range" value="0.3"/>
     <param name="odom_model_type" value="diff"/>
-  	</node>
-	<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  </node>
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find move_base_config)/move_base_params/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find move_base_config)/move_base_params/costmap_common_params.yaml" command="load" ns="local_costmap" />   
     <rosparam file="$(find move_base_config)/move_base_params/local_costmap_params.yaml" command="load" />   
