@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="finder_teleop" type="finder_teleop_key.py" name="finder_teleop_key" respawn="false" output="screen">
+    <remap from="flipper1_out" to="/finder_base/right_front_flipper_joint_position_controller/command"/>
+    <remap from="flipper2_out" to="/finder_base/left_front_flipper_joint_position_controller/command"/>
+    <remap from="flipper3_out" to="/finder_base/right_back_flipper_joint_position_controller/command"/>
+    <remap from="flipper4_out" to="/finder_base/left_back_flipper_joint_position_controller/command"/>
+  </node>
+</launch>
