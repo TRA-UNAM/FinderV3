@@ -30,7 +30,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Float64
 import sys, select, os
 if os.name == 'nt':
   import msvcrt
@@ -226,10 +226,10 @@ if __name__=="__main__":
 
     rospy.init_node('finder_teleop_key')
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    pub1=rospy.Publisher('/flipper1_out', Float32, queue_size=1)
-    pub2=rospy.Publisher('/flipper2_out', Float32, queue_size=1)
-    pub3=rospy.Publisher('/flipper3_out', Float32, queue_size=1)
-    pub4=rospy.Publisher('/flipper4_out', Float32, queue_size=1)
+    pub1=rospy.Publisher('/flipper1_out', Float64, queue_size=1)
+    pub2=rospy.Publisher('/flipper2_out', Float64, queue_size=1)
+    pub3=rospy.Publisher('/flipper3_out', Float64, queue_size=1)
+    pub4=rospy.Publisher('/flipper4_out', Float64, queue_size=1)
     pub5=rospy.Publisher('/base_rotation_out',Float32,queue_size=1)
     pub6=rospy.Publisher('/shoulder_rotation_out',Float32,queue_size=1)
     pub7=rospy.Publisher('/elbow_rotation_out',Float32,queue_size=1)
