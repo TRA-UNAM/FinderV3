@@ -19,9 +19,8 @@ depthimage-to-laserscan ros-melodic-rosserial-arduino ros-melodic-rosserial-pyth
 ros-melodic-rosserial-server ros-melodic-rosserial-client ros-melodic-rosserial-
 msgs ros-melodic-amcl ros-melodic-map-server ros-melodic-move-base ros-melodic-urdf
 ros-melodic-xacro ros-melodic-compressed-image-transport ros-melodic-rqt-image-view
-ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers`
-
-`sudo apt-get install ros-melodic-cv-camera`
+ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers` 
+ros-melodic-dwa-local-planner ros-melodic-gmapping ros-melodic-map-server ros-melodic-cv-camera
 
 # Installation
 ### 1. Clone this repository
