@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Load RQT with a pre-setup GUI from a perspective file  -->
+  <node name="finder_rqt" pkg="rqt_gui" type="rqt_gui" respawn="false"
+	output="screen" args="--perspective-file $(find finder_bringup)/launch/Interface.perspective"/>
+
+</launch>
