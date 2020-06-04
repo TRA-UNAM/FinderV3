@@ -19,8 +19,8 @@ depthimage-to-laserscan ros-melodic-rosserial-arduino ros-melodic-rosserial-pyth
 ros-melodic-rosserial-server ros-melodic-rosserial-client ros-melodic-rosserial-
 msgs ros-melodic-amcl ros-melodic-map-server ros-melodic-move-base ros-melodic-urdf
 ros-melodic-xacro ros-melodic-compressed-image-transport ros-melodic-rqt-image-view
-ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers` 
-ros-melodic-dwa-local-planner ros-melodic-gmapping ros-melodic-map-server ros-melodic-cv-camera
+ros-melodic-gmapping ros-melodic-navigation ros-melodic-interactive-markers 
+ros-melodic-dwa-local-planner ros-melodic-cv-camera`
 
 # Installation
 ### 1. Clone this repository
@@ -60,7 +60,7 @@ archivo .bashrc:
 ### Simulation using Fake Node
 These instructions refer to run the simulation on RViz **using the finder_fake package**. In order to run that execute the command 
 
-`roslaunch finder_ fake finder_fake.launch`
+`roslaunch finder_fake finder_fake.launch`
 
 If the simulation was successfully launched, execute the following command to teleoperate the robot with the keyboard:  
 
