@@ -48,9 +48,9 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
   <!--Macro para crear las juntas de los brazos laterales con el chasis-->
   <xacro:macro name = "arms_joints" params="name child origin">
     <joint name = "${name}" type="revolute">
-      <parent link = "chasis_link"/>
+      <parent link = "base_link"/>
       <child link = "${child}"/>
-      <origin xyz ="${origin}"/>
+      <origin xyz ="${origin}" rpy="0 0 ${pi/2}"/>
       <axis xyz = "1 0 0"/>
       <limit effort="30.0" velocity="0.2" lower="${-pi}" upper="${pi}"/>
     </joint>
@@ -81,18 +81,18 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
   </xacro:macro>
 
   <!--//////////////////////////  base link //////////////////-->
-  <link name = "base_link"/>
+  <link name = "base_footprint"/>
 
-  <link name = "chasis_link">
+  <link name = "base_link">
     <xacro:inertial_matrix mass="5.0"/>
     <visual>
       <xacro:default_geometry cad_file="chassis_core" extension="stl"/>
-      <origin xyz= "-0.13635 0 0.1556"/>
+      <origin xyz= "0 -0.13635 0.0707856" rpy="0 0 ${pi/2}"/>
       <material name="silver"/>
     </visual>
     <collision>
       <xacro:default_geometry cad_file="chassis_core" extension="stl"/>
-      <origin xyz= "-0.13635 0 0.1556"/>
+      <origin xyz= "0 -0.13635 0.0707856" rpy="0 0 ${pi/2}"/>
     </collision>
   </link>
 
@@ -184,104 +184,112 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
     </visual>
   </link>
 
+  <link name="imu_link"/>
+
   <!--Esta transformacion se hace para que los datos del SLAM correspondan a la correcta orientacion del robot-->
-  <joint name = "chasis_adjustment_joint" type="fixed">
-    <parent link = "base_link"/>
-    <child link = "chasis_link"/>
-    <origin xyz="0 0 0" rpy="0 0 ${pi/2}"/>
+  <joint name = "base_joint" type="fixed">
+    <parent link = "base_footprint"/>
+    <child link = "base_link"/>
+    <origin xyz="0 0 0.0848144" rpy="0 0 0"/>
   </joint>
 
 <!--////////////////// juntas de los brazos laterales del chasis //////////////////-->
   <!-- junta del brazo frontal derecho -->
-  <xacro:arms_joints name="right_front_flipper_joint" child="right_front_arm" origin="-0.3264 -0.30255 0.1556"/>
+  <xacro:arms_joints name="right_front_flipper_joint" child="right_front_arm" origin=" 0.30255 -0.3264 0.0707856"/>
 
   <!-- junta del brazo frontal izquierdo -->
-  <xacro:arms_joints name="left_front_flipper_joint" child="left_front_arm" origin="0.3264 -0.30255 0.1556"/>
+  <xacro:arms_joints name="left_front_flipper_joint" child="left_front_arm" origin=" 0.30255 0.3264 0.0707856"/>
 
   <!-- junta del brazo trasero derecho -->
-  <xacro:arms_joints name="right_back_flipper_joint" child="right_back_arm" origin="-0.3264 0.30255 0.1556"/>
+  <xacro:arms_joints name="right_back_flipper_joint" child="right_back_arm" origin="-0.30255 -0.3264 0.0707856"/>
 
   <!-- junta del brazo trasero izquierdo -->
-  <xacro:arms_joints name="left_back_flipper_joint" child="left_back_arm" origin="0.3264 0.30255 0.1556"/>
+  <xacro:arms_joints name="left_back_flipper_joint" child="left_back_arm" origin="-0.30255 0.3264 0.0707856"/>
 
 <joint name = "right_front_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "right_front_wheel_link"/>
-  <origin xyz="-0.19575 -0.2005 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.2005 -0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "left_front_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "left_front_wheel_link"/>
-  <origin xyz="0.19575 -0.2005 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.2005 0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "right_rear_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "right_rear_wheel_link"/>
-  <origin xyz="-0.19575 0.2005 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="-0.2005 -0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "left_rear_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "left_rear_wheel_link"/>
-  <origin xyz="0.19575 0.2005 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="-0.2005 0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "right_front_m_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "right_front_m_wheel_link"/>
-  <origin xyz="-0.19575 -0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.0675 -0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "left_front_m_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "left_front_m_wheel_link"/>
-  <origin xyz="0.19575 -0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="0.0675 0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
 <joint name = "right_rear_m_wheel_joint" type="continuous">
-  <parent link = "chasis_link"/>
+  <parent link = "base_link"/>
   <child link = "right_rear_m_wheel_link"/>
-  <origin xyz="-0.19575 0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+  <origin xyz="-0.0675 -0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
   <axis xyz="0 0 1"/>
 </joint>
 
   <joint name = "left_rear_m_wheel_joint" type="continuous">
-    <parent link = "chasis_link"/>
+    <parent link = "base_link"/>
     <child link = "left_rear_m_wheel_link"/>
-    <origin xyz="0.19575 0.0675 0.0501" rpy="0 ${pi/2} 0"/>
+    <origin xyz="-0.0675 0.19575 -0.0347144" rpy="${-pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
   <joint name = "chassis_left_belt_joint" type="fixed">
-    <parent link = "chasis_link"/>
+    <parent link = "base_link"/>
     <child link = "left_belt_link"/>
-    <origin xyz="0.19575 -0.3025 0.1556" rpy="0 0 ${pi/2}"/>
+    <origin xyz="-0.3025 0.19575 0.0707856" rpy="0 0 0"/>
   </joint>
 
   <joint name = "chassis_right_belt_joint" type="fixed">
-    <parent link = "chasis_link"/>
+    <parent link = "base_link"/>
     <child link = "right_belt_link"/>
-    <origin xyz="-0.19575 -0.3025 0.1556" rpy="0 0 ${pi/2}"/>
+    <origin xyz="-0.3025 -0.19575 0.0707856" rpy="0 0 0"/>
  </joint>
 
   <joint name="base_to_laser_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_laser"/>
-    <origin xyz="0.4 0 0.311"/>
+    <origin xyz="0.4 0 0.2297711"/>
   </joint>
 
   <joint name="base_to_camera1_joint" type="fixed">
     <parent link="base_link"/>
     <child link="camera1_link"/>
     <origin xyz="-0.3 0 0.6"/>
+  </joint>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0.0 0.0 0.2" rpy="0 0 0"/>
   </joint>
 	
 </robot>
