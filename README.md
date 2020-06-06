@@ -2,7 +2,7 @@
  
  # Table of Contents
  * [Requirements](#requirements)
- * [Installation](#instalation)
+ * [Installation](#installation)
  * [Usage](#usage)
   * [Simulation](#simulation)
     * [Simulation using Fake Node](#simulation-using-fake-node)
@@ -69,29 +69,47 @@ If the simulation was successfully launched, execute the following command to te
 ### Simulation using Gazebo
 These instructions refer to run the simulation on gazebo **using the gazebo_ros package**, which is installed by default with every ROS distribution. More info here: http://gazebosim.org/tutorials?tut=ros_overview
 
+Beore running the simulation, execute from the command line or add the following line to your .bashrc file (or .zshrc):
+
+`export GAZEBO_MODEL_PATH=${HOME}/FinderV3/catkin_ws/src/simulation/finder_gazebo/models`
+
 #### 1. Simulate in empty world
 Execute the command:
 
 `roslaunch finder_gazebo finder_empty_world.launch`
 
-to test the FinDERv3 robot in the gazebo default environment.
+to test the FinDERv3 robot base in the gazebo default environment.
  
 #### 2. Simulate in the Turtelbot3 maze
 Execute the command:
 
 `roslaunch finder_gazebo finder_stage_4.launch`
 
-to test the FinDERv3 robot in the turtlebot3 maze.
+to test the FinDERv3 robot base in the turtlebot3 maze.
  
 #### 3. Simulate in a test world
 Execute the command:
 
 `roslaunch finder_gazebo finder_world_test.launch`
 
-to test the FinDERv3 robot in a world with rough terrain.
+to test the FinDERv3 robot base in a world with rough terrain.
+
+#### 4. Simulate in a test circuit
+Execute the command:
+
+`roslaunch finder_gazebo finder_circuit_2.launch`
+
+to test the FinDERv3 robot base in circuit.
+
+#### 6. Simulate in a RoboCup Rescue test scenario
+Execute the command:
+
+`roslaunch finder_gazebo finder_crossover_ramps.launch`
+
+to test the FinDERv3 robot base in the Crossover Ramps test scenario.
  
 #### Drive the FinDER v3 Robot
-Execute the following command to teleoperate the robot with the keyboard:
+Execute the following command to teleoperate the robot base with the keyboard:
 
-`rosrun finder_teleop finder_teleop_key.py`
+`roslaunch finder_teleop finder_teleop_key.launch`
  
