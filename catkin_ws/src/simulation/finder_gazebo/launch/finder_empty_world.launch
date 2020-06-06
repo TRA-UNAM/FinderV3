@@ -15,7 +15,7 @@
   	</include>
 
 	<!-- Converts the xacro robot information to UDRF and use it as a robot_description parameter -->
-	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w.urdf.xacro'" />
+	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w_4cam.urdf.xacro'" />
 
 	<!-- Launch control launch file -->
 	<include file="$(find finder_gazebo)/launch/finder_base_control.launch"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w.urdf.xacro'" />
+	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w_4cam.urdf.xacro'" />
 
 	<!-- combine joint values -->
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
@@ -8,6 +8,6 @@
 	</node>
 
 	<!-- show in Rviz -->
-	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/rviz_config/finder_base_gazebo_rviz.rviz"/>
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/rviz_config/finder_base_4cam_gazebo_rviz.rviz"/>
 
 </launch>
