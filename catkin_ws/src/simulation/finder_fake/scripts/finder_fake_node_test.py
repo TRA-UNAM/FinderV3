@@ -4,7 +4,7 @@ import rospy
 import tf
 import math
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Float64
 from sensor_msgs.msg import JointState
 
 def cmd_vel_callback(data):
@@ -79,10 +79,10 @@ def main():
     gripper_rotation_out=1.6
     seq=0
     rospy.Subscriber("/cmd_vel", Twist, cmd_vel_callback)   #the value in /cmd_vel gows from -0.5 to 0.5 (m/S)
-    rospy.Subscriber('/flipper1_out',Float32, flipper1_out_callback)
-    rospy.Subscriber('/flipper2_out',Float32, flipper2_out_callback)
-    rospy.Subscriber('/flipper3_out',Float32, flipper3_out_callback)
-    rospy.Subscriber('/flipper4_out',Float32, flipper4_out_callback)
+    rospy.Subscriber('/flipper1_out',Float64, flipper1_out_callback)
+    rospy.Subscriber('/flipper2_out',Float64, flipper2_out_callback)
+    rospy.Subscriber('/flipper3_out',Float64, flipper3_out_callback)
+    rospy.Subscriber('/flipper4_out',Float64, flipper4_out_callback)
     rospy.Subscriber('/base_rotation_out',Float32, base_rotation_out_callback)
     rospy.Subscriber('/shoulder_rotation_out',Float32, shoulder_rotation_out_callback)
     rospy.Subscriber('/elbow_rotation_out',Float32, elbow_rotation_out_callback)
