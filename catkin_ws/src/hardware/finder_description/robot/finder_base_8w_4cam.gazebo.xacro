@@ -36,14 +36,14 @@
   <xacro:gazebo_ref link_name="left_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
   <xacro:gazebo_ref link_name="right_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
   <xacro:gazebo_ref link_name="left_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
-  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="right_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="left_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="right_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
-  <xacro:gazebo_ref link_name="left_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="100" mu2="100" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
 
   <xacro:gazebo_ref link_name="chasis_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="Grey"/>
   <xacro:gazebo_ref link_name="left_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="White"/>
