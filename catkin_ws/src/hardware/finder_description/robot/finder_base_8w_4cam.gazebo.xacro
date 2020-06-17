@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot name="finder_base" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:arg name="laser_visual" default="true"/>
+  <xacro:arg name="laser_visual" default="false"/>
 
   <!-- gazebo tag macro -->
   <xacro:macro name="gazebo_ref" params="link_name kp kd mu1 mu2 color">
