@@ -13,6 +13,18 @@ sudo apt-get install python-opencv
 sudo apt-get install python3-opencv
 sudo apt-get install ros-melodic-cv-camera
 
+#Paquetes audio
+sudo apt-get install python-tqdm
+sudo apt-get install python-pip
+sudo apt-get install python-pyaudio
+sudo apt-get install python-matplotlib
+sudo apt-get install ros-melodic-audio-common
+sudo apt-get install python-pip
+pip install tensorflow
+pip install keras
+pip install -q pyyaml h5py
+
+
 #Paquetes código QR
 sudo apt-get install python-zbar
 sudo apt-get install python3-numpy
