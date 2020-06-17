@@ -64,7 +64,7 @@ If the simulation was successfully launched, execute the following command to te
 ### Simulation using Gazebo
 These instructions refer to run the simulation on gazebo **using the gazebo_ros package**, which is installed by default with every ROS distribution. More info here: http://gazebosim.org/tutorials?tut=ros_overview
 
-Beore running the simulation, execute from the command line or add the following line to your .bashrc file (or .zshrc):
+Before running the simulation, execute from the command line or add the following line to your .bashrc file (or .zshrc):
 
 `export GAZEBO_MODEL_PATH=${HOME}/FinderV3/catkin_ws/src/simulation/finder_gazebo/models`
 
