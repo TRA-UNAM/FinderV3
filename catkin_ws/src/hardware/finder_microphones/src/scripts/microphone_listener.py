@@ -10,10 +10,10 @@ from std_msgs.msg import Bool
 
 nrow = 200
 ncol = 200
+RATE = 8000 #22050
+BLOCKSIZE = int(RATE/333) #128
 
-BLOCKSIZE = 128
 
-RATE = 22050
 WIDTH = 2
 CHANNELS = 1
 #Detection flag
