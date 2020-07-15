@@ -18,10 +18,11 @@ sudo apt-get install python-tqdm
 sudo apt-get install python-pip
 sudo apt-get install python-pyaudio
 sudo apt-get install python-matplotlib
-sudo apt-get install ros-melodic-audio-common
 sudo apt-get install python-pip
 pip install tensorflow
 pip install keras
+pip install wave
+pip install essentia
 pip install -q pyyaml h5py
 
 

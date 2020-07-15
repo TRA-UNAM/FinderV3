@@ -17,11 +17,9 @@ from keras.preprocessing import image
 from keras_preprocessing.image import ImageDataGenerator
 
 #Para creacion de imagen desde archivo wav
-import scipy.io.wavfile as wv
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
-import scipy.signal as ss
-
+from pylab import plot, show, figure, imshow
 
 #ROS MSGS
 from std_msgs.msg import Int16MultiArray
@@ -29,36 +27,31 @@ from std_msgs.msg import Int16
 from std_msgs.msg import Bool
 
 
+from essentia.standard import *
 import keras.backend as K
 K.clear_session()
 
-#import librosa.display
-#import librosa.feature
-#from keras import models
-#import matplotlib.pyplot as plt
-#from keras.preprocessing.image import ImageDataGenerator
 
-nrow = 200
-ncol = 200
+from keras import models
 
-BLOCKSIZE = 128
-
-RATE = 22050
+nrow = 450
+ncol = 450
+RATE = 8000 #44100
+BLOCKSIZE = int( RATE/333 ) #128
 WIDTH = 2
 CHANNELS = 1
-LEN = 2 * RATE   # n seconds
+LEN = 1.5 * RATE   # n seconds
 MAX_SILENCE_START = 40
-MAX_SILENCE_END = 50
-
+MAX_SILENCE_END = 40
 #Import Database
-model = tf.keras.models.load_model(sys.path[0] + '/sp_recog.h5')
+#model = tf.keras.models.load_model(sys.path[0] + '/sp_recog.h5')
+model = models.load_model(sys.path[0] + '/mfcc_cnn_model_all.h5')
 
-THRESHOLD = 1
 flag = True
 THRESHOLD = 1
+THRESHOLD_O = 1
 
 audioBuffer = []
-pred_dict = {0:0, 1:1, 2:10, 3:11, 4:12, 5:2, 6:3, 7:4, 8:5 , 9:6 , 10:7, 11:8, 12:9}
 
 def number_recognition_node():
   global flag
@@ -78,14 +71,14 @@ def number_recognition_node():
       #Published message
       message = Int16()
       #Starts defining threshold value with 20 samples
-      print('Defining threshold')
+      print('Defining volume threshold..')
       prevAudioBuffer = []
       while len(prevAudioBuffer) < 20 and not rospy.is_shutdown():
         rate.sleep()
         if audioBuffer != []:
           prevAudioBuffer.append(audioBuffer.pop(0))
-      THRESHOLD = def_threshold(prevAudioBuffer)
-      print('Threshold done')
+      THRESHOLD, THRESHOLD_O = def_threshold(prevAudioBuffer)
+      print('Start talking')
       # Wait until voice detected. Once detected, breaks the loop
       # Also saves up to n prevSamples samples before threshold is reached
       prevAudioBuffer = []
@@ -100,8 +93,9 @@ def number_recognition_node():
             if input_detected_start(prevAudioBuffer, THRESHOLD):
               break
       print('Input detected')
+      if rospy.is_shutdown(): break
       #Once an input is detected, threshold is adjusted down 
-      THRESHOLD = THRESHOLD * 0.75
+      THRESHOLD = THRESHOLD_O
       #Output wave file is oppened
       output_wf = wave.open(sys.path[0] + '/myNumber.wav', 'wb')
       output_wf.setframerate(RATE)
@@ -128,19 +122,21 @@ def number_recognition_node():
             break
         else:
           silence_count = 0
-      #CNN prediction
-      try:
-        SampleRate,data = wv.read(sys.path[0] + '/myNumber.wav')
-        to_png(SampleRate, data, sys.path[0] + '/myNumber.png')
-        message.data = predict(sys.path[0] + '/myNumber.png')
-        print(message.data)
-        pub.publish(message)
-      except:
-        print('Short sample')
+
       #Closes WAV file
       output_wf.close()
       #Cleans audio buffer
       audioBuffer = []
+
+      #CNN prediction
+      try:
+        to_png(sys.path[0] + '/myNumber.wav', sys.path[0] + '/tmp/tmp/myNumber.png')
+        message.data = predict(sys.path[0] + '/myNumber.png')
+        print('Predicted as: %s' % (message.data))
+        pub.publish(message)
+      except:
+        print('Short sample')
+
 
 def save_sample(sample):
   output_value = np.array(sample)
@@ -156,8 +152,8 @@ def input_detected_end(data, THRESHOLD):
   return math.sqrt(sum_squares / (BLOCKSIZE / 2)) > THRESHOLD
 
 def input_detected_start(currentBuffer, THRESHOLD):
-  samples = 5
   bufferCopy = currentBuffer[:]
+  samples = len(currentBuffer)
   volume = 0
   for i in range (samples):
     data = bufferCopy.pop()
@@ -180,8 +176,9 @@ def def_threshold(thresholdBuffer):
       sum_squares += n*n
     amp += math.sqrt(sum_squares / (BLOCKSIZE / 2))
   amp = amp / samples
-  return (amp) * ( 1 + (2 * ( 1 - amp )))
+  #return (amp) * ( 1 + (2 * ( 1 - amp )))
   #return math.sqrt(sum_squares / (BLOCKSIZE / 2)) * 2
+  return 1 - (amp - 1) * (amp - 1), amp * 1.1
 
 def flag_callback(currentFlag):
   global flag
@@ -196,125 +193,116 @@ def audio_callback(currentSample):
             audioBuffer.pop(0)
 
 
-
 #Make PNG file with spectrogram and wave
-def signal_interval(SampleRate, data_f, step, step_coef, file):
-    over_std = np.where(abs(data_f)>data_f.std())[0]
-    N, = over_std.shape
+def signal_interval(SampleRate, data_f, step, step_coef):
+  #Points where input is over std deviation times 0.8
+  over_std = np.where( abs(data_f) > data_f.std() * 0.5 )[0]
+  N, = over_std.shape
+
+  #Array of 0-1, where 0 is a gap
+  over_std_cont = np.zeros ((len(data_f),1))
+
+  n = 0
+  while (n < N-step):
+    #If there isn't a gap larger than step*step_coef
+    if over_std[n+step] - over_std[n] <= step*step_coef:
+      over_std_cont[over_std[n]:over_std[n+step]] = 1
+    n+=1
+  diff = over_std_cont[:-1] - over_std_cont[1:]
+  starts = np.where (diff==-1)[0] 
+  ends = np.where (diff==1)[0]
     
-    over_std_cont = np.zeros ((len(data_f),1))
-    n = 0
-    while (n<N-step):
-      if over_std[n+step]-over_std[n]<=step*step_coef: #where is no gap
-        over_std_cont[over_std[n]:over_std[n+step]]=1
-      n+=1
-    diff = over_std_cont[:-1]-over_std_cont[1:]
-    starts = np.where (diff==-1)[0] 
-    ends = np.where (diff==1)[0]
-    
-    if len(starts)<len(ends):
-      starts.insert(0, 0) #first start will be the beginning of the trace
-    elif len(starts)>len(ends):
-      ends.insert(len(data), -1) #last start is end of trace
-    durations = ends-starts
-    start_p = starts[durations.argmax()]
-    end_p = ends[durations.argmax()]    
-    return start_p, end_p
+  if len(starts)<len(ends):
+    #starts.insert(0, 0) #first start will be the beginning of the trace
+    starts = np.insert(starts, 0, 0)
+  elif len(starts)>len(ends):
+    ends.insert(len(data), -1) #last start is end of trace
+  durations = ends-starts
+  start_p = starts[durations.argmax()]
+  end_p = ends[durations.argmax()]    
+  return start_p, end_p
 
-def to_png(SampleRate, data, file):
-    #filtering
-    f_cutoff = [float(500), float(3200)]
-    Wn = [f_cutoff[0] / (SampleRate/2) , f_cutoff[1] / (SampleRate/2)]
-    b, a = ss.iirfilter(1, Wn, ftype='butter', btype='bandpass')
-    data_f = ss.filtfilt(b, a, data)
-    #start and end of signal
-    start_p, end_p = signal_interval(SampleRate, data_f, 10, 80, file)
 
-    ###resampling###
-    Resampling = 10000
-    data_res = ss.resample(data_f[start_p:end_p], Resampling)
-    SampleRate_res = Resampling/(end_p-start_p)*SampleRate
-
-    #spectrogramm###
-    plt.subplot(1,2,1)
-    f, t, Sxx = ss.spectrogram(data_res, fs = SampleRate_res)
-    print(SampleRate_res)
-    #f, t, Sxx = ss.spectrogram(data_f, fs = )
-
-    plt.pcolormesh(t, f, Sxx, cmap=cm.gray)
-    plt.xlim(t[0],t[-1])
-    plt.ylim(500,3200)
-    plt.yscale('log')
-    plt.axis('off')
-    plt.margins(0.0)
-    ###trace###
-    plt.subplot(1,2,2)
-    plt.plot(data_res, 'k')
-    #plt.plot(data_f, 'k')
-    plt.axis('off')
-    plt.margins(0.0)
-    ##save image###
-    plt.savefig(file, bbox_inches="tight", cmap='gray')
-    plt.close('all')
-
-#Funcion para identificar una imagen
 def predict(image_file):
-    img = image.load_img(image_file, target_size=(200, 200))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    prediction = model.predict(x, batch_size=1).argmax()
-    real_pred = pred_dict[prediction]
-    return real_pred
-
-
-'''
-def extract_mfcc(file, fmax, nMel):
-    y, sr = librosa.load(file)
-    
-    plt.figure(figsize=(3, 3), dpi=100)
-    
-    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=nMel, fmax=fmax)
-    librosa.display.specshow(librosa.core.amplitude_to_db(S), fmax=fmax)
-    
-    plt.xticks([])
-    plt.yticks([])
-    plt.tight_layout()
-    plt.savefig(sys.path[0] + '/tmp/tmp/myImg.png', bbox_inches='tight', pad_inches=-0.1)
-    
-    plt.close()  
-    return
-
-
-def predict():
-    # MFCCs of the test audio
-    extract_mfcc(sys.path[0] + '/myNumber.wav', 8000, 256)
-    test_datagen = ImageDataGenerator(
+  test_datagen = ImageDataGenerator(
             rescale=1./255,
             shear_range=0,
             zoom_range=0,
             horizontal_flip=False)
-    test_generator = test_datagen.flow_from_directory(
+  test_generator = test_datagen.flow_from_directory(
             sys.path[0] + '/tmp',
             target_size=(nrow, ncol),
             batch_size=1,
             class_mode='sparse')
 
-    # Load the model
-    Xts, _ = test_generator.next()
+  # Load the model
+  Xts, _ = test_generator.next()
 
-    # Predict the probability of each class
-    yts = model.predict(Xts)
-#    print (yts * 100)
-    if np.max(yts) < 0.1:
-        print ('Cannot Recognize!')
-
+  # Predict the probability of each class
+  yts = model.predict(Xts)
+  if np.max(yts) < 0.8:
+    res = None
+  else:
     # Choose the most likely class
     res = np.argmax(yts)
-    print (res)
-    
-    return
-'''
+  return res
 
+
+def to_png(wav_file, image_file):
+  SAMPLE_SIZE = 2048
+  HOP_RATE = 16; 
+  HOP = SAMPLE_SIZE / HOP_RATE
+  #Instantiate functions
+  w = Windowing(type = 'hann')
+  spectrum = Spectrum()
+  mfcc = MFCC(numberBands = 120, numberCoefficients = 120,highFrequencyBound = 8192)
+  bandPass = BandPass(bandwidth = 100, cutoffFrequency = 130, sampleRate = RATE)
+  loader = MonoLoader(filename = wav_file)
+  logNorm = UnaryOperator(type='log')
+
+  #Load audio
+  audio = loader()
+  #Filter audio BP 130 Hz
+  #audio = bandPass(audio)
+  #Audio trimm
+  start_p, end_p = signal_interval(RATE, audio, 10, 80)
+  audio = audio[start_p:end_p]
+
+  #Iterative process
+  frame = []
+  complete_spec = []
+  total_samples = (len(audio)  - HOP * (HOP_RATE - 1)) / HOP
+  if total_samples < 1:
+    return
+  for num in range(total_samples):
+  #for frame in FrameGenerator(audio,frameSize = 1102, hopSize = 441, startFromZero = True, validFrameThresholdRatio = 1):
+    frame = audio[num * HOP : num * HOP + SAMPLE_SIZE]
+    #MFCC extraction for each frame
+    spec = spectrum(w(frame))
+    mfcc_bands, mfcc_coeffs = mfcc(spec)
+    mfcc_bands_log = logNorm(mfcc_bands)
+    #Determining max and min frecquency
+    
+    #Saving frame's MFCCs
+    complete_spec.append(mfcc_bands_log)
+  #Plotting
+  num_samples = np.mgrid[0:len(complete_spec)]
+  num_frec = np.mgrid[0:len(complete_spec[0])]
+  plt.pcolormesh(num_samples, num_frec, np.transpose(complete_spec))
+  #Margins
+  plt.axis('off')
+  plt.gca().set_axis_off()
+  plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
+  plt.margins(0.0)
+  plt.gca().xaxis.set_major_locator(plt.NullLocator())
+  plt.gca().yaxis.set_major_locator(plt.NullLocator())
+  plt.xlim(num_samples[0],num_samples[-1])
+  plt.ylim(num_frec[0],num_frec[-25])
+  #Save Image
+  plt.savefig(image_file,bbox_inches='tight',pad_inches = 0)
+  plt.close('all')
+  return(1)
+  
 
 if __name__ == '__main__':
   try:
