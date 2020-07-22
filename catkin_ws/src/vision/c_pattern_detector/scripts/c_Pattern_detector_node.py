@@ -18,228 +18,145 @@ yh =255
 crh =255
 cbh = 250
 
+#Image converter
+bridge = CvBridge()
 image = []
 
+def main():
+  global image
+  global rad
+  rospy.init_node('c_pattern_detection_node')
+  rospy.Subscriber('/camera0/usb_cam0/image_raw', Image, ImageCallback)
+  pub = rospy.Publisher('/vision/c_pattern_info', String, queue_size=10)
+  rate = rospy.Rate(10)
+  rate.sleep()
+
+  #Our operations on the frame come here
+  #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+  while not rospy.is_shutdown():
+    rate.sleep()
+    gapAngle = String()
+    #Get image from camera
+    data = image.copy()
+    #Converts to YCBCR colorspace
+    yuvImg = cv2.cvtColor(data.copy(), cv2.COLOR_BGR2YCR_CB)
+    #Blur and close filter
+    fImg = prevFilter(data)
+    #Black color mask
+    yuvMask = maskf(fImg)
+    #Edges from b/n mask result
+    edges = cv2.Canny(yuvMask,50,150,apertureSize=3)
+    #circles=cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,dp=1,minDist=20,param1=50,param2=30,minRadius=50,maxRadius=80)
+    circlei = cv2.HoughCircles(yuvMask,cv2.HOUGH_GRADIENT,1,20, param1=100, param2=50, minRadius=0, maxRadius=0)
+
+    imguno = yuvMask
+    cv2.imshow('yvm',yuvMask)
+    #If circles are detected
+    if circlei is not None:
+      #Sort detected circles from biggest to smallest
+      circlei = sorted(circlei[0],key=lambda x:x[2],reverse=True)
+
+      #Iterates from the biggest to smallest circle trying to find 3 inner circles with gaps
+      gapFound = False
+      zz = True
+      for c in circlei:
+        if gapFound:
+           break
+        #Creates Region Of Interest (ROI) with circle inside
+        rad = 2.1 * (c[2] / 2)
+        roi = yuvMask[int(c[1]-rad) : int(c[1]+rad), int(c[0]-rad) : int(c[0]+rad)]
+        croi =   fImg[int(c[1]-rad) : int(c[1]+rad), int(c[0]-rad) : int(c[0]+rad),:]
+        if not all(roi.shape):
+          break
+
+        circlesROI = False
+        #Searches for at least a circles inside ROI
+        localCircles = cv2.HoughCircles(roi,cv2.HOUGH_GRADIENT,1,1,param1=150,param2=55, minRadius=0,maxRadius=int(rad))
+        #Searches for max 10 corners inside ROI
+        corners = cv2.goodFeaturesToTrack(roi, 20, 0.01, roi.shape[0] * 0.01)
+
+        #Searches for points of 3rd C
+        if corners is not None and localCircles is not None: 
+          cPoints = []
+          numpoints = [0, 0, 0]
+          for co in corners:
+            #Gets center distance
+            dist = math.sqrt( (co[0,0]-rad)**2 + (co[0,1]-rad)**2 )/rad 
+            cv2.circle(croi,(co[0,0],co[0,1]),3,(2,2,255),-1)
+            #Assigns point to C
+            if 0.1 <= dist and dist <= 0.2:
+              numpoints[0] += 1
+              #Saves point
+              cPoints.append(co[0])
+              #Draws points
+              cv2.circle(croi,(co[0,0],co[0,1]),3,(255,255,0),-1)
+            elif 0.5 <= dist and dist <= 0.62:
+              numpoints[1] += 1
+            elif 0.9 <= dist:
+              numpoints[2] += 1
+
+          #Checks if there is at least 2 points for each C
+          if min(numpoints) >= 2:
+            #Takes only close points to each other from 3rd C
+            for p in range(len(cPoints) - 1):
+              for bb in range(len(cPoints) - p - 1):
+                q = bb + p + 1
+                #Relative distance between points
+                dist = math.sqrt( (cPoints[p][0]-cPoints[q][0])**2 + (cPoints[p][1]-cPoints[q][1])**2 )
+                if 0.10 < dist / rad < 0.18:
+                   #Midpoint and angle
+                   pmy = (cPoints[q][1] + cPoints[p][1]) / 2 - rad
+                   pmx = (cPoints[q][0] + cPoints[p][0]) / 2 - rad
+                   ang = - ( np.arctan2( pmy, pmx ) ) * 180 / np.pi 
+                   gapFound = True
+                   gapAngle.data = str(ang)
+                   pub.publish(gapAngle)
+                   break
+        #cv2.imshow('roi',roi)
+        #cv2.imshow('croi',croi)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+      return True
+
+def ImageCallback(img):
+  global image
+  image = bridge.imgmsg_to_cv2(img, "bgr8")
+
 def prevFilter(img):
-        # Ventana para aplicar la el filtro de dilatcion y erosion
-        wKernel = np.ones((3,3),np.uint8)
-        # Aplicacion del filtros morfologicos, Dilate y posteriormente erosiona
-        fImg = cv2.morphologyEx(img, cv2.MORPH_CLOSE, wKernel)
-        # Filtro mediana de suavizamiento de imagen
-        fImg = cv2.medianBlur(fImg, 5)
-        #cv2.imshow('ImgFiltering',fImg)
-        return fImg
+  # Ventana para aplicar el filtro de dilatcion y erosion
+  wKernel = np.ones((3,3),np.uint8)
+  # Aplicacion del filtros morfologicos, Dilate y posteriormente erosiona
+  fImg = cv2.morphologyEx(img, cv2.MORPH_CLOSE, wKernel)
+  # Filtro mediana de suavizamiento de imagen
+  fImg = cv2.medianBlur(fImg, 5)
+  fImg = cv2.medianBlur(fImg, 5)
+  #Sharpenning image
+  #fImgG = cv2.GaussianBlur(fImg,(0,0),3)
+  #fImg  = cv2.addWeighted(fImg, 1.5, fImgG, -0.5, 0)
+  return fImg
 
 
 #  Funcion para obtener la mascara binaria, a partir del color de interes especificado
 def maskf( img ):
-        # Define el conjunto de valores para obtener la mascara binaria
-        lowLimits = (yl,crl,cbl)
-        highLimits = (yh,crh,cbh)
-        # Calculo de la mascara binaria, en funcion de los limites definidos
-        mask = cv2.inRange(img, lowLimits, highLimits)
-        # Ajuste de mascara
-        # Se define la ventana a utilizar en el filtro morfologico
-        #wKernel = np.ones((3,3),np.uint8)
-        # Filtro de dilatacion y erosion a la mascara
-        #mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, wKernel)
-
-        return mask
-
-def pmedio(cod_point1, cod_point2):
-  if ( cod_point1[0] < cod_point2[0] ):
-    xc = cod_point1[0] + ( cod_point2[0] - cod_point1[0] )*0.5
-  else:
-    xc = cod_point2[0] + ( cod_point1[0] - cod_point2[0] )*0.5
-  
-  if ( cod_point1[1] < cod_point2[1] ):
-    yc = cod_point1[1] + ( cod_point2[1] - cod_point1[1] )*0.5
-  else:
-    yc = cod_point2[1] + ( cod_point1[1] - cod_point2[1] )*0.5
-  
-  return xc,yc
-
-# Funcion para el calculo de contornos de una imagen con un solo canal. El proposito
-# de esta imagen es encontrar el contorno del patron C
-def canny_detector(image, sigma=0.33):
-  # Calcula la intensidad media de los pixeles de la imagen de entrada
-  v = np.median(image)
-  # Calculo de los umbrales para el detector canny, en funcion de la media y un delta
-  lower = int(max(0, (1.0 - sigma) * v))
-  upper = int(min(255, (1.0 + sigma) * v))
-  # Obtencion de los contornos
-  edged = cv2.Canny(image, lower, upper)
-  
-  return edged
-
-def recAber(colororig, original, imagen, mind,x0,y0):
-  # Numero de esquinas deseadas a obtener
-  Nesq = 3
-  #print '----'
-  # parametro del operador canny
-  cal = 32
-  cal=cal/255.0
-  #mind = 0.1
-
-  # numero de esquinas por buscar
-  #cv2.bitwise_not ( imagen,imagen )
-  #cv2.imshow('imagen',imagen)
-
-  # Detecta las esquinas en imagen
-  corners = cv2.goodFeaturesToTrack(imagen, Nesq, cal, mind)
-  # Conversion del vector de coordenadas flotantes a enteros de 8 bits
-  corners = np.int0(corners)
-  #print corners
-  
-  # Inicializacion de variables
-  x,y=0,0
-  coor=[]
-
-  # coloca las coordenadas de las esquinas en un solo arreglo
-  for i in corners:
-    # Separa los datos de cada elemento en el vector de corners
-    x,y = i.ravel()
-    # Junta las coordenadas de cada esquina en una lista
-    coor.append((x,y))
-
-    ## Esta parte se encarga de ver cual segmento de recta entre los tres puntos tiene la maxima
-    ## distancia y almacena el valor del punto medio de la recta mayor en xc yc
-    if  1<len(coor)<4:
-      # Calculo de la distancia entre las esquinas detectadas de la apertura del patron
-      d1 = math.sqrt( (coor[0][0] -coor[1][0] )**2 + (coor[0][1] -coor[1][1] )**2 )    #1,2
-
-      # Calculo del punto medio de la recta que une a las dos esquinas detectadas
-      xc,yc = pmedio( coor[0], coor[1] )
-
-      ##  Dibuja en la imagen las esquinas localizadas, y el punto donde
-      ##  se encuentre la abertura
-      #imagenC = cv2.cvtColor(imagen, cv2.COLOR_GRAY2BGR)
-      #cv2.circle(imagenC,(coor[0][0],coor[0][1]),2,(0,0,255),-1)
-      #cv2.circle(imagenC,(coor[1][0],coor[1][1]),2,(0,255,0),-1)
-      #cv2.circle(imagenC,(coor[2][0],coor[2][1]),2,(255,0,0),-1)
-
-      #cv2.circle(imagenC,(int(xc),int(yc)),5,(100,100,100),-1)
-      cv2.circle(colororig,(int(xc), int(yc)), 5, (0,0,255), -1)
-      #cv2.circle(colororig,(int(x0),int(y0)),5,(255,0,0),-1)
-
-      x1 = float(xc)
-      y1 = float(yc)
-      x0 = float(x0)
-      y0 = float(y0)
-      sx = abs(x0-x1)
-      sy = abs(y0-y1)
-
-      # dependiendo del cuadrante donde se encuentre la apertura, se suma o resta angulo
-      if x1<x0:
-        argum=sy/sx
-        angulo=math.atan(argum)
-        texto=str(angulo*180/math.pi)
-
-        if y1<y0:
-          angulo=math.pi-angulo
-          texto=str(angulo*180/math.pi)
-        elif y1>y0:
-          angulo=math.pi+angulo
-          texto=str(angulo*180/math.pi)
-        elif y1==y0:
-          angulo=math.pi
-          texto=str(angulo*180/math.pi)
-
-      elif x1>x0:
-        argum=sy/sx
-        angulo=math.atan(argum)
-        texto=str(angulo*180/math.pi)
-
-        if y1>y0:
-          angulo=2*math.pi-angulo
-          texto=str(angulo*180/math.pi)
-
-      elif x1==x0:
-        if y1<y0:
-          angulo=(math.pi)/2
-          texto=str(angulo*180/math.pi)
-
-        if y1>y0:
-          angulo=(math.pi/2)
-          texto=str(angulo*180/math.pi)
-
-        #else:
-          #texto='c'
-
-      font = cv2.FONT_HERSHEY_SIMPLEX
-      #coloca el texto en la imagen original
-      cv2.putText(colororig,texto, (int(xc)+3,int(yc)+3), font, 1, (0,255,0))
-  return (angulo, colororig)
-
-def main():
-    global image
-    rospy.init_node('cPattern_detection_node')
-    rospy.Subscriber('/camera2/usb_cam2/image_raw/compressed', CompressedImage, callback)
-    pub = rospy.Publisher('/cPattern_info', String, queue_size=10)
-    rate = rospy.Rate(10)
-    rate.sleep()
-
-    #cv2.imshow('data',data)
-    # Our operations on the frame come here
-    #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    while not rospy.is_shutdown():
-	    rate.sleep()
-	    data = image.copy()
-	    yuvImg = cv2.cvtColor(data.copy(), cv2.COLOR_BGR2YCR_CB)
-	    fImg = prevFilter(yuvImg)
-	    yuvMask = maskf( fImg )
-	    # Display the resulting frame
-	    #edges=cv2.Canny(gray,50,150,apertureSize=3)
-	    #circles=cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,dp=1,minDist=20,param1=50,param2=30,minRadius=50,maxRadius=80)
-	    circlei = cv2.HoughCircles(yuvMask,cv2.HOUGH_GRADIENT,1,20,param1=100,param2=30,minRadius=0,maxRadius=0)
-	    imguno = yuvMask
-
-	    try:
-	        #if circles!= None:   
-	        circlei=sorted(circlei[0],key=lambda x:x[2],reverse=True)
-	        mask0 = np.ones(yuvMask.shape,np.uint8)
-	        radio = int(1.1*circlei[0][2])                                # obtiene el radio del circulo mayor
-	        cv2.circle(mask0,(circlei[0][0],circlei[0][1]),radio,(0,0,0),-1)  # dibuja el circulo mayor en la mascara
-	        fg1 = cv2.bitwise_or( yuvMask, mask0 )                           # segmenta la imagen YUV con la mascara
-	        #cv2.imshow(fg1)
-	        contours, hier = cv2.findContours(fg1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-	        #cv2.imshow('hier',hier)
-	        #print('hier   ',hier)
-	        if len(hier)<9:
-	            for h,cnt in enumerate(contours):
-	                mask = np.zeros(imguno.shape,np.uint8)
-	                mask = cv2.bitwise_not(mask )
-	                cv2.drawContours(mask,[cnt],0,0,-1)                   # dibuja en mask el contorno actual
-	                circlei = cv2.HoughCircles(mask,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
-	                #cv2.imshow('mask',mask)
-	                try:
-
-	                    circles=sorted(circlei[0],key=lambda x:x[2],reverse=True)
-	                    rmax=500
-	                    for i in circles:
-	                        if i[2]<rmax:
-	                            rmax=i[2]
-	                            mind= rmax/10
-	                            (ang, imgRes) = recAber(data.copy() ,fg1, mask, mind, i[0],i[1])
-################################Publicar esta imagen
-	                            ##cv2.imshow('imgRes',imgRes)
-
-	                except Exception as e:
-	                        pass
-	    except Exception as e:
-	        pass
-	    
-	    if cv2.waitKey(1) & 0xFF == ord('q'):
-	        return True
-
-def callback(img):
-        global image
-        np_arr = np.fromstring(img.data, np.uint8)
-        image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+  # Define el conjunto de valores para obtener la mascara binaria
+  lowLimits = (yl,crl,cbl)
+  highLimits = (yh,crh,cbh)
+  lowLimits = (0,0,0)
+  highLimits = (100,100,100)
+  # Calculo de la mascara binaria, en funcion de los limites definidos
+  mask = cv2.inRange(img, lowLimits, highLimits)
+  # Ajuste de mascara
+  # Se define la ventana a utilizar en el filtro morfologico
+  #wKernel = np.ones((3,3),np.uint8)
+  # Filtro de dilatacion y erosion a la mascara
+  #mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, wKernel)
+  return mask
 
 if __name__ == '__main__':
-    try:
-	main()
-    except rospy.ROSInterruptException:
-	pass
+  try:
+    main()
+  except rospy.ROSInterruptException:
+    pass
+
+
