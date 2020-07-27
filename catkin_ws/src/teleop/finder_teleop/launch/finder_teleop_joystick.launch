@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="joy" type="joy_node"  name="joy_node" output="screen"/>
+  <node pkg="finder_teleop" type="finder_teleop_joystick.py" name="finder_teleop_joystick" respawn="false" output="screen">
+  </node>
+</launch>
