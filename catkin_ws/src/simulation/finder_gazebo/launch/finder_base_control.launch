@@ -4,7 +4,7 @@
 	<rosparam file="$(find finder_description)/config/finder_base_control.yaml" command="load"/>
 
 	<!-- load the controllers -->
-	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/finder_base" args="right_front_flipper_joint_position_controller left_front_flipper_joint_position_controller right_back_flipper_joint_position_controller left_back_flipper_joint_position_controller joint_state_controller --shutdown-timeout 3"/>
+	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/finder_base" args="right_front_flipper_joint_position_controller left_front_flipper_joint_position_controller right_back_flipper_joint_position_controller left_back_flipper_joint_position_controller laser_roll_joint_position_controller laser_pitch_joint_position_controller joint_state_controller --shutdown-timeout 3"/>
 
 	<!-- convert joint states to TF transforms for Rviz, etc -->
 	<!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">

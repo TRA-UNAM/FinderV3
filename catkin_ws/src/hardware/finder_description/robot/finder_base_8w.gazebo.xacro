@@ -55,6 +55,9 @@
   <xacro:tran joint="right_back_flipper_joint"/>
   <xacro:tran joint="left_back_flipper_joint"/>
 
+  <xacro:tran joint="laser_roll_joint"/>
+  <xacro:tran joint="laser_pitch_joint"/>
+
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
       <commandTopic>cmd_vel</commandTopic>

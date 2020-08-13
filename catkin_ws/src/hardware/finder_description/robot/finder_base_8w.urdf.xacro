@@ -154,11 +154,41 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
     </collision>-->
   </link>
 
+  <link name = "laser_roll">
+    <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <inertial>
+      <mass value="0.100" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+    </inertial>
+  </link>
+
+  <link name = "laser_pitch">
+    <visual>
+      <origin xyz="0 0 0.0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+    <inertial>
+      <mass value="0.100" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" />
+    </inertial>
+  </link>
+
   <link name = "base_laser">
     <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.01 0.01 0.01"/>
+        <box size="0.05 0.05 0.024"/>
       </geometry>
       <material name="red"/>
     </visual>
@@ -272,12 +302,28 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
     <parent link = "base_link"/>
     <child link = "right_belt_link"/>
     <origin xyz="-0.3025 -0.19575 0.0707856" rpy="0 0 0"/>
- </joint>
+  </joint>
 
-  <joint name="base_to_laser_joint" type="fixed">
+  <joint name="laser_roll_joint" type="revolute">
     <parent link="base_link"/>
+    <child link="laser_roll"/>
+    <origin xyz="0.4 0 0.18"/>
+    <limit lower="-0.5235" upper="0.5235" effort="0.1" velocity="1.57"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <joint name="laser_pitch_joint" type="revolute">
+    <parent link="laser_roll"/>
+    <child link="laser_pitch"/>
+    <origin xyz="0.05 0 0.0"/>
+    <limit lower="-0.5235" upper="0.5235" effort="0.1" velocity="1.57"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint name="pitch_to_laser_joint" type="fixed">
+    <parent link="laser_pitch"/>
     <child link="base_laser"/>
-    <origin xyz="0.4 0 0.2297711"/>
+    <origin xyz="0.0 0 0.0497711"/>
   </joint>
 
   <joint name="base_to_camera1_joint" type="fixed">
