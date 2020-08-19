@@ -20,7 +20,7 @@ def makeSimpleProfile(output, input, slop):
         output = min( input, output + slop )
     elif input < output:
         output = max( input, output - slop )
-    elif input==output:
+    elif input == output:
         output=input
     else:
         output = input
@@ -598,7 +598,7 @@ def main():
 
 
 if __name__=="__main__":
-    LIN_VEL_STEP_SIZE=0.1
+    LIN_VEL_STEP_SIZE=0.3
     ANG_VEL_STEP_SIZE=0.2
     ANG_FLIPPER_STEP_SIZE=0.01
     FINDER_MAX_LIN_VEL = 0.3
