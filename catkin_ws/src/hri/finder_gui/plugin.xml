@@ -1,0 +1,20 @@
+<library path="lib/libfinder_gui">
+  <class name="finder_gui/FinDERGUI" type="finder_gui:FinDERGUI" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      FinDER GUI Interface Plugin for rqt.
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>FinDER</label>
+      <icon type="theme">image-x-generic</icon>
+      <statustip>FinDER GUI for manipulation and visualization</statustip>
+    </qtgui>
+  </class>
+</library>
