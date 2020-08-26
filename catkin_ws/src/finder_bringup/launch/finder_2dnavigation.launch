@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
 
+  <arg name="map_file" default="$(find finder_2dnavigation)/maps/map_circuit2.yaml"/>
+
   <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
@@ -11,7 +13,6 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find finder_description)/rviz_config/finder_2dnav.rviz"/>
 	
   <!-- Run the map server -->
-  <arg name="map_file" default="$(find maps)/maps/map_circuit2_test03.yaml"/>
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- Run AMCL -->	

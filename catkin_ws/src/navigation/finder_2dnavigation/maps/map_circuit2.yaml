@@ -1,4 +1,4 @@
-image: map_circuit2_test03.pgm
+image: map_circuit2.pgm
 resolution: 0.050000
 origin: [-50.000000, -20.000000, 0.000000]
 negate: 0
