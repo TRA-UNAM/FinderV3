@@ -30,6 +30,13 @@ pip install -q pyyaml h5py
 sudo apt-get install python-zbar
 sudo apt-get install python3-numpy
 sudo apt-get install python3-matplotlib
+
+#Paquetes para simulador
+sudo apt-get install ros-melodic-urdf ros-melodic-xacro ros-melodic-effort-controllers
+
+#Paquetes para SLAM
+sudo apt-get install ros-melodic-map-server ros-melodic-gmapping ros-melodic-hector-slam
+
 cd ~/
 echo "done"
 
