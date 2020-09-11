@@ -11,7 +11,7 @@ sudo apt-get install python3.6-dev
 sudo apt-get install opencv-data
 sudo apt-get install python-opencv
 sudo apt-get install python3-opencv
-sudo apt-get install ros-melodic-cv-camera
+sudo apt-get install ros-melodic-cv-camera #1
 
 #Paquetes audio
 sudo apt-get install python-tqdm
@@ -25,11 +25,13 @@ pip install wave
 pip install essentia
 pip install -q pyyaml h5py
 
-
 #Paquetes código QR
 sudo apt-get install python-zbar
 sudo apt-get install python3-numpy
 sudo apt-get install python3-matplotlib
+
+#Paqutes interfaz grafica
+sudo apt-get install qtmultimedia5-dev #3
 
 #Paquetes para simulador
 sudo apt-get install ros-melodic-urdf ros-melodic-xacro ros-melodic-effort-controllers
@@ -43,4 +45,4 @@ echo "done"
 
 #File to install the eBUS_SDK for thermal camera (Preguntar a Nacho sobre el proceso completo)
 cd ~/FinderV3/ToInstall/
-sudo ./eBUS_SDK_4.1.7.3988_Ubuntu-14.04-x86_64.run
+sudo ./eBUS_SDK_4.1.7.3988_Ubuntu-14.04-x86_64.run #2
