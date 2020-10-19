@@ -1,0 +1,270 @@
+<?xml version="1.0"?>
+<robot name="finder_base" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="laser_visual" default="true"/>
+  <xacro:arg name="imu_visual"   default="false"/>
+  <xacro:arg name="kinect_visual"   default="true"/>
+
+  <!-- gazebo tag macro -->
+  <xacro:macro name="gazebo_ref" params="link_name kp kd mu1 mu2 color">
+    <gazebo reference="${link_name}">
+	<kp>${kp}</kp>	<!-- static contact stifness -->
+	<kd>${kd}</kd>	<!-- dynamic contact stifness -->
+	<mu1>${mu1}</mu1>	<!-- static friction coeficient -->
+	<mu2>${mu2}</mu2>	<!-- dynamic friction coeficient -->
+	<material>Gazebo/${color}</material>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="tran" params="joint">
+    <transmission name="${joint}_tran">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${joint}">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${joint}_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/finder_base</robotNamespace>
+    </plugin>
+  </gazebo>
+	
+  <xacro:gazebo_ref link_name="right_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="left_front_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="left_back_arm" kp="1000.0" kd="1000.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_front_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_front_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="right_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+  <xacro:gazebo_ref link_name="left_rear_m_wheel_link" kp="100000.0" kd="1000.0" mu1="10" mu2="10" color="ZincYellow"/>
+
+  <xacro:gazebo_ref link_name="base_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="Grey"/>
+  <xacro:gazebo_ref link_name="left_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="White"/>
+  <xacro:gazebo_ref link_name="right_belt_link" kp="100.0" kd="10.0" mu1="10.0" mu2="10.0" color="White"/>
+
+  <xacro:tran joint="right_front_flipper_joint"/>
+  <xacro:tran joint="left_front_flipper_joint"/>
+  <xacro:tran joint="right_back_flipper_joint"/>
+  <xacro:tran joint="left_back_flipper_joint"/>
+
+  <xacro:tran joint="laser_roll_joint"/>
+  <xacro:tran joint="laser_pitch_joint"/>
+
+  <gazebo>
+    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <updateRate>25.0</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <leftFrontJoint>left_front_wheel_joint</leftFrontJoint>
+      <rightFrontJoint>right_front_wheel_joint</rightFrontJoint>
+      <leftRearJoint>left_rear_wheel_joint</leftRearJoint>
+      <rightRearJoint>right_rear_wheel_joint</rightRearJoint>
+      <wheelSeparation>0.3915</wheelSeparation>
+      <wheelDiameter>0.1002</wheelDiameter>
+      <torque>20</torque>
+      <broadcastTF>true</broadcastTF>
+    </plugin>
+  </gazebo>
+
+<!-- second controller for the 4 middle-wheels -->
+  <gazebo>
+    <plugin name="skid_steer_drive_controller_2" filename="libgazebo_ros_skid_steer_drive.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <updateRate>25.0</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <leftFrontJoint>left_front_m_wheel_joint</leftFrontJoint>
+      <rightFrontJoint>right_front_m_wheel_joint</rightFrontJoint>
+      <leftRearJoint>left_rear_m_wheel_joint</leftRearJoint>
+      <rightRearJoint>right_rear_m_wheel_joint</rightRearJoint>
+      <wheelSeparation>0.3915</wheelSeparation>
+      <wheelDiameter>0.1002</wheelDiameter>
+      <torque>20</torque>
+      <broadcastTF>true</broadcastTF>
+    </plugin>
+  </gazebo>
+
+<!-- plug-in for publish the joint states of the 8 wheels -->
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>left_front_wheel_joint, right_front_wheel_joint, left_rear_wheel_joint, right_rear_wheel_joint, left_front_m_wheel_joint, right_front_m_wheel_joint, left_rear_m_wheel_joint, right_rear_m_wheel_joint</jointName>
+      <robotNamespace>/finder_base</robotNamespace>
+      <updateRate>25.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="base_laser">
+    <material>Gazebo/Red</material>
+    <sensor type="ray" name="hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>$(arg laser_visual)</visualize>
+      <update_rate>5</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>240</samples> <!-- with 360deg/1024steps, 240degrees are 682 steps -->
+            <resolution>1.0</resolution> <!-- 0.352 degree, 360deg/1024 steps -->
+            <min_angle>-2.094395</min_angle> <!-- -120 degrees -->
+            <max_angle>2.094395</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>5.6</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+<!-- from ROS cookbook: Noise parameters based on published spec for Hokuyo laser achieving "+-30mm" accuracy at range < 10m. A mean of 0.0m
+and stddev of 0.01m will put 99.7% of samples within 0.03m of
+the true reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>base_laser</frameName> <!-- base_scan -->
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- tag for simulating the camera1 -->
+  <gazebo reference="camera1_link">
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+          <pose>0 0 0 0 0.5 0</pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>400</width>
+          <height>400</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>finder_base/camera1</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera1_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+      <visualize>$(arg imu_visual)</visualize>
+    </sensor>
+    <material>Gazebo/FlatBlack</material>
+  </gazebo>
+
+  <!-- imu plug in -->
+  <gazebo>
+    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+      <alwaysOn>true</alwaysOn>
+      <bodyName>imu_link</bodyName>
+      <frameName>imu_link</frameName>
+      <topicName>imu</topicName>
+      <serviceName>imu_service</serviceName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <updateRate>200</updateRate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </plugin>
+  </gazebo>
+
+<!-- openni kinect plugin -->
+<gazebo reference="kinect_link">
+  <sensor name="kinect_link_camera" type="depth">
+    <update_rate>20</update_rate>
+    <visualize>$(arg kinect_visual)</visualize>
+    <camera>
+      <horizontal_fov>1.047198</horizontal_fov>
+      <image>
+        <width>640</width>
+        <height>480</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.05</near>
+        <far>3</far>
+      </clip>
+    </camera>
+    <plugin name="kinect_link_controller" filename="libgazebo_ros_openni_kinect.so">
+      <baseline>0.2</baseline>
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1.0</updateRate>
+      <cameraName>kinect_ir</cameraName>
+      <imageTopicName>/kinect/color/image_raw</imageTopicName>
+      <cameraInfoTopicName>/kinect/color/camera_info</cameraInfoTopicName>
+      <depthImageTopicName>/kinect/depth/image_raw</depthImageTopicName>
+      <depthImageInfoTopicName>/kinect/depth/camera_info</depthImageInfoTopicName>
+      <pointCloudTopicName>/kinect/depth/points</pointCloudTopicName>
+      <frameName>kinect_depth_frame</frameName>
+      <pointCloudCutoff>0.5</pointCloudCutoff>
+      <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+      <distortionK1>0.00000001</distortionK1>
+      <distortionK2>0.00000001</distortionK2>
+      <distortionK3>0.00000001</distortionK3>
+      <distortionT1>0.00000001</distortionT1>
+      <distortionT2>0.00000001</distortionT2>
+      <CxPrime>0</CxPrime>
+      <Cx>0</Cx>
+      <Cy>0</Cy>
+      <focalLength>0</focalLength>
+      <hackBaseline>0</hackBaseline>
+    </plugin>
+  </sensor>
+</gazebo>
+
+</robot>
