@@ -7,7 +7,7 @@
 	<arg name="robot_name" default="finder" />
 
 	<!-- Converts the xacro robot information to UDRF and use it as a robot_description parameter -->
-	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w_4cam.urdf.xacro'" />
+	<param name="robot_description" command="$(find xacro)/xacro '$(find finder_description)/robot/finder_base_8w.urdf.xacro'" />
 
 
 	<!-- push robot_description to factory and spawn robot in gazebo -->
