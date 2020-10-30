@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+import rospy
+import serial
+from std_msgs.msg import String
+from sensor_msgs.msg import Imu
+from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3Stamped
+
+ser =serial.Serial('/dev/ttyACM2',9600)
+
+def main():
+	rospy.init_node('bridge', anonymous=True)
+	rate = rospy.Rate(10) # 10hz
+	pub=rospy.Publisher('imu/data_raw',Imu,queue_size=1)
+	mag_pub=rospy.Publisher('imu/mag',Vector3Stamped,queue_size=1)
+	while not rospy.is_shutdown():
+		if(ser.in_waiting>0):
+			line=ser.readline()
+#			El mensaje llega Acc[3] Mag[4] Gyro[4];
+			print(line)
+			divided=line.split()
+			#print divided
+			sAcc=divided[0]
+			sMag=divided[1]
+			sGyro=divided[2]
+			msg=Imu()
+			mag=Vector3Stamped()
+			i=0
+			axesA=[0,0,0]
+			axesG=[0,0,0]
+			axesM=[0,0,0,0]
+			for x in sAcc.split(','):
+				axesA[i]=(float(float(x)/1000)*9.81)
+				i+=1
+			i=0
+			for x in sGyro.split(','):
+				axesG[i]=(float((float(x)/1000)*3.14169)/180)
+				i+=1
+			i=0
+			for x in sMag.split(','):
+				axesM[i]=float(x)
+				i+=1
+			frame_id = rospy.get_param('~frame_id', 'bridge')
+			seq=0
+			msg.header.stamp = rospy.Time.now()
+			msg.header.frame_id = frame_id
+			msg.header.seq = seq
+			msg.angular_velocity.x = axesG[0]
+			msg.angular_velocity.y = axesG[1]
+			msg.angular_velocity.z = axesG[2]
+			msg.angular_velocity_covariance[0] = 0;
+			#msg.linear_acceleration=Vector3(axesA[0],axesA[1],axesA[2])
+			msg.linear_acceleration.x = axesA[0]
+			msg.linear_acceleration.y = axesA[1]
+			msg.linear_acceleration.z = axesA[2]
+			msg.linear_acceleration_covariance[0] = 0;
+			pub.publish(msg)
+			mag.header.stamp = rospy.Time.now()
+			mag.header.frame_id = frame_id
+			mag.vector.x = axesM[0]
+			mag.vector.y=axesM[1]
+			mag.vector.z = axesM[2]
+			mag_pub.publish(mag)
+			print 'Acc: {} Gyro: {} Mag {}'.format(axesA,axesG,axesM)
+			rate.sleep()
+
+def talker():
+    pub = rospy.Publisher('chatter', String, queue_size=10)
+    rospy.init_node('talker', anonymous=True)
+    rate = rospy.Rate(10) # 10hz
+    while not rospy.is_shutdown():
+        hello_str = "hello world %s" % rospy.get_time()
+        rospy.loginfo(hello_str)
+        pub.publish(hello_str)
+        rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        #talker()
+		main()
+    except rospy.ROSInterruptException:
+        pass
