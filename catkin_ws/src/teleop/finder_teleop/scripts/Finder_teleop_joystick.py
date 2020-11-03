@@ -2,7 +2,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32, Float64
+from std_msgs.msg import Float32, Float64, Int16
 from sensor_msgs.msg import Joy
 from time import sleep
 
@@ -242,7 +242,7 @@ class Nodo():
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 self.control_angular_flipper3 = self.makeSimpleProfile(self.control_angular_flipper3, self.target_angular_flipper3, (self.ANG_FLIPPER_STEP_SIZE))
                 self.pos[3]=self.control_angular_flipper3
-
+	"""
             #-----Auxiliar arm-----
         if self.palancas[2]<0 and self.palancas[5]>=0:
             self.target_linear_vel   = 0.0
@@ -369,7 +369,7 @@ class Nodo():
                 self.pos[10]=self.control_angular_flipper10
 
 
-
+	"""
 
 
         twist = Twist()
@@ -378,10 +378,11 @@ class Nodo():
         self.control_angular_vel = self.makeSimpleProfile(self.control_angular_vel, self.target_angular_vel, (self.ANG_VEL_STEP_SIZE/2.0))
         twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = self.control_angular_vel
         self.pub.publish(twist)  
-        self.pub1.publish(self.pos[0])
-        self.pub2.publish(self.pos[1])
-        self.pub3.publish(self.pos[2])
-        self.pub4.publish(self.pos[3])
+        self.pub1.publish(int(self.pos[0]))
+        self.pub2.publish(int(self.pos[1]))
+        self.pub3.publish(int(self.pos[2]))
+        self.pub4.publish(int(self.pos[3]))
+	"""
         self.pub5.publish(self.pos[4])
         self.pub6.publish(self.pos[5])
         self.pub7.publish(self.pos[6])
@@ -390,7 +391,7 @@ class Nodo():
         self.pub10.publish(self.pos[9])
         self.pub11.publish(self.pos[10])
         
-            
+	"""         
            
 
         #--------------------Manejo de excepciones--------------------
@@ -484,10 +485,10 @@ class Nodo():
         #--------------------Varaibles para definir los pasos--------------------
         self.LIN_VEL_STEP_SIZE=0.1
         self.ANG_VEL_STEP_SIZE=0.2
-        self.ANG_FLIPPER_STEP_SIZE=0.01
+        self.ANG_FLIPPER_STEP_SIZE=2
         self.FINDER_MAX_LIN_VEL = 0.3
         self.FINDER_MAX_ANG_VEL = 0.2
-        self.FLIPPER_MAX_VALUE= 3.14
+        self.FLIPPER_MAX_VALUE= 64
         self.SHOULDER_MAX_VALUE=0.9
         self.ELBOW_MIN_VALUE=-2.3
         self.ROLL_ROTATION_MAX_VALUE= 3.14
@@ -534,13 +535,13 @@ class Nodo():
         
 
         #--------------------Variables para guardar las velocidades de las juntas--------------------
-        """"""
+        
         
         self.pos=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.6,1.6]
         
 
         self.init_node=rospy.init_node('Finder_teleop_joystick')
-
+	"""
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.pub1=rospy.Publisher('/flipper1_out', Float64, queue_size=1)
         self.pub2=rospy.Publisher('/flipper2_out', Float64, queue_size=1)
@@ -553,6 +554,13 @@ class Nodo():
         self.pub9=rospy.Publisher('/pitch_rotation_out',Float32,queue_size=1)
         self.pub10=rospy.Publisher('/roll_rotation_2_out',Float32,queue_size=1)
         self.pub11=rospy.Publisher('/gripper_rotation_out',Float32,queue_size=1)
+	"""
+
+	self.pub = rospy.Publisher('/base_controller/command', Twist, queue_size=10)
+        self.pub1=rospy.Publisher('/flipper1_out', Int16, queue_size=1)
+        self.pub2=rospy.Publisher('/flipper2_out', Int16, queue_size=1)
+        self.pub3=rospy.Publisher('/flipper3_out', Int16, queue_size=1)
+        self.pub4=rospy.Publisher('/flipper4_out', Int16, queue_size=1)
 
         #--------------------Variable que controla la alerta del mensaje--------------------
         """status=0
@@ -583,8 +591,8 @@ class Nodo():
 if __name__=="__main__":
     
     nodo=Nodo()
-    rospy.Subscriber("/joint_states",JointState,nodo.callback)
-    sleep(1)
+    #rospy.Subscriber("/joint_states",JointState,nodo.callback)
+    #sleep(1)
     rospy.Subscriber("/joy",Joy,nodo.joystick_callback)
     rospy.spin()
 
