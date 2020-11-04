@@ -4,7 +4,7 @@ import rospy
 import tf
 import math
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float32, Float64
+from std_msgs.msg import Float32, Int16
 from sensor_msgs.msg import JointState
 
 def cmd_vel_callback(data):
@@ -78,11 +78,11 @@ def main():
     roll_rotation_2_out=1.6
     gripper_rotation_out=1.6
     seq=0
-    rospy.Subscriber("/cmd_vel", Twist, cmd_vel_callback)   #the value in /cmd_vel gows from -0.5 to 0.5 (m/S)
-    rospy.Subscriber('/flipper1_out',Float64, flipper1_out_callback)
-    rospy.Subscriber('/flipper2_out',Float64, flipper2_out_callback)
-    rospy.Subscriber('/flipper3_out',Float64, flipper3_out_callback)
-    rospy.Subscriber('/flipper4_out',Float64, flipper4_out_callback)
+    rospy.Subscriber("/base_controller/command", Twist, cmd_vel_callback)   #the value in /cmd_vel gows from -0.5 to 0.5 (m/S)
+    rospy.Subscriber('/flipper1_out',Int16, flipper1_out_callback)
+    rospy.Subscriber('/flipper2_out',Int16, flipper2_out_callback)
+    rospy.Subscriber('/flipper3_out',Int16, flipper3_out_callback)
+    rospy.Subscriber('/flipper4_out',Int16, flipper4_out_callback)
     rospy.Subscriber('/base_rotation_out',Float32, base_rotation_out_callback)
     rospy.Subscriber('/shoulder_rotation_out',Float32, shoulder_rotation_out_callback)
     rospy.Subscriber('/elbow_rotation_out',Float32, elbow_rotation_out_callback)
@@ -101,7 +101,7 @@ def main():
         joint_state.header.stamp=rospy.get_rostime()
         joint_state.header.frame_id=''
         joint_state.name=["right_front_flipper","left_front_flipper","right_back_flipper","left_back_flipper","base_rotation","shoulder_rotation","elbow_rotation","roll_rotation","pitch_rotation","roll_rotation_2","gripper_rotation"]
-        joint_state.position=[flipper1_out,flipper2_out,flipper3_out,flipper4_out,base_rotation_out,shoulder_rotation_out,elbow_rotation_out,roll_rotation_out,pitch_rotation_out,roll_rotation_2_out,gripper_rotation_out]
+        joint_state.position=[flipper1_out/30,flipper2_out/30,flipper3_out/30,flipper4_out/30,base_rotation_out,shoulder_rotation_out,elbow_rotation_out,roll_rotation_out,pitch_rotation_out,roll_rotation_2_out,gripper_rotation_out]
         joint_state.velocity=[]
         joint_state.effort=[]
         joint_state.header.seq=seq+1
