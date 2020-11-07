@@ -158,11 +158,11 @@ class Nodo():
             
         Axes name on the Xbox One Controller:
 
-        0   Palanca Izq Horizontal (Izq= 1.0)
-        1   Palanca Izq Vertical (Arriba= 1.0)
+        0   Palanca Izq Horizontal LS (Izq= 1.0)
+        1   Palanca Izq Vertical LS (Arriba= 1.0)
         2   LT (Sin presionar= 1.0)
-        3   Palanca Der Horizontal (Izq= 1.0)
-        4   Palanca Der Vertical (Arriba= 1.0)
+        3   Palanca Der Horizontal LS (Izq= 1.0)
+        4   Palanca Der Vertical RS(Arriba= 1.0)
         5   RT (Sin presionar= 1.0)
         6   Cruceta Horizontal (Izq=1.0)
         7   Cruceta Vertical (Arriba=1.0)
@@ -184,17 +184,37 @@ class Nodo():
             if self.palancas[3]<-0.2 :
                 self.target_angular_vel = self.checkAngularLimitVelocity(self.palancas[3]*0.3)#((self.target_angular_vel+self.palancas[3])*0.3)
                 print(self.vels())
+                
             
             #--------------------Stop all movements --------------------   
-            #--------------------Show commands--------------------    
-            if self.botones[7]==1:
-                print(self.vels())
-                self.target_linear_vel   = 0.0
-                self.control_linear_vel  = 0.0
-                self.target_angular_vel  = 0.0
-                self.control_angular_vel = 0.0
-                print(self.vels())
-                print(self.msg)
+        
+        if self.palancas[4]<0.2 and self.palancas[4]>-0.2 and self.palancas[3]<0.2 and self.palancas[3]>-0.2:
+            twist = Twist()
+            twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0
+            twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
+            self.pos[0]=0
+            self.pos[1]=0
+            self.pos[2]=0
+            self.pos[3]=0
+            self.pub1.publish(self.pos[0])
+            self.pub2.publish(self.pos[1])
+            self.pub3.publish(self.pos[2])
+            self.pub4.publish(self.pos[3])
+            self.pub.publish(twist)
+            #--------------------Show commands and stop all movements--------------------    
+        if self.botones[7]==1:
+            print(self.vels())
+            self.target_linear_vel   = 0.0
+            self.control_linear_vel  = 0.0
+            self.target_angular_vel  = 0.0
+            self.control_angular_vel = 0.0
+            self.pos[0]=0
+            self.pos[1]=0
+            self.pos[2]=0
+            self.pos[3]=0
+        
+            print(self.vels())
+            print(self.msg)
 
         if self.botones[5]>-0.2 and self.botones[5]<0.2 and self.botones[4]>0.2:
 
@@ -205,14 +225,14 @@ class Nodo():
             
         #--------------------Left_back_flipper--------------------
             if self.palancas[4]>0.2:
-                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*64)#(self.target_angular_flipper3-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper3-self.ANG_FLIPPER_STEP_SIZE)
                 #status3 = status3 + 1
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
-                #self.control_angular_flipper3 = self.makeSimpleProfile(self.control_angular_flipper3, self.target_angular_flipper3, self.ANG_FLIPPER_STEP_SIZE)
+                #self.control_angular_flipper0 = self.makeSimpleProfile(self.control_angular_flipper0, self.target_angular_flipper3, self.ANG_FLIPPER_STEP_SIZE)
                 self.pos[3]=self.target_angular_flipper3
                 
             if self.palancas[4]<-0.2:
-                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*64)#(self.target_angular_flipper3+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper3+self.ANG_FLIPPER_STEP_SIZE)
                 #status3 = status3 + 3
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 #self.control_angular_flipper3 = self.makeSimpleProfile(self.control_angular_flipper3, self.target_angular_flipper3, (self.ANG_FLIPPER_STEP_SIZE))
@@ -220,19 +240,19 @@ class Nodo():
 
             #--------------------Left_front_flipper--------------------
             if self.palancas[1]>0.2 :
-                self.target_angular_flipper1= self.checkAngularLimitFlipper(self.palancas[1]*64)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper1= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
                 print("Left_front_flipper "+self.angs(self.target_angular_flipper1))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
                 self.pos[1]=self.target_angular_flipper1
                 
             if self.palancas[1]<-0.2:
-                self.target_angular_flipper1= self.checkAngularLimitFlipper(self.palancas[1]*64)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper1= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
                 print("Left_front_flipper "+self.angs(self.target_angular_flipper1))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
                 self.pos[1]=self.target_angular_flipper1
-
+                
         if self.botones[4]>-0.2 and self.botones[4]<0.2 and self.botones[5]>0.2:
             self.target_linear_vel   = 0.0
             self.control_linear_vel  = 0.0
@@ -241,14 +261,14 @@ class Nodo():
            
             #--------------------Right_front_flipper--------------------
             if self.palancas[1]>0.2 :
-                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*64)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
                 print("Right_front_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
                 self.pos[0]=self.target_angular_flipper0
 
             if self.palancas[1]<-0.2 :
-                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*64)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
                 print("Right_front_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
@@ -257,14 +277,14 @@ class Nodo():
 
             #--------------------Right_back_flipper--------------------
             if self.palancas[4]>0.2  :
-                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*64)#(self.target_angular_flipper2+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2+self.ANG_FLIPPER_STEP_SIZE)
                 #status2 = status2 + 1
                 print("Right_back_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
                 self.pos[2]=self.target_angular_flipper2
 
             if self.palancas[4]<-0.2 :
-                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*64)#(self.target_angular_flipper2-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2-self.ANG_FLIPPER_STEP_SIZE)
                 #status2 = status2 + 1
                 print("Right_back_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
@@ -425,9 +445,8 @@ class Nodo():
 
 
         #--------------------Se indica que el robot deje de moverse hasta que reciba otro comando de velocidad--------------------
-        twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0
-        twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
-        self.pub.publish(twist)
+        
+        
 
 
 
@@ -439,27 +458,26 @@ class Nodo():
         Control Your FINDER and Your Flippers!
         ---------------------------
 
-        Moving around:   
+        Moving around :   
 
             LS AND RS
                
 
-        Left_back_flipper:   
+        Left_front_flipper (Se movia en el robot real Delantero derecho):   
             
             LB + LS
 
-        Left_front_flipper:   
+        Left_back_flipper (Se movia trasero derecho):   
             
             LB + RS
 
-        Right_front_flipper:   
+        Right_front_flipper ( Se movia Trasero izquierdo):   
             
             RB + LS
 
-        Right_back_flipper:   
+        Right_back_flipper (Se movia Delantero Izquierdo):   
             
             RB + RS
-            
 
         Arm_base_rotation:   
                
@@ -515,7 +533,7 @@ class Nodo():
         self.ANG_FLIPPER_STEP_SIZE=0.3
         self.FINDER_MAX_LIN_VEL = 0.3
         self.FINDER_MAX_ANG_VEL = 0.3
-        self.FLIPPER_MAX_VALUE= 64
+        self.FLIPPER_MAX_VALUE= 32
         self.SHOULDER_MAX_VALUE=0.9
         self.ELBOW_MIN_VALUE=-2.3
         self.ROLL_ROTATION_MAX_VALUE= 3.14
@@ -583,11 +601,11 @@ class Nodo():
         self.pub11=rospy.Publisher('/gripper_rotation_out',Float32,queue_size=1)
 	"""
 
-	self.pub = rospy.Publisher('/base_controller/command', Twist, queue_size=10)
-        self.pub1=rospy.Publisher('/flipper1_out', Int16, queue_size=1)
+        self.pub = rospy.Publisher('/base_controller/command', Twist, queue_size=10)
+        self.pub1=rospy.Publisher('/flipper4_out', Int16, queue_size=1)
         self.pub2=rospy.Publisher('/flipper2_out', Int16, queue_size=1)
         self.pub3=rospy.Publisher('/flipper3_out', Int16, queue_size=1)
-        self.pub4=rospy.Publisher('/flipper4_out', Int16, queue_size=1)
+        self.pub4=rospy.Publisher('/flipper1_out', Int16, queue_size=1)
 
         #--------------------Variable que controla la alerta del mensaje--------------------
         """status=0
