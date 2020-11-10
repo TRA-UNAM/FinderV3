@@ -463,19 +463,19 @@ class Nodo():
             LS AND RS
                
 
-        Left_front_flipper (Se movia en el robot real Delantero derecho):   
+        Left_front_flipper :   
             
             LB + LS
 
-        Left_back_flipper (Se movia trasero derecho):   
+        Left_back_flipper :   
             
             LB + RS
 
-        Right_front_flipper ( Se movia Trasero izquierdo):   
+        Right_front_flipper :   
             
             RB + LS
 
-        Right_back_flipper (Se movia Delantero Izquierdo):   
+        Right_back_flipper :   
             
             RB + RS
 
