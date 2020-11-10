@@ -30,7 +30,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float32, Float64
+from std_msgs.msg import Float32, Int16
 import sys, select, os
 if os.name == 'nt':
   import msvcrt
@@ -38,9 +38,9 @@ else:
   import tty, termios
 
 #--------------------Variables para definir el tope de comandos o valores--------------------
-FINDER_MAX_LIN_VEL = 0.2
-FINDER_MAX_ANG_VEL = 0.5
-FLIPPER_MAX_VALUE= 3.14
+FINDER_MAX_LIN_VEL = 0.3
+FINDER_MAX_ANG_VEL = 0.3
+FLIPPER_MAX_VALUE= 32
 SHOULDER_MAX_VALUE=0.9
 ELBOW_MIN_VALUE=-2.3
 PITCH_ROTATION_MAX_VALUE=1.5
@@ -225,18 +225,18 @@ if __name__=="__main__":
         settings = termios.tcgetattr(sys.stdin)
 
     rospy.init_node('finder_teleop_key')
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    pub1=rospy.Publisher('/flipper1_out', Float64, queue_size=1)
-    pub2=rospy.Publisher('/flipper2_out', Float64, queue_size=1)
-    pub3=rospy.Publisher('/flipper3_out', Float64, queue_size=1)
-    pub4=rospy.Publisher('/flipper4_out', Float64, queue_size=1)
-    pub5=rospy.Publisher('/base_rotation_out',Float32,queue_size=1)
-    pub6=rospy.Publisher('/shoulder_rotation_out',Float32,queue_size=1)
-    pub7=rospy.Publisher('/elbow_rotation_out',Float32,queue_size=1)
-    pub8=rospy.Publisher('/roll_rotation_out',Float32,queue_size=1)
-    pub9=rospy.Publisher('/pitch_rotation_out',Float32,queue_size=1)
-    pub10=rospy.Publisher('/roll_rotation_2_out',Float32,queue_size=1)
-    pub11=rospy.Publisher('/gripper_rotation_out',Float32,queue_size=1)
+    pub = rospy.Publisher('/base_controller/command', Twist, queue_size=10)
+    pub1=rospy.Publisher('/flipper4_out', Int16, queue_size=1)
+    pub2=rospy.Publisher('/flipper2_out', Int16, queue_size=1)
+    pub3=rospy.Publisher('/flipper3_out', Int16, queue_size=1)
+    pub4=rospy.Publisher('/flipper1_out', Int16, queue_size=1)
+    #pub5=rospy.Publisher('/base_rotation_out',Float32,queue_size=1)
+    #pub6=rospy.Publisher('/shoulder_rotation_out',Float32,queue_size=1)
+    #pub7=rospy.Publisher('/elbow_rotation_out',Float32,queue_size=1)
+    #pub8=rospy.Publisher('/roll_rotation_out',Float32,queue_size=1)
+    #pub9=rospy.Publisher('/pitch_rotation_out',Float32,queue_size=1)
+    #pub10=rospy.Publisher('/roll_rotation_2_out',Float32,queue_size=1)
+    #pub11=rospy.Publisher('/gripper_rotation_out',Float32,queue_size=1)
     
     
     #--------------------Variable que controla la alerta del mensaje--------------------
@@ -272,7 +272,7 @@ if __name__=="__main__":
     #--------------------Varaibles para definir los pasos--------------------
     LIN_VEL_STEP_SIZE=0.1
     ANG_VEL_STEP_SIZE=0.2
-    ANG_FLIPPER_STEP_SIZE=0.1
+    ANG_FLIPPER_STEP_SIZE=5
     #--------------------Variables para guardar las velocidades de las juntas--------------------
     target_angular_flipper0=0.0
     target_angular_flipper1 =0.0
@@ -294,6 +294,10 @@ if __name__=="__main__":
         while(1):
 
             key = getKey()
+            pos[0]=0
+            pos[1]=0
+            pos[2]=0
+            pos[3]=0
             if key == 'w' :
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
                 status = status + 1
@@ -312,29 +316,29 @@ if __name__=="__main__":
                 print(vels(target_linear_vel,target_angular_vel))
             #--------------------Right front flipper--------------------
             elif key == 'o' :
-                target_angular_flipper0= checkAngularLimitFlipper(target_angular_flipper0 - ANG_FLIPPER_STEP_SIZE)
-                status0 = status0 + 1
-                print("Right_front_flipper "+angs(target_angular_flipper0))
-                control_angular_flipper0 = makeSimpleProfile(control_angular_flipper0, target_angular_flipper0, (ANG_FLIPPER_STEP_SIZE))
-                pos[0]=control_angular_flipper0
-                
-            elif key == 'l' :
                 target_angular_flipper0= checkAngularLimitFlipper(target_angular_flipper0 + ANG_FLIPPER_STEP_SIZE)
                 status0 = status0 + 1
                 print("Right_front_flipper "+angs(target_angular_flipper0))
                 control_angular_flipper0 = makeSimpleProfile(control_angular_flipper0, target_angular_flipper0, (ANG_FLIPPER_STEP_SIZE))
-                pos[0]=control_angular_flipper0
+                pos[2]=control_angular_flipper0
+                
+            elif key == 'l' :
+                target_angular_flipper0= checkAngularLimitFlipper(target_angular_flipper0 - ANG_FLIPPER_STEP_SIZE)
+                status0 = status0 + 1
+                print("Right_front_flipper "+angs(target_angular_flipper0))
+                control_angular_flipper0 = makeSimpleProfile(control_angular_flipper0, target_angular_flipper0, (ANG_FLIPPER_STEP_SIZE))
+                pos[2]=control_angular_flipper0
 
             #--------------------Left front flipper--------------------
             elif key == 'r' :
-                target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 - ANG_FLIPPER_STEP_SIZE)
+                target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 + ANG_FLIPPER_STEP_SIZE)
                 status1 = status1 + 1
                 print("Left_front_flipper "+angs(target_angular_flipper1))
                 control_angular_flipper1 = makeSimpleProfile(control_angular_flipper1, target_angular_flipper1, (ANG_FLIPPER_STEP_SIZE))
                 pos[1]=control_angular_flipper1
 
             elif key == 'f' :
-                target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 + ANG_FLIPPER_STEP_SIZE)
+                target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 - ANG_FLIPPER_STEP_SIZE)
                 status1 = status1 + 1
                 print("Left_front_flipper "+angs(target_angular_flipper1))
                 control_angular_flipper1 = makeSimpleProfile(control_angular_flipper1, target_angular_flipper1, (ANG_FLIPPER_STEP_SIZE))
@@ -342,17 +346,17 @@ if __name__=="__main__":
 
             #--------------------Right back flipper--------------------
             elif key == 'i' :
-                target_angular_flipper2= checkAngularLimitFlipper(target_angular_flipper2 - ANG_FLIPPER_STEP_SIZE)
-                status2 = status2 + 1
-                print("Right_back_flipper "+angs(target_angular_flipper2))
-                control_angular_flipper2 = makeSimpleProfile(control_angular_flipper2, target_angular_flipper2, (ANG_FLIPPER_STEP_SIZE))
-                pos[2]=control_angular_flipper2
-            elif key == 'k' :
                 target_angular_flipper2= checkAngularLimitFlipper(target_angular_flipper2 + ANG_FLIPPER_STEP_SIZE)
                 status2 = status2 + 1
                 print("Right_back_flipper "+angs(target_angular_flipper2))
                 control_angular_flipper2 = makeSimpleProfile(control_angular_flipper2, target_angular_flipper2, (ANG_FLIPPER_STEP_SIZE))
-                pos[2]=control_angular_flipper2
+                pos[0]=control_angular_flipper2
+            elif key == 'k' :
+                target_angular_flipper2= checkAngularLimitFlipper(target_angular_flipper2 - ANG_FLIPPER_STEP_SIZE)
+                status2 = status2 + 1
+                print("Right_back_flipper "+angs(target_angular_flipper2))
+                control_angular_flipper2 = makeSimpleProfile(control_angular_flipper2, target_angular_flipper2, (ANG_FLIPPER_STEP_SIZE))
+                pos[0]=control_angular_flipper2
             #--------------------Left back flipper--------------------
             elif key == 't' :
                 target_angular_flipper3= checkAngularLimitFlipper(target_angular_flipper3 - ANG_FLIPPER_STEP_SIZE)
@@ -367,7 +371,32 @@ if __name__=="__main__":
                 print("Left_back_flipper "+angs(target_angular_flipper3))
                 control_angular_flipper3 = makeSimpleProfile(control_angular_flipper3, target_angular_flipper3, (ANG_FLIPPER_STEP_SIZE))
                 pos[3]=control_angular_flipper3
+            #--------------------Stop all movements --------------------   
+            elif key == 's' :
+                target_linear_vel   = 0.0
+                control_linear_vel  = 0.0
+                target_angular_vel  = 0.0
+                control_angular_vel = 0.0
+                pos[0]=0
+                pos[1]=0
+                pos[2]=0
+                pos[3]=0
+                pub1.publish(pos[0])
+                pub2.publish(pos[1])
+                pub3.publish(pos[2])
+                pub4.publish(pos[3])
+                print(vels(target_linear_vel, target_angular_vel))
+                print(msg)
+            #--------------------Show commands--------------------    
+            elif key == ' ':
+
+                print(msg)
+
+            else:
+                if (key == '\x03'):
+                    break
             #--------------------Arm base rotation--------------------
+            """
             elif key == '1' :
                 target_angular_flipper4= checkAngularLimitFlipper(target_angular_flipper4 + ANG_FLIPPER_STEP_SIZE)
                 status4 = status4 + 1
@@ -459,23 +488,8 @@ if __name__=="__main__":
                 status10 = status10 + 1
                 print("Gripper_rotation "+angs(target_angular_flipper10))
                 control_angular_flipper10 = makeSimpleProfile(control_angular_flipper10, target_angular_flipper10, (ANG_FLIPPER_STEP_SIZE))
-                pos[10]=control_angular_flipper10
-            #--------------------Stop all movements --------------------   
-            elif key == 's' :
-                target_linear_vel   = 0.0
-                control_linear_vel  = 0.0
-                target_angular_vel  = 0.0
-                control_angular_vel = 0.0
-                print(vels(target_linear_vel, target_angular_vel))
-                print(msg)
-            #--------------------Show commands--------------------    
-            elif key == ' ':
-
-                print(msg)
-
-            else:
-                if (key == '\x03'):
-                    break
+                pos[10]=control_angular_flipper10"""
+            
             
             #--------------------Se lleva la cuenta de las veces que se presionan las teclas y cuando debe de ser mandado el mensaje de comandos--------------------
             if status == 5 :
@@ -527,14 +541,13 @@ if __name__=="__main__":
             pub2.publish(pos[1])
             pub3.publish(pos[2])
             pub4.publish(pos[3])
-            pub5.publish(pos[4])
+            """pub5.publish(pos[4])
             pub6.publish(pos[5])
             pub7.publish(pos[6])
             pub8.publish(pos[7])
             pub9.publish(pos[8])
             pub10.publish(pos[9])
-            pub11.publish(pos[10])
-           
+            pub11.publish(pos[10])"""
 
     #--------------------Manejo de excepciones--------------------
     except:
