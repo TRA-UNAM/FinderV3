@@ -225,14 +225,14 @@ class Nodo():
             
         #--------------------Left_back_flipper--------------------
             if self.palancas[4]>0.2:
-                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper3-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper3= self.checkAngularLimitFlipper(-self.palancas[4]*32)#(self.target_angular_flipper3-self.ANG_FLIPPER_STEP_SIZE)
                 #status3 = status3 + 1
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 #self.control_angular_flipper0 = self.makeSimpleProfile(self.control_angular_flipper0, self.target_angular_flipper3, self.ANG_FLIPPER_STEP_SIZE)
                 self.pos[3]=self.target_angular_flipper3
                 
             if self.palancas[4]<-0.2:
-                self.target_angular_flipper3= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper3+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper3= self.checkAngularLimitFlipper(-self.palancas[4]*32)#(self.target_angular_flipper3+self.ANG_FLIPPER_STEP_SIZE)
                 #status3 = status3 + 3
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 #self.control_angular_flipper3 = self.makeSimpleProfile(self.control_angular_flipper3, self.target_angular_flipper3, (self.ANG_FLIPPER_STEP_SIZE))
@@ -261,34 +261,34 @@ class Nodo():
            
             #--------------------Right_front_flipper--------------------
             if self.palancas[1]>0.2 :
-                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1+self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
-                print("Right_front_flipper "+self.angs(self.target_angular_flipper0))
+                print("Right_front_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
-                self.pos[0]=self.target_angular_flipper0
+                self.pos[2]=self.target_angular_flipper2
 
             if self.palancas[1]<-0.2 :
-                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[1]*32)#(self.target_angular_flipper1-self.ANG_FLIPPER_STEP_SIZE)
                 #status1 = status1 + 1
-                print("Right_front_flipper "+self.angs(self.target_angular_flipper0))
+                print("Right_front_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
-                self.pos[0]=self.target_angular_flipper0
+                self.pos[2]=self.target_angular_flipper2
 
 
             #--------------------Right_back_flipper--------------------
             if self.palancas[4]>0.2  :
-                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2+self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2+self.ANG_FLIPPER_STEP_SIZE)
                 #status2 = status2 + 1
-                print("Right_back_flipper "+self.angs(self.target_angular_flipper2))
+                print("Right_back_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
-                self.pos[2]=self.target_angular_flipper2
+                self.pos[0]=self.target_angular_flipper0
 
             if self.palancas[4]<-0.2 :
-                self.target_angular_flipper2= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2-self.ANG_FLIPPER_STEP_SIZE)
+                self.target_angular_flipper0= self.checkAngularLimitFlipper(self.palancas[4]*32)#(self.target_angular_flipper2-self.ANG_FLIPPER_STEP_SIZE)
                 #status2 = status2 + 1
-                print("Right_back_flipper "+self.angs(self.target_angular_flipper2))
+                print("Right_back_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
-                self.pos[2]=self.target_angular_flipper2
+                self.pos[0]=self.target_angular_flipper0
 	"""
             #-----Auxiliar arm-----
         if self.palancas[2]<0 and self.palancas[5]>=0:
