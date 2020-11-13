@@ -272,20 +272,7 @@ if __name__=="__main__":
             pos[1]=0
             pos[2]=0
             pos[3]=0
-            target_angular_flipper0=0.0
-            target_angular_flipper1 =0.0
-            target_angular_flipper2=0.0
-            target_angular_flipper3=0.0
-            target_angular_flipper4=0.0
-            control_angular_flipper0 = 0.0
-            control_angular_flipper1 = 0.0
-            control_angular_flipper2 = 0.0
-            control_angular_flipper3 = 0.0
-            control_angular_flipper4 = 0.0
-            target_linear_vel   = 0.0
-            control_linear_vel  = 0.0
-            target_angular_vel  = 0.0
-            control_angular_vel = 0.0
+            
             if key == 'w' :
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
                 status = status + 1
@@ -373,12 +360,10 @@ if __name__=="__main__":
                 target_angular_flipper1 =0.0
                 target_angular_flipper2=0.0
                 target_angular_flipper3=0.0
-                target_angular_flipper4=0.0
                 control_angular_flipper0 = 0.0
                 control_angular_flipper1 = 0.0
                 control_angular_flipper2 = 0.0
                 control_angular_flipper3 = 0.0
-                control_angular_flipper4 = 0.0
                 pub1.publish(pos[0])
                 pub2.publish(pos[1])
                 pub3.publish(pos[2])
