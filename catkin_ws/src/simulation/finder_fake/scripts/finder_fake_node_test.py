@@ -101,7 +101,7 @@ def main():
         joint_state.header.stamp=rospy.get_rostime()
         joint_state.header.frame_id=''
         joint_state.name=["right_front_flipper","left_front_flipper","right_back_flipper","left_back_flipper","base_rotation","shoulder_rotation","elbow_rotation","roll_rotation","pitch_rotation","roll_rotation_2","gripper_rotation"]
-        joint_state.position=[flipper1_out/30,flipper2_out/30,flipper3_out/30,flipper4_out/30,base_rotation_out,shoulder_rotation_out,elbow_rotation_out,roll_rotation_out,pitch_rotation_out,roll_rotation_2_out,gripper_rotation_out]
+        joint_state.position=[flipper3_out/30,flipper2_out/30,flipper4_out/30,-flipper1_out/30,base_rotation_out,shoulder_rotation_out,elbow_rotation_out,roll_rotation_out,pitch_rotation_out,roll_rotation_2_out,gripper_rotation_out]
         joint_state.velocity=[]
         joint_state.effort=[]
         joint_state.header.seq=seq+1

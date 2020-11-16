@@ -173,7 +173,10 @@ class Nodo():
         """
         #------------------Move base of finder ------------
         if self.botones[4]>-0.2 and self.botones[4]<0.2 and self.botones[5]>-0.2 and self.botones[5]<0.2:
-
+            self.pos[0]=0
+            self.pos[1]=0
+            self.pos[2]=0
+            self.pos[3]=0
             if self.palancas[1]>0.2 :
                 self.target_linear_vel = self.checkLinearLimitVelocity(self.palancas[1]*0.3)#((self.target_linear_vel+self.palancas[1])*0.3) #------Palanca izquierda-----
                 print(self.vels())
@@ -233,6 +236,13 @@ class Nodo():
                 #status3 = status3 + 1
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 #self.control_angular_flipper0 = self.makeSimpleProfile(self.control_angular_flipper0, self.target_angular_flipper3, self.ANG_FLIPPER_STEP_SIZE)
+                self.pos[0]=0
+                self.pos[1]=0
+                self.pos[2]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[3]=self.target_angular_flipper3
                 
             if self.palancas[4]<-0.2:
@@ -240,6 +250,13 @@ class Nodo():
                 #status3 = status3 + 3
                 print("Left_back_flipper "+self.angs(self.target_angular_flipper3))
                 #self.control_angular_flipper3 = self.makeSimpleProfile(self.control_angular_flipper3, self.target_angular_flipper3, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[0]=0
+                self.pos[1]=0
+                self.pos[2]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[3]=self.target_angular_flipper3
 
             #--------------------Left_front_flipper--------------------
@@ -248,6 +265,13 @@ class Nodo():
                 #status1 = status1 + 1
                 print("Left_front_flipper "+self.angs(self.target_angular_flipper1))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[0]=0
+                self.pos[2]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[1]=self.target_angular_flipper1
                 
             if self.palancas[1]<-0.2:
@@ -255,6 +279,13 @@ class Nodo():
                 #status1 = status1 + 1
                 print("Left_front_flipper "+self.angs(self.target_angular_flipper1))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[0]=0
+                self.pos[2]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[1]=self.target_angular_flipper1
                 
         if self.botones[4]==0 and self.botones[5]==1:
@@ -269,6 +300,13 @@ class Nodo():
                 #status1 = status1 + 1
                 print("Right_front_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[0]=0
+                self.pos[1]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[2]=self.target_angular_flipper2
 
             if self.palancas[1]<-0.2 :
@@ -276,6 +314,13 @@ class Nodo():
                 #status1 = status1 + 1
                 print("Right_front_flipper "+self.angs(self.target_angular_flipper2))
                 #self.control_angular_flipper1 = self.makeSimpleProfile(self.control_angular_flipper1, self.target_angular_flipper1, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[0]=0
+                self.pos[1]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[2]=self.target_angular_flipper2
 
 
@@ -285,6 +330,13 @@ class Nodo():
                 #status2 = status2 + 1
                 print("Right_back_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[1]=0
+                self.pos[2]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[0]=self.target_angular_flipper0
 
             if self.palancas[4]<-0.2 :
@@ -292,6 +344,13 @@ class Nodo():
                 #status2 = status2 + 1
                 print("Right_back_flipper "+self.angs(self.target_angular_flipper0))
                 #self.control_angular_flipper2 = self.makeSimpleProfile(self.control_angular_flipper2, self.target_angular_flipper2, (self.ANG_FLIPPER_STEP_SIZE))
+                self.pos[1]=0
+                self.pos[2]=0
+                self.pos[3]=0
+                self.target_linear_vel   = 0.0
+                self.control_linear_vel  = 0.0
+                self.target_angular_vel  = 0.0
+                self.control_angular_vel = 0.0
                 self.pos[0]=self.target_angular_flipper0
 	"""
             #-----Auxiliar arm-----

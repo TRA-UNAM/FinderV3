@@ -291,6 +291,12 @@ if __name__=="__main__":
                 print(vels(target_linear_vel,target_angular_vel))
             #--------------------Right front flipper--------------------
             elif key == 'o' :
+                target_angular_flipper1 =0.0
+                target_angular_flipper2=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper2 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper0= checkAngularLimitFlipper(target_angular_flipper0 + ANG_FLIPPER_STEP_SIZE)
                 status0 = status0 + 1
                 print("Right_front_flipper "+angs(target_angular_flipper0))
@@ -298,6 +304,12 @@ if __name__=="__main__":
                 pos[2]=control_angular_flipper0
                 
             elif key == 'l' :
+                target_angular_flipper1 =0.0
+                target_angular_flipper2=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper2 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper0= checkAngularLimitFlipper(target_angular_flipper0 - ANG_FLIPPER_STEP_SIZE)
                 status0 = status0 + 1
                 print("Right_front_flipper "+angs(target_angular_flipper0))
@@ -306,6 +318,12 @@ if __name__=="__main__":
 
             #--------------------Left front flipper--------------------
             elif key == 'r' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper2=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper2 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 + ANG_FLIPPER_STEP_SIZE)
                 status1 = status1 + 1
                 print("Left_front_flipper "+angs(target_angular_flipper1))
@@ -313,6 +331,12 @@ if __name__=="__main__":
                 pos[1]=control_angular_flipper1
 
             elif key == 'f' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper2=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper2 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper1= checkAngularLimitFlipper(target_angular_flipper1 - ANG_FLIPPER_STEP_SIZE)
                 status1 = status1 + 1
                 print("Left_front_flipper "+angs(target_angular_flipper1))
@@ -321,12 +345,25 @@ if __name__=="__main__":
 
             #--------------------Right back flipper--------------------
             elif key == 'i' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper1=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper2= checkAngularLimitFlipper(target_angular_flipper2 + ANG_FLIPPER_STEP_SIZE)
                 status2 = status2 + 1
                 print("Right_back_flipper "+angs(target_angular_flipper2))
                 control_angular_flipper2 = makeSimpleProfile(control_angular_flipper2, target_angular_flipper2, (ANG_FLIPPER_STEP_SIZE))
                 pos[0]=control_angular_flipper2
+                
             elif key == 'k' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper1=0.0
+                target_angular_flipper3=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper3 = 0.0
                 target_angular_flipper2= checkAngularLimitFlipper(target_angular_flipper2 - ANG_FLIPPER_STEP_SIZE)
                 status2 = status2 + 1
                 print("Right_back_flipper "+angs(target_angular_flipper2))
@@ -334,6 +371,12 @@ if __name__=="__main__":
                 pos[0]=control_angular_flipper2
             #--------------------Left back flipper--------------------
             elif key == 't' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper1=0.0
+                target_angular_flipper2=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper2 = 0.0
                 target_angular_flipper3= checkAngularLimitFlipper(target_angular_flipper3 - ANG_FLIPPER_STEP_SIZE)
                 status3 = status3 + 1
                 print("Left_back_flipper "+angs(target_angular_flipper3))
@@ -341,6 +384,12 @@ if __name__=="__main__":
                 pos[3]=control_angular_flipper3
 
             elif key == 'g' :
+                target_angular_flipper0 =0.0
+                target_angular_flipper1=0.0
+                target_angular_flipper2=0.0
+                control_angular_flipper0 = 0.0
+                control_angular_flipper1 = 0.0
+                control_angular_flipper2 = 0.0
                 target_angular_flipper3= checkAngularLimitFlipper(target_angular_flipper3 + ANG_FLIPPER_STEP_SIZE)
                 status3 = status3 + 1
                 print("Left_back_flipper "+angs(target_angular_flipper3))
