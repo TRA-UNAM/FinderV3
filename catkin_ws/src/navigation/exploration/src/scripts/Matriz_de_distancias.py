@@ -37,7 +37,7 @@ def visualizacion_objetivos(objetivos,mapa):
     puntos.scale.x=0.04
     puntos.scale.y=0.04
     #Los puntos seran rojos
-    puntos.color.g=1.0
+    puntos.color.r=1.0
     puntos.color.a=1.0
     
     """o=Point()

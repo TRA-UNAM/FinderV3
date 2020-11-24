@@ -12,9 +12,9 @@ else:
   import tty, termios
 
 #--------------------Variables para definir el tope de comandos o valores--------------------
-FINDER_MAX_LIN_VEL = 0.3
-FINDER_MAX_ANG_VEL = 0.3
-FLIPPER_MAX_VALUE= 32
+FINDER_MAX_LIN_VEL = 0.4
+FINDER_MAX_ANG_VEL = 0.4
+FLIPPER_MAX_VALUE= 64
 SHOULDER_MAX_VALUE=0.9
 ELBOW_MIN_VALUE=-2.3
 PITCH_ROTATION_MAX_VALUE=1.5
