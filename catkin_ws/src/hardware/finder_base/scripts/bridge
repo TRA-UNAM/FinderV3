@@ -4,7 +4,6 @@ import serial
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3
-from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import MagneticField #Es el necesario para poder obtener la orientacion 
 
 ser =serial.Serial('/dev/ttyACM2',9600)
@@ -17,10 +16,8 @@ def main():
 	while not rospy.is_shutdown():
 		if(ser.in_waiting>0):
 			line=ser.readline()
-#			El mensaje llega Acc[3] Mag[4] Gyro[4];
 			print(line)
 			divided=line.split()
-			#print divided
 			sAcc=divided[0]
 			sMag=divided[1]
 			sGyro=divided[2]
