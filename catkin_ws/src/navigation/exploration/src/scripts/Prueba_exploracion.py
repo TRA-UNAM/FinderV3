@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-
+#Autor: Axel Javier Rojas Msoqueda
 import rospy
 #from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 import numpy as np
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import OccupancyGrid
-import Matriz_de_distancias as md
+import Metodos_de_navegacion_autonoma as md
 import time
 
 
