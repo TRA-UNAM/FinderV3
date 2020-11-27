@@ -6,7 +6,7 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import MagneticField #Es el necesario para poder obtener la orientacion 
 
-ser=serial.Serial("/dev/ttyACM3",9600)
+
 
 def main():
 	rospy.init_node('bridge', anonymous=True)
@@ -60,11 +60,12 @@ def main():
 			mag.magnetic_field_covariance=[0,0,0,0,0,0,0,0,0]
 			mag_pub.publish(mag)
 			print ('Acc: {} Gyro: {} Mag {}'.format(axesA,axesG,axesM))
+   
 		rate.sleep()
 
 
 if __name__ == '__main__':
     try:
-        main()
+	ser=serial.Serial('/
     except rospy.ROSInterruptException:
         pass
