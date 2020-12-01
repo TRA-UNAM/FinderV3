@@ -6,6 +6,10 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import MagneticField #Es el necesario para poder obtener la orientacion 
 
+<<<<<<< HEAD
+=======
+ser=serial.Serial("/dev/finder_XDK",9600)
+>>>>>>> 36b809df6baf033473b82e4981ccaf605a70f74e
 
 def main():
 	rospy.init_node('bridge', anonymous=True)
@@ -59,7 +63,6 @@ def main():
 			mag.magnetic_field_covariance=[0,0,0,0,0,0,0,0,0]
 			mag_pub.publish(mag)
 			print ('Acc: {} Gyro: {} Mag {}'.format(axesA,axesG,axesM))
-   
 		rate.sleep()
 
 

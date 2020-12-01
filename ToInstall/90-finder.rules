@@ -1,2 +1,11 @@
 #ACTION=="add", KERNEL=="ttyACM[0-9]*" ATTRS{idVendor}=="0x1cbe", ATTRS{idProduct}=="", ATTRS{manufacturer}=="Texas Instruments" SYMLINK+="arm_stellaris"
+#tivaC finder_base
+SUBSYSTEM=="tty" ATTRS{idVendor}=="1cbe" ATTRS{idProduct}=="00fd" ATTRS{manufacturer}=="Texas Instruments" ATTRS{serial}=="0E10A7B0" SYMLINK+="finder_base_tivaC"
 
+#hokuyo
+SUBSYSTEM=="tty" ATTRS{idVendor}=="15d1" ATTRS{idProduct}=="0000" ATTRS{manufacturer}=="Hokuyo Data Flex for USB" SYMLINK+="finder_hokuyo"
+
+#XDK Bosch
+SUBSYSTEM=="tty" ATTRS{idVendor}=="108c" ATTRS{idProduct}=="017b" ATTRS{manufacturer}=="Bosch Connected Devices and Solutions GmbH" ATTRS{serial}=="24F43F025695BFE2" SYMLINK+="finder_XDK"
+
+#

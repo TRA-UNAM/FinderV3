@@ -1,20 +1,21 @@
 <launch>
 	<rosparam param="base_width">0.4</rosparam>
-	<rosparam param="ticks_meter">3069</rosparam>
+	<rosparam param="ticks_meter">3259</rosparam>
 
 	<node name="l_vel" pkg="finder_bringup" type="pid_velocity.py" output="screen">
 		<remap from ="wheel" to="lwheel"/>
 		<remap from ="motor_cmd" to="left_wheel_speed"/>
 		<remap from ="wheel_vtarget" to="lwheel_vtarget"/>
 		<remap from ="wheel_vel" to="lwheel_vel"/> 
+		<remap from ="error" to="l_error"/>
 
-		<rosparam param ="kp">200</rosparam>
-		<rosparam param ="ki">0</rosparam>
-		<rosparam param ="kd">0</rosparam>
-		<rosparam param="out_min">-100</rosparam>
-      		<rosparam param="out_max">100</rosparam>
+		<rosparam param ="kp">350</rosparam>
+		<rosparam param ="ki">10</rosparam>
+		<rosparam param ="kd">30</rosparam>
+		<rosparam param="out_min">-80</rosparam>
+      		<rosparam param="out_max">80</rosparam>
 		<rosparam param="rate">30</rosparam>
-		<rosparam param="timeout_ticks">4</rosparam>
+		<rosparam param="timeout_ticks">2</rosparam>
       		<rosparam param="rolling_pts">5</rosparam>
 	</node>
 
@@ -23,14 +24,15 @@
 		<remap from ="motor_cmd" to="right_wheel_speed"/>
 		<remap from ="wheel_vtarget" to="rwheel_vtarget"/>
 		<remap from ="wheel_vel" to="rwheel_vel"/> 
+		<remap from ="error" to="r_error"/>
 
-		<rosparam param ="kp">200</rosparam>
-		<rosparam param ="ki">0</rosparam>
-		<rosparam param ="kd">0</rosparam>
-		<rosparam param="out_min">-100</rosparam>
-      		<rosparam param="out_max">100</rosparam>
+		<rosparam param ="kp">350</rosparam>
+		<rosparam param ="ki">10</rosparam>
+		<rosparam param ="kd">30</rosparam>
+		<rosparam param="out_min">-80</rosparam>
+      		<rosparam param="out_max">80</rosparam>
 		<rosparam param="rate">30</rosparam>
-		<rosparam param="timeout_ticks">4</rosparam>
+		<rosparam param="timeout_ticks">2</rosparam>
       		<rosparam param="rolling_pts">5</rosparam>
 	</node>
 
@@ -40,6 +42,6 @@
 			<param name="serial_port" type="string" value="/dev/ttyACM1" />
 			<param name="frame_id" type="string" value="laser_link" />
 	</node>
-	<node name="brazo_node" pkg="finder_arm" type="brazo_node.py" output="screen"/>
+	<!--<node name="brazo_node" pkg="finder_arm" type="brazo_node.py" output="screen"/>-->
 
 </launch>
