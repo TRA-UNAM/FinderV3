@@ -39,6 +39,11 @@ sudo apt-get install ros-melodic-urdf ros-melodic-xacro ros-melodic-effort-contr
 #Paquetes para SLAM
 sudo apt-get install ros-melodic-map-server ros-melodic-gmapping ros-melodic-hector-slam
 
+#Serial devices settings
+sudo cp ~/FinderV3/ToInstall/90-finder.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
 cd ~/
 echo "done"
 

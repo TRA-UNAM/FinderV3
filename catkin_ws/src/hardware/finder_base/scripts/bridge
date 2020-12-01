@@ -6,7 +6,7 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import MagneticField #Es el necesario para poder obtener la orientacion 
 
-ser=serial.Serial("/dev/ttyACM3",9600)
+ser=serial.Serial("/dev/finder_XDK",9600)
 
 def main():
 	rospy.init_node('bridge', anonymous=True)
