@@ -1,0 +1,316 @@
+<?xml version="1.0"?>
+<!--Taller de Robotica Abierta
+	Modified on May 2020 by Eli Baron from:
+	FinDER robot xacro file 
+	developed by Cesar Pineda 
+	December 2016 - January 2017
+NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se podra convertir a URDF.-->
+<!-- Rojo= X, Verde=Y y Azul= Z (color de los ejes en Rviz)-->
+<robot name="finder_arm"  xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Macro para "mandar llamar" a las mallas *.obj -->
+    <xacro:macro name="default_geometry" params="cad_dir:=package://finder_description/mallas cad_file extension:=obj">
+        <geometry>
+	<!-- Typically, STL/DAE/OBJ model units are in mm, but RViz units are in m, hence models must be scaled down by 1000-->
+            <mesh filename="${cad_dir}/${cad_file}.${extension}" scale="0.001 0.001 0.001"/>
+        </geometry>
+    </xacro:macro>
+
+	<!--General porpuse variables-->
+	<xacro:property name="pi" value = "3.14159265359"/>
+	<property name="deg_to_rad" value="0.01745329251994329577"/>
+
+	<!--Inertial matrix macro-->
+   	<xacro:macro name="inertial_matrix" params="mass">
+    	<inertial>
+		<origin xyz="0 0 0" rpy="0 0 0"/>
+      		<mass value="${mass}"/>
+        	<inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.0002"/>
+  	</inertial>
+   </xacro:macro>
+
+	<!--parameters for geometries in collision tags-->
+<!--///////////////////// shoulder collision geometry//////////////////////////////-->
+<!--	<property name="shoulder_coll_len" value="0.456" />
+	<property name="shoulder_coll_width" value="0.062" />
+	<property name="shoulder_coll_height" value="0.05" />
+-->
+<!--///////////////////// elbow  collision geometry//////////////////////////////-->
+	<!--<property name="elbow_coll_len" value="0.393" />--><!--altura en y-->
+	<!--<property name="elbow_coll_width" value="0.052" />--><!--altura en x-->
+	<!--<property name="elbow_coll_height" value="0.0475" />--><!--altura en z-->
+<!--///////////////////// elbow  collision geometry//////////////////////////////-->
+	<!--<property name="roll_coll_len" value="0.05"/>--><!--altura en y-->
+	<!--<property name="roll_coll_width" value="0.087" />--><!--altura en x-->
+	<!--<property name="roll_coll_height" value="0.03" />--><!--altura en z-->
+
+	<!--Cylinder parameters-->
+<!--	<property name="cylinder_len" value ="0.087"/>
+	<property name="cylinder_rad" value ="0.0187"/>
+-->
+
+	<!-- Grasping frame -->
+<!--	<property name="grasp_frame_len" value="0.02"/>
+	<property name="grasp_frame_width" value="0.02"/>
+	<property name="grasp_frame_height" value="0.02"/>
+	<material name="White">
+        <color rgba="1.0 1.0 1.0 1.0"/>
+    </material>
+-->
+<!--//////////////////////////  base link //////////////////-->
+  <link name = "base_link">
+    <inertial>	
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.0108333333333" ixy="0.0" ixz="0.0" iyy="0.0108333333333" iyz="0.0" izz="0.015"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.3 0.3 0.2"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.3 0.3 0.2"/>
+      </geometry>
+    </visual>
+  </link>
+
+<!--///////////////// Brazo 6GDL + Gripper//////////////////-->
+
+<!--////////////////// "eje tronco" rotation joint //////////////////-->
+	<joint name = "base_rotation" type="revolute">
+		<parent link = "base_link"/>
+		<child	link = "eje_tronco"/>
+		<origin xyz ="0 -0.30645 ${0.2691-0.0455}" rpy="0 0 0"/>
+		<axis xyz = "0 0 1"/>
+		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
+	</joint>
+
+	<!--////////////////// "eje tronco link" //////////////////-->
+	<link name = "eje_tronco">
+		<xacro:inertial_matrix mass="0.2"/>
+		<visual>
+			<origin xyz= "0 0 0"/>
+			<xacro:default_geometry cad_file = "base"/>
+		</visual>
+		<collision>
+			<xacro:default_geometry cad_file = "base"/>
+    		</collision>
+	</link>
+
+	<gazebo reference="eje_tronco">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+		<material>Gazebo/Black</material>
+	</gazebo>
+<!--//////////////////"eje_tronco-shoulder rotation joint//////////////////-->
+<!--	<joint name = "shoulder_rotation" type = "revolute">
+		<parent link = "eje_tronco"/>
+		<child link = "shoulder"/>
+		<origin xyz = "0 -0.0035 0.179"/>
+		<axis xyz = "1 0 0"/>-->
+		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
+<!--		<limit effort="300" velocity="0.1" lower="0" upper="3.1"/>
+	</joint>
+-->
+<!--////////////////////// shoulder link //////////////////////-->
+<!--	<link name = "shoulder">
+		<xacro:inertial_matrix mass="0.5"/>
+		<visual>
+			<origin  xyz= "0 0.0035 -0.0338"/>
+			<xacro:default_geometry cad_file = "hombro"/>
+		</visual>
+		<collision>
+			<origin  xyz= "0 0.0035 -0.0338"/>
+      			<xacro:default_geometry cad_file = "hombro"/>
+		</collision>
+	</link>
+
+	<gazebo reference="shoulder">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->
+<!--///////////////////// "shoulder-elbow" rotation joint ////////////////////////////-->
+<!--	<joint name = "elbow_rotation" type = "revolute">
+		<parent link = "shoulder"/>
+		<child link = "elbow"/>
+		<origin xyz = "0 0.423 0.0363"/>
+		<axis xyz = "1 0 0"/>-->
+		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
+<!--		<limit effort="300" velocity="0.1" lower="-2.3" upper="0"/>
+	</joint>
+-->
+<!--////////////////////// elbow link /////////////////////////////////////-->
+<!--	<link name = "elbow">
+		<xacro:inertial_matrix mass="0.5"/>
+		<visual>-->
+			<!--origin xyz= "0 -0.4192 -0.027"/-->
+<!--			<origin xyz= "0 -0.668 -0.027"/>
+			<xacro:default_geometry cad_file = "codo"/>	
+		</visual>
+		<collision>
+			<origin xyz= "0 -0.4192 -0.027"/>
+			<xacro:default_geometry cad_file = "codo"/>
+		</collision>
+	</link>
+
+	<gazebo reference="elbow">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->
+<!--/////////////////////// roll joint ///////////////////////-->
+<!--	<joint name = "roll_rotation" type = "revolute">
+		<parent link = "elbow"/>
+		<child link = "roll"/>
+		<origin xyz = "0 -0.4192 0.0103"/>
+		<axis xyz = "0 1 0"/>
+		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
+	</joint>
+-->
+<!--//////////////////// roll link ////////////////////////////////-->
+<!--	<link name = "roll">
+		<xacro:inertial_matrix mass="0.2"/>
+		<visual>
+			<origin xyz = "0 0 -0.0188" rpy = "0 0 0"/>
+			<xacro:default_geometry cad_file = "roll1"/>
+		</visual>
+		<collision>
+			<origin xyz = "0 0 -0.0188" rpy = "0 0 0"/>
+			<xacro:default_geometry cad_file = "roll1"/>
+		</collision>
+	</link>
+
+	<gazebo reference="roll">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->
+<!--///////////////// pitch rotation joint////////////////////////////////-->
+<!--	<joint name = "pitch_rotation" type = "revolute">
+		<parent link = "roll"/>
+		<child link = "pitch"/>
+		<origin xyz = "0 -0.0778 0"/>
+		<axis xyz = "1 0 0"/>-->
+		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
+<!--		<limit effort="300" velocity="0.1" lower="${-deg_to_rad*60}" upper="${deg_to_rad*60}"/>
+	</joint>
+-->
+<!--//////////////////// pitch link ////////////////////////7-->
+<!--	<link name = "pitch">
+		<xacro:inertial_matrix mass="0.2"/>
+		<visual>
+			<xacro:default_geometry cad_file = "pitch_light"/>-->
+			<!--origin xyz= "0 0.0778 -0.0188"/-->
+<!--			<origin xyz= "0 0.048 -0.0188"/>
+		</visual>
+		<collision>
+			<xacro:default_geometry cad_file = "pitch_light"/>
+			<origin xyz= "0 0.0778 -0.0188"/>
+		</collision>
+	</link>
+
+	<gazebo reference="pitch">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->
+	<!--////////////////////// yaw rotation joint /////////////////////////////7-->
+<!--	<joint name = "roll_rotation_2" type = "revolute">
+		<parent link = "pitch"/>
+		<child link = "yaw"/>
+		<origin xyz = "0 -0.0835 0"/>
+		<axis xyz = "0 1 0"/>
+		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
+	</joint>
+-->
+<!-- ///////////////////// yaw link ///////////////////////////////-->
+<!--	<link name = "yaw">
+		<xacro:inertial_matrix mass="0.2"/>
+		<visual>
+			<xacro:default_geometry cad_file = "yaw"/>-->
+			<!--origin xyz= "0.0007 0 0.00053"/-->
+<!--			<origin xyz= "0.0007 0 -0.019"/>
+		</visual>
+		<collision>
+			<xacro:default_geometry cad_file = "yaw"/>-->
+			<!--origin xyz= "0.0007 0 0.00053"/-->
+<!--			<origin xyz= "0.0007 0 -0.019"/>
+		</collision>
+	</link>
+
+	<gazebo reference="yaw">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->
+	<!--////////////////////// gripper rotation joint /////////////////////////////7-->
+<!--	<joint name = "gripper_rotation" type = "revolute">
+		<parent link = "yaw"/>
+		<child link = "gripper"/>
+		<origin xyz = "-0.0147485 -0.003042 0"/>
+		<axis xyz = "0 0 1"/>-->
+		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
+<!--		<limit effort="300" velocity="0.1" lower="0" upper="${pi}"/>
+	</joint>
+-->
+<!-- ///////////////////// gripper link ///////////////////////////////-->
+<!--	<link name = "gripper">
+		<xacro:inertial_matrix mass="0.1"/>
+		<visual>
+			<xacro:default_geometry cad_file = "fingers"/>
+			<origin xyz= "-0.00425 0.0071 -0.035"/>
+		</visual>
+		<collision>
+			<xacro:default_geometry cad_file = "fingers"/>
+			<origin xyz= "-0.00425 0.0071 0"/>
+		</collision>
+	</link>
+
+	<gazebo reference="gripper">
+		<kp>1000.0</kp>
+		<kd>10.0</kd>
+		<mu1>10.0</mu1>
+		<mu2>10.0</mu2>
+	</gazebo>
+-->	
+<!--    <link name="grasping_frame">
+      	<inertial>
+        	<origin xyz="0 0 0" rpy="0 0 0"/>
+        	<mass value="0.001"/>
+        	<cuboid_inertia mass="0.0001" x="0.001" y="0.001" z="0.001"/>
+        	<inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0"/>
+      	</inertial>
+		<visual>
+      		<origin xyz="0 0 0"/>
+      		<geometry>
+          		<box size="${grasp_frame_len} ${grasp_frame_width} ${grasp_frame_height}"/>
+      		</geometry>
+      		<material name="White" />
+    	</visual>
+    </link>-->
+
+<!-- ////////////// Finger-Grasping joint///////////// -->
+<!--    <joint name="grasping_frame_joint" type="fixed">
+      <parent link="yaw"/>
+      <child link="grasping_frame"/>
+      <origin xyz="-0.023 -0.1 0"/>
+    </joint>-->
+
+</robot>
