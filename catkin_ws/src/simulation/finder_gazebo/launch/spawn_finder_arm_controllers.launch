@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find finder_gazebo)/launch/spawn_finder_arm.launch"/>
+    <include file="$(find finder_gazebo)/launch/finder_arm_control.launch"/>
+</launch>

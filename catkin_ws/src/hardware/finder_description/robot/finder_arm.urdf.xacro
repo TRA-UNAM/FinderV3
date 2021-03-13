@@ -7,7 +7,9 @@
 NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se podra convertir a URDF.-->
 <!-- Rojo= X, Verde=Y y Azul= Z (color de los ejes en Rviz)-->
 <robot name="finder_arm"  xmlns:xacro="http://www.ros.org/wiki/xacro">
-
+	<xacro:include filename="$(find finder_description)/robot/finder_arm.gazebo.xacro"/>
+	<xacro:include filename="$(find finder_description)/robot/common_properties.xacro"/>
+	
 	<!-- Macro para "mandar llamar" a las mallas *.obj -->
     <xacro:macro name="default_geometry" params="cad_dir:=package://finder_description/mallas cad_file extension:=obj">
         <geometry>
@@ -23,11 +25,11 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 	<!--Inertial matrix macro-->
    	<xacro:macro name="inertial_matrix" params="mass">
     	<inertial>
-		<origin xyz="0 0 0" rpy="0 0 0"/>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
       		<mass value="${mass}"/>
         	<inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.0002"/>
-  	</inertial>
-   </xacro:macro>
+  		</inertial>
+    </xacro:macro>
 
 	<!--parameters for geometries in collision tags-->
 <!--///////////////////// shoulder collision geometry//////////////////////////////-->
@@ -61,19 +63,19 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
   <link name = "base_link">
     <inertial>	
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <mass value="1.0"/>
+      <mass value="5.0"/>
       <inertia ixx="0.0108333333333" ixy="0.0" ixz="0.0" iyy="0.0108333333333" iyz="0.0" izz="0.015"/>
     </inertial>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.3 0.3 0.2"/>
+        <box size="0.3 0.15 0.2"/>
       </geometry>
     </collision>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <box size="0.3 0.3 0.2"/>
+        <box size="0.3 0.15 0.2"/>
       </geometry>
     </visual>
   </link>
@@ -84,7 +86,8 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 	<joint name = "base_rotation" type="revolute">
 		<parent link = "base_link"/>
 		<child	link = "eje_tronco"/>
-		<origin xyz ="0 -0.30645 ${0.2691-0.0455}" rpy="0 0 0"/>
+		<!--<origin xyz ="0 -0.30645 ${0.2691-0.0455}" rpy="0 0 0"/>-->
+		<origin xyz ="0 0 0.1" rpy="0 0 0"/>
 		<axis xyz = "0 0 1"/>
 		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
 	</joint>
@@ -97,8 +100,9 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 			<xacro:default_geometry cad_file = "base"/>
 		</visual>
 		<collision>
+			<origin xyz= "0 0 0"/>
 			<xacro:default_geometry cad_file = "base"/>
-    		</collision>
+    	</collision>
 	</link>
 
 	<gazebo reference="eje_tronco">
@@ -109,17 +113,17 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<material>Gazebo/Black</material>
 	</gazebo>
 <!--//////////////////"eje_tronco-shoulder rotation joint//////////////////-->
-<!--	<joint name = "shoulder_rotation" type = "revolute">
+	<joint name = "shoulder_rotation" type = "revolute">
 		<parent link = "eje_tronco"/>
 		<child link = "shoulder"/>
 		<origin xyz = "0 -0.0035 0.179"/>
-		<axis xyz = "1 0 0"/>-->
+		<axis xyz = "1 0 0"/>
 		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
-<!--		<limit effort="300" velocity="0.1" lower="0" upper="3.1"/>
+		<limit effort="300" velocity="0.1" lower="0" upper="3.1"/>
 	</joint>
--->
+
 <!--////////////////////// shoulder link //////////////////////-->
-<!--	<link name = "shoulder">
+	<link name = "shoulder">
 		<xacro:inertial_matrix mass="0.5"/>
 		<visual>
 			<origin  xyz= "0 0.0035 -0.0338"/>
@@ -127,7 +131,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		</visual>
 		<collision>
 			<origin  xyz= "0 0.0035 -0.0338"/>
-      			<xacro:default_geometry cad_file = "hombro"/>
+      		<xacro:default_geometry cad_file = "hombro"/>
 		</collision>
 	</link>
 
@@ -137,23 +141,23 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->
+
 <!--///////////////////// "shoulder-elbow" rotation joint ////////////////////////////-->
-<!--	<joint name = "elbow_rotation" type = "revolute">
+	<joint name = "elbow_rotation" type = "revolute">
 		<parent link = "shoulder"/>
 		<child link = "elbow"/>
 		<origin xyz = "0 0.423 0.0363"/>
-		<axis xyz = "1 0 0"/>-->
+		<axis xyz = "1 0 0"/>
 		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
-<!--		<limit effort="300" velocity="0.1" lower="-2.3" upper="0"/>
+		<limit effort="300" velocity="0.1" lower="-2.3" upper="0"/>
 	</joint>
--->
+
 <!--////////////////////// elbow link /////////////////////////////////////-->
-<!--	<link name = "elbow">
+	<link name = "elbow">
 		<xacro:inertial_matrix mass="0.5"/>
-		<visual>-->
+		<visual>
 			<!--origin xyz= "0 -0.4192 -0.027"/-->
-<!--			<origin xyz= "0 -0.668 -0.027"/>
+			<origin xyz= "0 -0.668 -0.027"/>
 			<xacro:default_geometry cad_file = "codo"/>	
 		</visual>
 		<collision>
@@ -168,18 +172,18 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->
+
 <!--/////////////////////// roll joint ///////////////////////-->
-<!--	<joint name = "roll_rotation" type = "revolute">
+	<joint name = "roll_rotation" type = "revolute">
 		<parent link = "elbow"/>
 		<child link = "roll"/>
 		<origin xyz = "0 -0.4192 0.0103"/>
 		<axis xyz = "0 1 0"/>
 		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
 	</joint>
--->
+
 <!--//////////////////// roll link ////////////////////////////////-->
-<!--	<link name = "roll">
+	<link name = "roll">
 		<xacro:inertial_matrix mass="0.2"/>
 		<visual>
 			<origin xyz = "0 0 -0.0188" rpy = "0 0 0"/>
@@ -197,24 +201,24 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->
+
 <!--///////////////// pitch rotation joint////////////////////////////////-->
-<!--	<joint name = "pitch_rotation" type = "revolute">
+	<joint name = "pitch_rotation" type = "revolute">
 		<parent link = "roll"/>
 		<child link = "pitch"/>
 		<origin xyz = "0 -0.0778 0"/>
-		<axis xyz = "1 0 0"/>-->
+		<axis xyz = "1 0 0"/>
 		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
-<!--		<limit effort="300" velocity="0.1" lower="${-deg_to_rad*60}" upper="${deg_to_rad*60}"/>
+		<limit effort="300" velocity="0.1" lower="${-deg_to_rad*60}" upper="${deg_to_rad*60}"/>
 	</joint>
--->
+
 <!--//////////////////// pitch link ////////////////////////7-->
-<!--	<link name = "pitch">
+	<link name = "pitch">
 		<xacro:inertial_matrix mass="0.2"/>
 		<visual>
 			<xacro:default_geometry cad_file = "pitch_light"/>-->
 			<!--origin xyz= "0 0.0778 -0.0188"/-->
-<!--			<origin xyz= "0 0.048 -0.0188"/>
+			<origin xyz= "0 0.048 -0.0188"/>
 		</visual>
 		<collision>
 			<xacro:default_geometry cad_file = "pitch_light"/>
@@ -228,28 +232,28 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->
+
 	<!--////////////////////// yaw rotation joint /////////////////////////////7-->
-<!--	<joint name = "roll_rotation_2" type = "revolute">
+	<joint name = "roll_rotation_2" type = "revolute">
 		<parent link = "pitch"/>
 		<child link = "yaw"/>
 		<origin xyz = "0 -0.0835 0"/>
 		<axis xyz = "0 1 0"/>
 		<limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/>
 	</joint>
--->
+
 <!-- ///////////////////// yaw link ///////////////////////////////-->
-<!--	<link name = "yaw">
+	<link name = "yaw">
 		<xacro:inertial_matrix mass="0.2"/>
 		<visual>
-			<xacro:default_geometry cad_file = "yaw"/>-->
+			<origin xyz= "0.0007 0 -0.019"/>
+			<xacro:default_geometry cad_file = "yaw"/>
 			<!--origin xyz= "0.0007 0 0.00053"/-->
-<!--			<origin xyz= "0.0007 0 -0.019"/>
 		</visual>
 		<collision>
-			<xacro:default_geometry cad_file = "yaw"/>-->
+			<origin xyz= "0.0007 0 -0.019"/>
+			<xacro:default_geometry cad_file = "yaw"/>
 			<!--origin xyz= "0.0007 0 0.00053"/-->
-<!--			<origin xyz= "0.0007 0 -0.019"/>
 		</collision>
 	</link>
 
@@ -259,27 +263,27 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->
+
 	<!--////////////////////// gripper rotation joint /////////////////////////////7-->
-<!--	<joint name = "gripper_rotation" type = "revolute">
+	<joint name = "gripper_rotation" type = "revolute">
 		<parent link = "yaw"/>
 		<child link = "gripper"/>
 		<origin xyz = "-0.0147485 -0.003042 0"/>
-		<axis xyz = "0 0 1"/>-->
+		<axis xyz = "0 0 1"/>
 		<!--limit effort="300" velocity="0.1" lower="${-pi}" upper="${pi}"/-->
-<!--		<limit effort="300" velocity="0.1" lower="0" upper="${pi}"/>
+		<limit effort="300" velocity="0.1" lower="0" upper="${pi}"/>
 	</joint>
--->
+
 <!-- ///////////////////// gripper link ///////////////////////////////-->
-<!--	<link name = "gripper">
+	<link name = "gripper">
 		<xacro:inertial_matrix mass="0.1"/>
 		<visual>
-			<xacro:default_geometry cad_file = "fingers"/>
 			<origin xyz= "-0.00425 0.0071 -0.035"/>
+			<xacro:default_geometry cad_file = "fingers"/>
 		</visual>
 		<collision>
-			<xacro:default_geometry cad_file = "fingers"/>
 			<origin xyz= "-0.00425 0.0071 0"/>
+			<xacro:default_geometry cad_file = "fingers"/>
 		</collision>
 	</link>
 
@@ -289,7 +293,7 @@ NOTA: NO utilizar acentos en codigo ni en comentarios, de lo contrario no se pod
 		<mu1>10.0</mu1>
 		<mu2>10.0</mu2>
 	</gazebo>
--->	
+
 <!--    <link name="grasping_frame">
       	<inertial>
         	<origin xyz="0 0 0" rpy="0 0 0"/>

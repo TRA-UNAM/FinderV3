@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Load joint controller configurations from YAML file to the parameter server -->
+    <rosparam
+        file="$(find finder_description)/config/finder_arm_control.yaml"
+        command="load"
+    />
+
+    <!-- Load the controllers -->
+    <node 
+        name="controller_spawner"
+        pkg="controller_manager"
+        type="spawner"
+        respawn="false"
+        output="screen"
+        ns="/finder_arm"
+        args="
+            base_rotation_position_controller
+            shoulder_rotation_position_controller
+            elbow_rotation_position_controller
+            roll_rotation_position_controller
+            pitch_rotation_position_controller
+            roll_rotation_2_position_controller
+            gripper_rotation_position_controller
+            --shutdown-timeout 3
+        "
+    />
+
+    <!-- Convert joint states to TF transforms for Rviz, etc. -->
+    <node 
+        name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher"
+        respawn="false"
+        output="screen"
+    >
+        <remap from="/joint_states" to="/finder_arm/joint_states"/>        
+    </node>
+
+</launch>

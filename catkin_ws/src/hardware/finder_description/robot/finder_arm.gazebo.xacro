@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<robot name="finder_arm" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!-- TODO: gazebo tag macro -->
+
+<!-- Macro for transmissions -->
+<xacro:macro name="tran" params="joint">
+    <transmission name="${joint}_tran">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="${joint}">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="${joint}_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+</xacro:macro>
+
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/finder_arm</robotNamespace>
+    </plugin>
+</gazebo>
+
+<xacro:tran joint="base_rotation"/>
+<xacro:tran joint="shoulder_rotation"/>
+<xacro:tran joint="elbow_rotation"/>
+<xacro:tran joint="roll_rotation"/>
+<xacro:tran joint="pitch_rotation"/>
+<xacro:tran joint="roll_rotation_2"/>
+<xacro:tran joint="gripper_rotation"/>
+
+
+</robot>

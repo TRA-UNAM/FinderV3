@@ -34,7 +34,7 @@ sudo apt-get install python3-matplotlib
 sudo apt-get install qtmultimedia5-dev #3
 
 #Paquetes para simulador
-sudo apt-get install ros-melodic-urdf ros-melodic-xacro ros-melodic-effort-controllers
+sudo apt-get install ros-melodic-urdf ros-melodic-xacro ros-melodic-effort-controllers ros-melodic-ros-controllers
 
 #Paquetes para SLAM
 sudo apt-get install ros-melodic-map-server ros-melodic-gmapping ros-melodic-hector-slam
