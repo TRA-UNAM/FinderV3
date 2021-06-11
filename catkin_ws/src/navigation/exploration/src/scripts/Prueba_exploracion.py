@@ -64,9 +64,9 @@ class Nodo:
         list(set(self.objetivos))#Elimina los elementos repetidos en mis puntos objetivos
         #md.visualizacion_objetivos(self.objetivos,self.dato)
         #self.objetivos=md.Filtrado_de_objetivos(self)
-        #print(len(self.objetivos))
-        #if len(self.objetivos)!=0:
-            #md.visualizacion_objetivos(self.objetivos,self.dato)
+        print(len(self.objetivos))
+        if len(self.objetivos)!=0:
+            md.visualizacion_objetivos(self.objetivos,self.dato)
         
         #self.nuevo_grafo=md.convertir_matriz(self.mapa)
         #self.objetivos=md.calcularDistancias(self)

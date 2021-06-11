@@ -12,7 +12,7 @@ from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 #El mapa de Inflado 2 infla todos los puntos alrededor de un obstaculo el número de celdas que le digas
 def mapa_inflado_2(self,num_celdas_inflar,grafo):
-    pub_inflated=rospy.Publisher("/inflatedmap", OccupancyGrid, queue_size=10)
+    pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
     num_celdas_inflar=int(num_celdas_inflar/self.dato.info.resolution)
     c, l=np.shape(grafo)
     mapa_inflado=np.copy(grafo)
@@ -48,7 +48,7 @@ def mapa_inflado_2(self,num_celdas_inflar,grafo):
     return mapa_inflado
 #El mapa de Inflado 1 infla solo los puntos que se encuentran al lado de espacio conocido, pero requiere muchas más operaciones
 def mapa_inflado_1(self,num_celdas_inflar,grafo):
-    pub_inflated=rospy.Publisher("/inflatedmap", OccupancyGrid, queue_size=10)
+    pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
     num_celdas_inflar=int(num_celdas_inflar/self.dato.info.resolution)
     c, l=np.shape(grafo)
     mapa_inflado=np.copy(grafo)
@@ -471,8 +471,8 @@ def Busqueda_Objetivos(self,numero_de_celdas,grafo):
 
     c, l=np.shape(grafo)
     nodos_objetivo=[]
-    grafo=mapa_inflado_1(self,numero_de_celdas, grafo)
-    """
+    grafo=mapa_inflado_2(self,numero_de_celdas, grafo)
+    
     for j in range(l):
         for i in range(c): 
             
@@ -665,9 +665,13 @@ def Busqueda_Objetivos(self,numero_de_celdas,grafo):
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
-    """            
+
+
     print("Ya termine de calcular los puntos objetivo")
-    return grafo,nodos_objetivo   
+    return grafo,nodos_objetivo 
+
+ 
+      
 #Me permite visualizar el número de puntos objetivos encontrados en el mapa a explorar
 def visualizacion_objetivos(objetivos,mapa):
     
@@ -703,6 +707,5 @@ def visualizacion_objetivos(objetivos,mapa):
     
     
     rate = rospy.Rate(20)#defino que los datos se publicaran 15/s
-    print("Ya puedes visualizar los puntos objetivo, ahora pasare a discriminarlos")
     pub.publish(puntos)
     rate.sleep()
