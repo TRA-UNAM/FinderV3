@@ -1,65 +1,341 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=utf-8
 import rospy
 import numpy as np
 #import networkx as nx
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
+import sys
+from nav_msgs.msg import OccupancyGrid
+from nav_msgs.srv import GetMap
+from nav_msgs.srv import GetMapResponse
+from nav_msgs.srv import GetMapRequest
+#El mapa de Inflado 2 infla todos los puntos alrededor de un obstaculo el número de celdas que le digas
+def mapa_inflado_2(self,num_celdas_inflar,grafo):
+    pub_inflated=rospy.Publisher("/inflatedmap", OccupancyGrid, queue_size=10)
+    num_celdas_inflar=int(num_celdas_inflar/self.dato.info.resolution)
+    c, l=np.shape(grafo)
+    mapa_inflado=np.copy(grafo)
+    #Voy a inflar el mapa para poder obtener las rutas y que el robot se aleje de las paredes del mapa, entonces sobre el original cada vez que me encuentre 
+    
+    for i in range(c):
+        for j in range(l): 
+            if grafo[i,j]==100:#checamos para cada punto del mapa si esta ocupado y si lo esta entonces inflamos
+                for k1 in range(i-num_celdas_inflar,i+num_celdas_inflar+1):#Aqui voy a iterar para inflar las filas
+                    for k2 in range(j-num_celdas_inflar,j+num_celdas_inflar+1):#Aqui para inflar las columnas
+                        mapa_inflado[k1,k2]=grafo[i,j]#Con k1 y k2 delimito el cuadrado que voy a llenar y marco como ocupada el cuadro al rededor del punto segun el numero de celdas que desean
+    
+    print("Acabe de inflar el mapa, ahora calculare los puntos objetivo")  
+    #Voy a publicar el mapa inflado para observarlo, por ello debo poner otro mapa
+    mapa_ocupacion = OccupancyGrid()
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.header.stamp=self.dato.header.stamp
+    mapa_ocupacion.header.frame_id=self.dato.header.frame_id
+    mapa_ocupacion.info.resolution=self.dato.info.resolution
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.info.width = self.dato.info.width
+    mapa_ocupacion.info.height = self.dato.info.height
+    mapa_ocupacion.info.origin.position.x =self.dato.info.origin.position.x
+    mapa_ocupacion.info.origin.position.y =self.dato.info.origin.position.y
+    mapa_ocupacion.info.origin.orientation.x =self.dato.info.origin.orientation.x
+    mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
+    mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
+    mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
+    pub_inflated.publish(mapa_ocupacion)
+    
+    
+    return mapa_inflado
+#El mapa de Inflado 1 infla solo los puntos que se encuentran al lado de espacio conocido, pero requiere muchas más operaciones
+def mapa_inflado_1(self,num_celdas_inflar,grafo):
+    pub_inflated=rospy.Publisher("/inflatedmap", OccupancyGrid, queue_size=10)
+    num_celdas_inflar=int(num_celdas_inflar/self.dato.info.resolution)
+    c, l=np.shape(grafo)
+    mapa_inflado=np.copy(grafo)
+    #Voy a inflar el mapa para poder obtener las rutas y que el robot se aleje de las paredes del mapa, entonces sobre el original cada vez que me encuentre 
+    #Voy a inflar con 5 celdas
+    for i in range(c):
+        for j in range(l): 
+            
+            if i>=0 and i<(num_celdas_inflar+1) and j==0:#CASO 1
+               
+               if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
 
-def calcularDistancias(self):
-    caminos=[]
-    #Tengo que hacer un ajuste, ya que necesito saber la posicion del laser para poder buscar la distancia minima, por lo cual le sumo a la distancia de base_link 0.45 en x para saber la posicion y le sumo 0.1 a todos para asegurar que se encuentre dentro de mi matriz, es una celda despues de donde esta el laser
-    abscisas=[]
-    ordenadas=[]
-    for (x,y) in self.objetivos:
-        abscisas.append(x)
-        ordenadas.append(y)
-    a=np.where(ordenadas>=int(214+(self.pos_y/self.dato.info.resolution)))[0]
-    coordenadas=(abscisas[a[0]],ordenadas[0])
-    nx.shortest_path(self.nuevo_grafo,source=coordenadas)
-    for i in self.objetivos:
-       caminos.append(nx.shortest_path(self.nuevo_grafo,source=coordenadas,target=i))
-    return caminos
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+
+            elif i>0 and i<(num_celdas_inflar+1) and j>0 and j<(num_celdas_inflar+1):#CASO 2
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+   
+            elif i>0 and i<(num_celdas_inflar+1) and j>=(num_celdas_inflar+1) and j<(l-(num_celdas_inflar+1)):#CASO 3
 
 
-def visualizacion_objetivos(objetivos,mapa):
-    
-    pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
-    puntos=Marker(ns="puntos_objetivo",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
-    puntos.header.stamp=rospy.Time()
-    puntos.header.frame_id="/map"
-    puntos.pose.orientation.w=1.0
-    #Esta es la posicion de la marca
-    puntos.pose.position.x=mapa.info.origin.position.x+0.025 #La referencia se encuentra en la esquina inferior derecha se se ve el robot avanzando hacia enfrente, en el punto más alejado verde en una esquina, y se encuentra a -10.275 positivos en ambos ejes
-    puntos.pose.position.y=mapa.info.origin.position.y+0.025
-    puntos.pose.position.z=0
-    #Puntos
-    puntos.scale.x=0.04
-    puntos.scale.y=0.04
-    #Los puntos seran rojos
-    puntos.color.g=1.0
-    puntos.color.a=1.0
-    
-    """o=Point()
-    o.x=0
-    o.y=0
-    o.z=0
-    puntos.points.append(o)"""
-    #Son las posiciones de los puntos
-    
-    for (x,y) in objetivos:
-        p=Point()
-        p.x=y*(mapa.info.resolution)#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
-        p.y=x*(mapa.info.resolution)
-        p.z=0
-        puntos.points.append(p)
-    
-    
-    rate = rospy.Rate(20)#defino que los datos se publicaran 15/s
-    pub.publish(puntos)
-    rate.sleep()
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+                    
+            elif i>0 and i<(num_celdas_inflar+1) and j>=(l-(num_celdas_inflar+1)) and j<(l-1):#CASO 4
+
+
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+                        
+            elif i>=0 and i<(num_celdas_inflar+1) and j==l-1:#CASO 5
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100         
+                        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j==0:#CASO 6
+               
+               if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>=(num_celdas_inflar+1) and j<(l-num_celdas_inflar+1):#CASO 7
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+  
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j==(l-1):#CASO 8
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+            
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j==0:#CASO 9
+
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+                        
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>0 and j<(num_celdas_inflar+1):#CASO 10
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+      
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>=(num_celdas_inflar+1) and j<(l-(num_celdas_inflar+1)):#CASO 11
+
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+            
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>=(l-(num_celdas_inflar+1)) and j<(l-1):#CASO 12
+
+
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100         
+                
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j==(l-1):#CASO 13
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i-1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100    
+                        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>0 and j<(num_celdas_inflar+1):#CASO 14
+                
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+                
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100    
         
-        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>=(l-(num_celdas_inflar+1)) and j<(c-1):#CASO 15
+                
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+                
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100  
+                        
+    print("Acabe de inflar el mapa, ahora calculare los puntos objetivo")  
+    #Voy a publicar el mapa inflado para observarlo, por ello debo poner otro mapa
+    mapa_ocupacion = OccupancyGrid()
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.header.stamp=self.dato.header.stamp
+    mapa_ocupacion.header.frame_id=self.dato.header.frame_id
+    mapa_ocupacion.info.resolution=self.dato.info.resolution
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.info.width = self.dato.info.width
+    mapa_ocupacion.info.height = self.dato.info.height
+    mapa_ocupacion.info.origin.position.x =self.dato.info.origin.position.x
+    mapa_ocupacion.info.origin.position.y =self.dato.info.origin.position.y
+    mapa_ocupacion.info.origin.orientation.x =self.dato.info.origin.orientation.x
+    mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
+    mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
+    mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
+    pub_inflated.publish(mapa_ocupacion)
+    return mapa_inflado
+
+#def mapa_de_costos(radio_de_costos,grafo):
+    
+    
+              
 def convertir_matriz(grafo):
     """#Entra un grafo de 40x40 que es subgrafo que envuelve al robot en un area cuadrada, en la cual se hara la busqueda de objetivos.
     #Este grafo fue modificado colocando como 1 los valores conocidos, esto porque se consideran grafos conectados, y a los demas valores se les ha colocado un 0.
@@ -190,14 +466,13 @@ def convertir_matriz(grafo):
                 
 
     return nuevo_grafo
-
-
-                
-def Busqueda_Objetivos(grafo):
+#Busqueda de Objetivos encuentra los puntos frontera en el mapa inflado                
+def Busqueda_Objetivos(self,numero_de_celdas,grafo):
 
     c, l=np.shape(grafo)
     nodos_objetivo=[]
-    
+    grafo=mapa_inflado_1(self,numero_de_celdas, grafo)
+    """
     for j in range(l):
         for i in range(c): 
             
@@ -390,93 +665,44 @@ def Busqueda_Objetivos(grafo):
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
-                
-
-    return nodos_objetivo
-
-def Filtrado_de_objetivos(self):
-    abscisas=[]
-    ordenadas=[]
-    for (x,y) in self.objetivos:
-        abscisas.append(x)
-        ordenadas.append(y)
+    """            
+    print("Ya termine de calcular los puntos objetivo")
+    return grafo,nodos_objetivo   
+#Me permite visualizar el número de puntos objetivos encontrados en el mapa a explorar
+def visualizacion_objetivos(objetivos,mapa):
+    
+    pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
+    puntos=Marker(ns="puntos_objetivo",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+    puntos.header.stamp=rospy.Time()
+    puntos.header.frame_id="/map"
+    puntos.pose.orientation.w=1.0
+    #Esta es la posicion de la marca
+    puntos.pose.position.x=mapa.info.origin.position.x+0.025 #La referencia se encuentra en la esquina inferior derecha se se ve el robot avanzando hacia enfrente, en el punto más alejado verde en una esquina, y se encuentra a -10.275 positivos en ambos ejes
+    puntos.pose.position.y=mapa.info.origin.position.y+0.025
+    puntos.pose.position.z=0
+    #Puntos
+    puntos.scale.x=0.04
+    puntos.scale.y=0.04
+    #Los puntos seran rojos
+    puntos.color.g=1.0
+    puntos.color.a=1.0
+    
+    """o=Point()
+    o.x=0
+    o.y=0
+    o.z=0
+    puntos.points.append(o)"""
+    #Son las posiciones de los puntos
+    
+    for (x,y) in objetivos:
+        p=Point()
+        p.x=y*(mapa.info.resolution)#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
+        p.y=x*(mapa.info.resolution)
+        p.z=0
+        puntos.points.append(p)
     
     
-    objetivos_izq=[]
-    objetivos_arr=[]
-    objetivos_aba=[]
-    objetivos_der=[]
-    puntos=[]
-    #print(sorted(ordenadas))
-    a=np.where(abscisas==np.min(abscisas))[0]
-    c=np.where(ordenadas==np.min(ordenadas))[0]
-    
-    
-    #(X_min,Y_max) Izquierda
-    for i in a:
-        objetivos_izq.append(ordenadas[i])
-    b=np.where(objetivos_izq==np.max(objetivos_izq))[0]
-    objetivos_izq=[(abscisas[a[0]],objetivos_izq[b[0]])]
-    #(X_min,Y_min) Arriba
-    for i in a:
-        objetivos_arr.append(ordenadas[i])
-    b=np.where(objetivos_arr==np.min(objetivos_arr))[0]
-    objetivos_arr=[(abscisas[a[0]],objetivos_arr[b[0]])]
-    
-    #(X_min,Y_max) Abajo
-    for i in a:
-        objetivos_aba.append(ordenadas[i])
-    b=np.where(objetivos_aba==np.max(objetivos_aba))[0]
-    objetivos_aba=[(abscisas[a[0]],objetivos_aba[b[0]])]
-    
-    #(X_max,Y_min) Derecha
-    for i in c:
-        objetivos_der.append(abscisas[i])
-    b=np.where(objetivos_der==np.max(objetivos_der))[0]
-    objetivos_der=[(objetivos_der[b[0]],ordenadas[c[0]])]
-        
-    puntos=[]
-    #Izquierda
-    if objetivos_izq[0][0]<self.min_x_anterior or objetivos_izq[0][1]<=self.max_y_anterior:
-        
-        self.min_x_anterior=objetivos_izq[0][0]
-        self.max_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_izq[0][0]+12,objetivos_izq[0][1]-8]==1 and self.mapa[objetivos_izq[0][0]-8,objetivos_izq[0][1]-8]==0 : 
-            
-            
-            puntos.append((objetivos_izq[0][0]+14,objetivos_izq[0][1]-14))
-    
-    #Abajo    
-    elif objetivos_aba[0][1]>self.max_y_anterior:
-        self.max_y_anterior=objetivos_aba[0][1]
-        
-        if self.mapa[objetivos_aba[0][0]+8,objetivos_aba[0][1]+8]==0 and self.mapa[objetivos_aba[0][0]+8,objetivos_aba[0][1]-12]==1:
-            puntos.append((objetivos_aba[0][0]+14,objetivos_aba[0][1]-14))
-    
-    #Arriba
-    elif objetivos_arr[0][1]<self.min_y_anterior:
-        #Si entra en el caso de Y _min  
-        self.min_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_arr[0][0]+8,objetivos_arr[0][1]+12]==1 and self.mapa[objetivos_arr[0][0]+8,objetivos_arr[0][1]-8]==0 : 
-            puntos.append((objetivos_arr[0][0]+14,objetivos_arr[0][1]+14))
-       
-            
-    #Derecha 
-    elif objetivos_der[0][0]>self.max_x_anterior or objetivos_der[0][1]<=self.min_y_anterior:
-        #Si entra en el caso de Y _min  
-        self.max_x_anterior=objetivos_der[0][1]
-        self.min_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_der[0][0]-12,objetivos_der[0][1]+8]==1 and self.mapa[objetivos_der[0][0]+8,objetivos_der[0][1]+8]==0 : 
-            
-            
-            puntos.append((objetivos_der[0][0]-14,objetivos_der[0][1]+14))
-        
-       
-        
-    
-    
-    return puntos
-    
+    rate = rospy.Rate(20)#defino que los datos se publicaran 15/s
+    print("Ya puedes visualizar los puntos objetivo, ahora pasare a discriminarlos")
+    pub.publish(puntos)
+    rate.sleep()

@@ -18,6 +18,7 @@ class Nodo:
         self.twist= twist
         self.dato=0
         self.mapa=0
+        self.mapa_inflado=0
         self.objetivos=[]
         self.pos_x=0
         self.pos_y=0
@@ -51,18 +52,21 @@ class Nodo:
         self.dato=dato
         #-------------------------------- Estoy preparando una matriz, a partir de todos los puntos que me entrega rviz como arreglo, el elemento 0,0 se encuentra u origen se encuentra en la esquina superior izq, desde ahi, rviz empieza el arreglo que obtenemos en /map
         #Sin embargo, el sistema de referencia del mapa se encuentra justo en el medio, por lo cual debemos de hacer un ajuste para movernos en esta matriz, seria a cada punto restarle la posicion original obtenida del topico /map en origin/posicion y multiplicar los indices por el factor de escala de 0.05
-        self.mapa=np.array(self.dato.data).reshape((self.dato.info.height, self.dato.info.width))#[(self.dato.info.height/2)+self.pos_x-40:(self.dato.info.height/2)+self.pos_x+40,(self.dato.info.width/2)-self.pos_y-40:(self.dato.info.width/2)-self.pos_y+40]
+        self.mapa=np.array(self.dato.data).reshape((self.dato.info.height, self.dato.info.width))
         #Las filas de la matriz corresponden a las coordenadas y
         #Las columnas de la matriz corresponden a las coordenas en x
         self.mapa.flags.writeable = True
-        self.mapa[self.mapa==0]=1
-        self.mapa[self.mapa==-1]=0
-        self.objetivos=md.Busqueda_Objetivos(self.mapa)
+        self.mapa[self.mapa==0]=1#Conocido y libre
+        self.mapa[self.mapa==-1]=0#Desconocido
+        self.centimetros_a_inflar=0.5 #Los cm son 0.## cm
+        self.mapa_inflado,self.objetivos=md.Busqueda_Objetivos(self,self.centimetros_a_inflar,self.mapa)
+        
         list(set(self.objetivos))#Elimina los elementos repetidos en mis puntos objetivos
         #md.visualizacion_objetivos(self.objetivos,self.dato)
         #self.objetivos=md.Filtrado_de_objetivos(self)
-        if len(self.objetivos)!=0:
-            md.visualizacion_objetivos(self.objetivos,self.dato)
+        #print(len(self.objetivos))
+        #if len(self.objetivos)!=0:
+            #md.visualizacion_objetivos(self.objetivos,self.dato)
         
         #self.nuevo_grafo=md.convertir_matriz(self.mapa)
         #self.objetivos=md.calcularDistancias(self)
@@ -80,7 +84,6 @@ if __name__ == "__main__":
     nodo=Nodo(Twist())
     #rospy.Subscriber('/slam_out_pose',PoseStamped,nodo.posicion_robot_callback,queue_size=1)
     rospy.Subscriber('/map',OccupancyGrid,nodo.map_callback,queue_size=100)
-    
     rospy.spin()
 
     
