@@ -13,6 +13,7 @@ from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 import heapq
 import math
+import cv2
 
 class Nodo:
     def __init__(self,twist):
@@ -21,20 +22,21 @@ class Nodo:
         self.dato=0
         self.mapa=0
         self.mapa_inflado=0
-        self.celdas_a_inflar=6#número de celdas a inflar, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
-        self.celdas_de_costo=3#número de celdas de costo desde el obstaculo, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
+        self.celdas_a_inflar=5#número de celdas a inflar, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
+        self.celdas_de_costo=5#número de celdas de costo desde el obstaculo, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
         self.objetivos=[]
         self.pos_x_robot=0
         self.pos_y_robot=0
         self.costos=0
         self.mapa_de_costos=0
+        self.costos_rutas=0
 
     def posicion_robot_callback(self,data):
             #Obtendre la posicion del laser a partir de la posicion de base_footprint
             
             pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
-            correcion_x=(0.5)*(math.cos(data.pose.pose.orientation.z))#Son las correciones ya que deseo medir desde el laser, y no desde la mitad del robot
-            correcion_y=(0.5)*(math.sin(data.pose.pose.orientation.z))
+            correcion_x=(0.6)*(math.cos(data.pose.pose.orientation.z))#Son las correciones ya que deseo medir desde el laser, y no desde la mitad del robot
+            correcion_y=(0.6)*(math.sin(data.pose.pose.orientation.z))
             self.pos_y_robot=(self.dato.info.height/2)+((data.pose.pose.position.y+correcion_y)/self.dato.info.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
             self.pos_x_robot=(self.dato.info.width/2)+((data.pose.pose.position.x+correcion_x)/self.dato.info.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
 
@@ -62,25 +64,21 @@ class Nodo:
         #Las filas de la matriz corresponden a las coordenadas y
         #Las columnas de la matriz corresponden a las coordenas en x
         self.mapa.flags.writeable = True
-        self.mapa[self.mapa==0]=1#Conocido y libre
-        self.mapa[self.mapa==-1]=0#Desconocido
+        #self.mapa[self.mapa==0]=1#Conocido y libre
+        #self.mapa[self.mapa==-1]=0#Desconocido
         #Obtengo el mapa inflado
         self.mapa_inflado=md.mapa_inflado_2(self,self.celdas_a_inflar, self.mapa)
         #Obtengo el mapa de costos
         self.mapa_de_costos=md.mapa_de_costos(self,self.celdas_de_costo,self.mapa_inflado)
         #Obtengo los puntos candidatos
         self.objetivos=md.Busqueda_Objetivos(self,self.celdas_a_inflar,self.mapa_inflado)
-        #Filtro los puntos segun su costo en el mapa
-        self.objetivos=md.Filtrado_de_objetivos(self.objetivos,self.mapa_de_costos)
-        #Visualizo el punto que salio mejor
         
-
-        #Aun falta pulir el criterio de seleccion para el punto objetivo
-        self.objetivos=([self.objetivos[((len(self.objetivos[:])-1)/2)][1]])
+        
+        list(set(self.objetivos))
         
         print("Encontre una vez filtrados los puntos que este punto es el mejor: "+str(self.objetivos[0][1]))
-        
-        print(self.objetivos)
+        #r,c=int(self.pos_y_robot), int(self.pos_x_robot)
+        #self.objetivos=[[r+1,c],[r-1,c],[r,c+1],[r,c-1]]
         
         if len(self.objetivos)!=0:
 
@@ -89,13 +87,46 @@ class Nodo:
                 md.visualizacion_objetivos(self,self.objetivos,self.dato)
         
         
+        
+        """
+        for (x_goal,y_goal) in self.objetivos:
+            #print(int(self.pos_x_robot), int(self.pos_y_robot),x_goal,y_goal)
+            path=md.a_star(int(self.pos_y_robot), int(self.pos_x_robot),x_goal, y_goal, self.mapa_inflado, self.mapa_de_costos,self.dato)
+            
+            if len(path)!=0:
 
-
+            
+                
+                md.visualizacion_objetivos(self,path,self.dato)
+        
         
 
+            #time.sleep(1)
+            raw_input("Presione una tecla para continuar...")#esperar hasta que se presione una tecla
+        """
+        """
+        costos_rutas=[]
+        i=0
+        for (x_goal,y_goal) in self.objetivos:
+            i+=1
+            costo_ruta,path=md.a_star(int(self.pos_y_robot), int(self.pos_x_robot),x_goal, y_goal, self.mapa_inflado, self.mapa_de_costos,self.dato)
+            #path=md.get_smooth_path(path, alpha=0.9, beta=0.1)
+            heapq.heappush(costos_rutas,(i,costo_ruta))
+        
+        costo_max=np.max(costos_rutas[:][1])
+        punto_objetivo=np.where(costos_rutas[:][0]==costo_max)[0][0]
+        print(punto_objetivo)
+        
+            if len(path)!=0:
 
+            
+                
+                md.visualizacion_objetivos(self,path,self.dato)
+                raw_input("Presione una tecla para continuar...")#esperar hasta que se presione una tecla
+        
+        #print(len(self.objetivos),len(self.costos_rutas),self.costos_rutas)
         print("Termine")
-        
+        """
         
         
         

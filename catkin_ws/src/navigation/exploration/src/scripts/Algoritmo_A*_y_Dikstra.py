@@ -118,7 +118,7 @@ def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map):
             steps+=1#Aumento el número de pasos que le tomo al algoritmo calcular la ruta y vuelvo a hacer lo mismo para cada punto de la lista abierta hasta terminar
        
     if[r,c]!=[goal_r,goal_c]:#Una vez checo para todos losn nodos, si el valor de r,c no es igual al objetivo es que no hay solucion
-        print("Cannot calculate path by Dijsktra :c")
+        print("Cannot calculate path by A* :c")
         return[]
     
     #Aqui r, c ya se quedo con los valores meta, por lo cual el punto anterior
@@ -178,7 +178,6 @@ def generic_callback(req, algorithm):
         p.pose.position.y = r*static_map.info.resolution + static_map.info.origin.position.y
         msg_path.poses.append(p)
     pub_path = rospy.Publisher('/navigation/calculated_path', Path, queue_size=10)
-    pub_path.publish(msg_path)
     pub_path.publish(msg_path)
     return GetPlanResponse(msg_path)
 
