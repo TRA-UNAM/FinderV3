@@ -35,10 +35,10 @@ class Nodo:
             #Obtendre la posicion del laser a partir de la posicion de base_footprint
             
             pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
-            correcion_x=(0.6)*(math.cos(data.pose.pose.orientation.z))#Son las correciones ya que deseo medir desde el laser, y no desde la mitad del robot
-            correcion_y=(0.6)*(math.sin(data.pose.pose.orientation.z))
-            self.pos_y_robot=(self.dato.info.height/2)+((data.pose.pose.position.y+correcion_y)/self.dato.info.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
-            self.pos_x_robot=(self.dato.info.width/2)+((data.pose.pose.position.x+correcion_x)/self.dato.info.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
+            correcion_x=-4*(math.cos(data.pose.pose.orientation.z))#Son las correciones ya que deseo medir desde el laser, y no desde la mitad del robot
+            correcion_y=-4*(math.sin(data.pose.pose.orientation.z))
+            self.pos_y_robot=(self.dato.info.width/2)+correcion_y+((data.pose.pose.position.y)/self.dato.info.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
+            self.pos_x_robot=(self.dato.info.height/2)+correcion_y+((data.pose.pose.position.x)/self.dato.info.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
 
     #Se obtiene un arreglo bidimensional que se transforma en un arreglo bidimensional, en donde las columnas corresponden a las coordenadas en x en el mapa de rviz
     #Mientras que las filas corresponden a las coordenadas en y. Una vez obtenido el mapa, se procede a alterar los valores de la matriz, con el fin de prepararlo tanto para la busqueda de objetivos, como para la evaluacion de distancias
@@ -76,7 +76,7 @@ class Nodo:
         
         list(set(self.objetivos))
         
-        print("Encontre una vez filtrados los puntos que este punto es el mejor: "+str(self.objetivos[0][1]))
+        #print("Encontre una vez filtrados los puntos que este punto es el mejor: "+str(self.objetivos[0][1]))
         #r,c=int(self.pos_y_robot), int(self.pos_x_robot)
         #self.objetivos=[[r+1,c],[r-1,c],[r,c+1],[r,c-1]]
         
