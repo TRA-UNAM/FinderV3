@@ -15,6 +15,8 @@ import heapq
 import math
 import cv2
 
+
+
 class Nodo:
     def __init__(self,twist):
         self.init_node=rospy.init_node("Exploration_and_Mapping", anonymous=True)
@@ -33,12 +35,13 @@ class Nodo:
 
     def posicion_robot_callback(self,data):
             #Obtendre la posicion del laser a partir de la posicion de base_footprint
-            
-            pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
-            correcion_x=-4*(math.cos(data.pose.pose.orientation.z))#Son las correciones ya que deseo medir desde el laser, y no desde la mitad del robot
-            correcion_y=-4*(math.sin(data.pose.pose.orientation.z))
-            self.pos_y_robot=(self.dato.info.width/2)+correcion_y+((data.pose.pose.position.y)/self.dato.info.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
-            self.pos_x_robot=(self.dato.info.height/2)+correcion_y+((data.pose.pose.position.x)/self.dato.info.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
+            angulo_robot=2*math.atan2(data.pose.pose.orientation.z,data.pose.pose.orientation.w)#Se trata de un cuaternion, por ello debo de hacer esto con dichas componentes
+            #pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
+            correcion_x=0.7*math.cos(angulo_robot)
+            correcion_y=0.7*math.sin(angulo_robot)
+            #print(correcion_x,correcion_y,data.pose.pose.orientation.z)
+            self.pos_y_robot=(self.dato.info.width/2)+(correcion_y/self.dato.info.resolution)+((data.pose.pose.position.y)/self.dato.info.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
+            self.pos_x_robot=(self.dato.info.height/2)+(correcion_x/self.dato.info.resolution)+((data.pose.pose.position.x)/self.dato.info.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
 
     #Se obtiene un arreglo bidimensional que se transforma en un arreglo bidimensional, en donde las columnas corresponden a las coordenadas en x en el mapa de rviz
     #Mientras que las filas corresponden a las coordenadas en y. Una vez obtenido el mapa, se procede a alterar los valores de la matriz, con el fin de prepararlo tanto para la busqueda de objetivos, como para la evaluacion de distancias
@@ -76,18 +79,24 @@ class Nodo:
         
         list(set(self.objetivos))
         
-        #print("Encontre una vez filtrados los puntos que este punto es el mejor: "+str(self.objetivos[0][1]))
-        #r,c=int(self.pos_y_robot), int(self.pos_x_robot)
-        #self.objetivos=[[r+1,c],[r-1,c],[r,c+1],[r,c-1]]
         
+        #Aqui hago el clustering con k means
         if len(self.objetivos)!=0:
 
-            
+                centroide_final=[(0,0),(0,0)]
+                centroides=md.inicializar_centroides(self.objetivos,k=2)
+                while centroide_final[0][0]!=centroides[0][0] or centroide_final[0][1]!=centroides[0][1] or centroide_final[1][0]!=centroides[1][0] or centroide_final[1][1]!=centroides[1][1]:
+                    centroide_final=centroides
+                    grupos=md.suma_del_error_al_cuadrado(self.objetivos, centroides)
+                    centroides=[]
+                    centroides=md.actualizar_centroide(grupos)
+                    loop.sleep()#Para dormir un momento y alcanzar 20 Hz solo
+                    
                 
-                md.visualizacion_objetivos(self,self.objetivos,self.dato)
-        
-        
-        
+                for i in grupos:
+                    md.visualizacion_objetivos(self,i,self.dato)
+                    
+                
         """
         for (x_goal,y_goal) in self.objetivos:
             #print(int(self.pos_x_robot), int(self.pos_y_robot),x_goal,y_goal)
@@ -140,6 +149,7 @@ class Nodo:
     
 if __name__ == "__main__":
     nodo=Nodo(Twist())
+    loop=rospy.Rate(20)#20 Hz
     rospy.Subscriber('/odom',Odometry,nodo.posicion_robot_callback,queue_size=1)
     rospy.Subscriber('/map',OccupancyGrid,nodo.map_callback,queue_size=100)
     rospy.spin()
