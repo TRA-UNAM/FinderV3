@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  nav_msgs
   tf2
   message_generation
 )
@@ -58,7 +59,9 @@ find_package(catkin REQUIRED COMPONENTS
 #Generate services in the 'srv' folder
  add_service_files(
    FILES
+   Datos_rviz_mapeo.srv
    Posicion_robot.srv
+   Inflar_mapa.srv
 
  )
 
@@ -73,6 +76,7 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
+   nav_msgs
  )
 
 ################################################
@@ -161,10 +165,9 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Prueba_Exploracion_Client.py
+	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

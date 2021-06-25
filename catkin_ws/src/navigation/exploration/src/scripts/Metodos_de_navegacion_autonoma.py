@@ -21,7 +21,7 @@ import time
 
 #El mapa de Inflado 2 infla todos los puntos alrededor de un obstaculo el número de celdas que le digas
 def mapa_inflado_2(self,num_celdas_inflar,grafo):
-
+    
     print ("Calculando el mapa inflando " +str(num_celdas_inflar) + " cells\n")
     pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
     c, l=np.shape(grafo)
@@ -42,7 +42,6 @@ def mapa_inflado_2(self,num_celdas_inflar,grafo):
     mapa_ocupacion.header.stamp=self.dato.header.stamp
     mapa_ocupacion.header.frame_id=self.dato.header.frame_id
     mapa_ocupacion.info.resolution=self.dato.info.resolution
-    mapa_ocupacion.header.seq=self.dato.header.seq
     mapa_ocupacion.info.width = self.dato.info.width
     mapa_ocupacion.info.height = self.dato.info.height
     mapa_ocupacion.info.origin.position.x =self.dato.info.origin.position.x
@@ -51,7 +50,7 @@ def mapa_inflado_2(self,num_celdas_inflar,grafo):
     mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
     mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
     mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
-    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.mapa), 1)))
     pub_inflated.publish(mapa_ocupacion)
     
     

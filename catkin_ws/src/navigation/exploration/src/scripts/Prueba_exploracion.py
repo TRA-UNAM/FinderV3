@@ -18,6 +18,7 @@ import cv2
 
 
 class Nodo:
+    
     def __init__(self,twist):
         self.init_node=rospy.init_node("Exploration_and_Mapping", anonymous=True)
         self.twist= twist
@@ -66,7 +67,7 @@ class Nodo:
         self.mapa=np.array(self.dato.data).reshape((self.dato.info.height, self.dato.info.width))
         #Las filas de la matriz corresponden a las coordenadas y
         #Las columnas de la matriz corresponden a las coordenas en x
-        self.mapa.flags.writeable = True
+        #self.mapa.flags.writeable = True
         #self.mapa[self.mapa==0]=1#Conocido y libre
         #self.mapa[self.mapa==-1]=0#Desconocido
         #Obtengo el mapa inflado

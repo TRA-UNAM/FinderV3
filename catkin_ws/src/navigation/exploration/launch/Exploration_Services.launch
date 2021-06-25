@@ -1,0 +1,3 @@
+<launch>
+<node pkg="exploration" type="Servidor_Mapa.py" name="Servidor_Mapa" respawn="false" output="screen"></node>
+</launch>

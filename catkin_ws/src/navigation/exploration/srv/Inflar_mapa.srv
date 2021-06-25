@@ -1,0 +1,8 @@
+
+uint32 width
+uint32 height
+int8[] mapa
+-----------------
+
+int8[] mapa_inflado
+
