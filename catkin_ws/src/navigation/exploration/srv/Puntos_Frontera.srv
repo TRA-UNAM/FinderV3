@@ -1,0 +1,8 @@
+
+int8[] mapa_inflado
+uint32 width
+uint32 height
+-----------------
+
+Int16MultyArray puntos_frontera
+

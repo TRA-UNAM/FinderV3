@@ -75,12 +75,12 @@ class Nodo:
         #Obtengo el mapa de costos
         self.mapa_de_costos=md.mapa_de_costos(self,self.celdas_de_costo,self.mapa_inflado)
         #Obtengo los puntos candidatos
-        self.objetivos=md.Busqueda_Objetivos(self,self.celdas_a_inflar,self.mapa_inflado)
+        self.objetivos=md.Busqueda_Objetivos(self,self.mapa_inflado)
         
         
         list(set(self.objetivos))
-        
-        
+        print(type(self.objetivos))
+        """
         #Aqui hago el clustering con k means
         if len(self.objetivos)!=0:
 
@@ -97,7 +97,7 @@ class Nodo:
                 for i in grupos:
                     md.visualizacion_objetivos(self,i,self.dato)
                     
-                
+        """       
         """
         for (x_goal,y_goal) in self.objetivos:
             #print(int(self.pos_x_robot), int(self.pos_y_robot),x_goal,y_goal)

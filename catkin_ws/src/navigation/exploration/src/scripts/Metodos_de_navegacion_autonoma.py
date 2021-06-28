@@ -50,7 +50,7 @@ def mapa_inflado_2(self,num_celdas_inflar,grafo):
     mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
     mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
     mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
-    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.mapa), 1)))
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
     pub_inflated.publish(mapa_ocupacion)
     
     
@@ -490,7 +490,7 @@ def convertir_matriz(grafo):
 
     return nuevo_grafo
 #Busqueda de Objetivos encuentra los puntos frontera en el mapa inflado                
-def Busqueda_Objetivos(self,numero_de_celdas,grafo):
+def Busqueda_Objetivos(self,grafo):
 
     c, l=np.shape(grafo)
     nodos_objetivo=[]
@@ -691,7 +691,8 @@ def Busqueda_Objetivos(self,numero_de_celdas,grafo):
 
     print("Ya termine de calcular los puntos objetivo\n")
     print("Encontre un total de "+str(len(nodos_objetivo))+" candidatos\n")
-    return nodos_objetivo      
+    return nodos_objetivo    
+
 #Me permite visualizar el número de puntos objetivos encontrados en el mapa a explorar   
 def visualizacion_objetivos(self,objetivos,mapa):
     

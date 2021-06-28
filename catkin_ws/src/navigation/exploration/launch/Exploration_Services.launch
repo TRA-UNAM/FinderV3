@@ -1,3 +1,4 @@
 <launch>
 <node pkg="exploration" type="Servidor_Mapa.py" name="Servidor_Mapa" respawn="false" output="screen"></node>
+<node pkg="exploration" type="Servidor_Mapa_Inflado.py" name="Servidor_Mapa_Inflado" respawn="false" output="screen"></node>
 </launch>

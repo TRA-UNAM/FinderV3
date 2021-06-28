@@ -51,7 +51,7 @@ class Servicio:
 
 
     def handle_Datos_rviz_mapa(self,req):
-        
+        print("Ya se obtuvo el mapa")
         return Datos_rviz_mapeoResponse(seq=self.seq,stamp=self.stamp,frame_id=self.frame_id,posicion_x=self.pos_x,posicion_y=self.pos_y,orientacion_x=self.ori_x,orientacion_y=self.ori_y,orientacion_z=self.ori_z,orientacion_w=self.ori_w,width=self.width,height=self.height,resolution=self.resolution,mapa=self.mapa)
 
 
