@@ -1,5 +1,12 @@
 
+uint32 width
+uint32 height
+float32 resolution
+float64 posicion_x
+float64 posicion_y
+
 -----------------
 
-int8[] data
+float64 posicion_x_robot
+float64 posicion_y_robot
 

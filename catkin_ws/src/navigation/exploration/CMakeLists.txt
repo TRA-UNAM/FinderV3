@@ -63,8 +63,6 @@ find_package(catkin REQUIRED COMPONENTS
    Posicion_robot.srv
    Inflar_mapa.srv
 
-	
-
  )
 
 ## Generate actions in the 'action' folder
@@ -167,7 +165,7 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Servidor_Mapa_Inflado.py src/scripts/Prueba_Exploracion_Client.py
+catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Servidor_Mapa_Inflado.py src/scripts/Prueba_Exploracion_Client.py src/scripts/Servidor_Posicion_robot.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
