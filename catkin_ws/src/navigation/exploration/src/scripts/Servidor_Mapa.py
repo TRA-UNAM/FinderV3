@@ -28,6 +28,8 @@ class Servicio:
        self.ori_z=0
        self.ori_w=0
        self.mapa=[]
+       
+       
 
 
     def map_callback(self,dato):
@@ -47,13 +49,20 @@ class Servicio:
         self.mapa=dato.data
         self.Datos_rviz_mapeo_server()
         
+        try:
+            self.Datos_rviz_mapeo_server()
+        finally:
+            
+            return Datos_rviz_mapeoResponse(seq=self.seq,stamp=self.stamp,frame_id=self.frame_id,posicion_x=dato.info.origin.position.x,posicion_y=dato.info.origin.position.y,orientacion_x=self.ori_x,orientacion_y=self.ori_y,orientacion_z=self.ori_z,orientacion_w=self.ori_w,width=self.width,height=self.height,resolution=self.resolution,mapa=self.mapa)
         
-
+        
+            
 
     def handle_Datos_rviz_mapa(self,req):
+        
         print("Ya se obtuvo el mapa")
+        
         return Datos_rviz_mapeoResponse(seq=self.seq,stamp=self.stamp,frame_id=self.frame_id,posicion_x=self.pos_x,posicion_y=self.pos_y,orientacion_x=self.ori_x,orientacion_y=self.ori_y,orientacion_z=self.ori_z,orientacion_w=self.ori_w,width=self.width,height=self.height,resolution=self.resolution,mapa=self.mapa)
-
 
 
 
@@ -70,9 +79,10 @@ class Servicio:
 if __name__ == "__main__":
     rospy.init_node('Servidor_Mapa')
     servicio=Servicio()
-    #rospy.Subscriber('/odom',Odometry,nodo.posicion_robot_callback,queue_size=1)
-    rospy.Subscriber('/map',OccupancyGrid,servicio.map_callback,queue_size=10)
+    rospy.Subscriber('/map',OccupancyGrid,servicio.map_callback,queue_size=100)
     rospy.spin()
+    
+    
     
 
     

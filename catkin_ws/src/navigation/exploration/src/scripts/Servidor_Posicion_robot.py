@@ -44,7 +44,7 @@ class Servicio:
         self.posicion_y=req.posicion_y
         self.width=req.width
         self.height=req.height
-        rospy.Subscriber('/odom',Odometry,self.posicion_robot_callback,queue_size=20)
+        rospy.Subscriber('/odom',Odometry,self.posicion_robot_callback,queue_size=50)
         print("Ya se obtuvo la posición del robot")
         return Posicion_robotResponse(posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
 

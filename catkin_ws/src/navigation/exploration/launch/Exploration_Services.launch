@@ -2,4 +2,5 @@
 <node pkg="exploration" type="Servidor_Mapa.py" name="Servidor_Mapa" respawn="false" output="screen"></node>
 <node pkg="exploration" type="Servidor_Mapa_Inflado.py" name="Servidor_Mapa_Inflado" respawn="false" output="screen"></node>
 <node pkg="exploration" type="Servidor_Posicion_robot.py" name="Servidor_Posicion_robot" respawn="false" output="screen"></node>
+<node pkg="exploration" type="Servidor_Mapa_Costos.py" name="Servidor_Mapa_Costos" respawn="false" output="screen"></node>
 </launch>

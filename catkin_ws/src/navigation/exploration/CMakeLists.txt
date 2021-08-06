@@ -62,6 +62,7 @@ find_package(catkin REQUIRED COMPONENTS
    Datos_rviz_mapeo.srv
    Posicion_robot.srv
    Inflar_mapa.srv
+   Mapa_Costos.srv
 
  )
 
@@ -165,7 +166,7 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Servidor_Mapa_Inflado.py src/scripts/Prueba_Exploracion_Client.py src/scripts/Servidor_Posicion_robot.py
+catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Servidor_Mapa_Inflado.py src/scripts/Prueba_Exploracion_Client.py src/scripts/Servidor_Posicion_robot.py src/scripts/Servidor_Mapa_Costos.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
