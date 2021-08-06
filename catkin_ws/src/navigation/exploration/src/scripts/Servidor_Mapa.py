@@ -47,7 +47,8 @@ class Servicio:
         self.ori_z=dato.info.origin.orientation.z
         self.ori_w=dato.info.origin.orientation.w
         self.mapa=dato.data
-        self.Datos_rviz_mapeo_server()
+        
+        
         
         try:
             self.Datos_rviz_mapeo_server()
@@ -79,7 +80,7 @@ class Servicio:
 if __name__ == "__main__":
     rospy.init_node('Servidor_Mapa')
     servicio=Servicio()
-    rospy.Subscriber('/map',OccupancyGrid,servicio.map_callback,queue_size=100)
+    rospy.Subscriber('/map',OccupancyGrid,servicio.map_callback,queue_size=1)
     rospy.spin()
     
     

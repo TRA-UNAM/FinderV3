@@ -19,28 +19,24 @@ def visualizacion_objetivos(self,objetivo):
     puntos.pose.position.y=self.dato.posicion_y+0.025
     puntos.pose.position.z=0
     #Puntos
-    puntos.scale.x=0.09#Tamaño de los puntos
-    puntos.scale.y=0.09
-    puntos.scale.z=0.09
+    puntos.scale.x=0.08#Tamaño de los puntos
+    puntos.scale.y=0.08
+    puntos.scale.z=0.08
     #Los puntos seran verdes
-    puntos.color.r=1.0#Color 
+    puntos.color.b=1.0#Color  
     puntos.color.a=1.0#Nitidez
 
     
-    o=Point()
-    o.x=int(self.pos_x_robot)*self.dato.resolution
-    o.y=int(self.pos_y_robot)*self.dato.resolution
-    o.z=0
-    puntos.points.append(o)
     
     
     
-    p=Point()
     
-    p.x=objetivo[1]*(self.dato.resolution)#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
-    p.y=objetivo[0]*(self.dato.resolution)
-    p.z=0
-    puntos.points.append(p)
+    for i in range(len(objetivo)):
+        p=Point()
+        p.x=objetivo[i][1]*self.dato.resolution#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
+        p.y=objetivo[i][0]*self.dato.resolution
+        p.z=0
+        puntos.points.append(p)
 
     rate=rospy.Rate(20)
     

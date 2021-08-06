@@ -61,16 +61,16 @@ def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map,self):
             steps+=1#Aumento el número de pasos que le tomo al algoritmo calcular la ruta y vuelvo a hacer lo mismo para cada punto de la lista abierta hasta terminar
 
      
-    if[r,c]!=[goal_r,goal_c] or steps<=500:#Una vez checo para todos losn nodos, si el valor de r,c no es igual al objetivo es que no hay solucion
+    if[r,c]!=[goal_r,goal_c]:#Una vez checo para todos losn nodos, si el valor de r,c no es igual al objetivo es que no hay solucion
         print("Cannot calculate path by A* :c")
         return[]
         
-    if steps>500:
+    
     #Aqui r, c ya se quedo con los valores meta, por lo cual el punto anterior
     #Preguntar sobre p_nodes
-        while [p_nodes[r,c][0],p_nodes[r,c][1]]!=[-1,-1]:#Sí si existe la solución entonces hasta encontrar el nodo [-1,-1] que fue con lo que se lleno y me dice que son todos los puntos
-            path.insert(0,[r,c])#Voy agregando en la posicion cero cada una de las coordenadas que es el punto anterior
-            [r,c]=p_nodes[r,c]
+    while [p_nodes[r,c][0],p_nodes[r,c][1]]!=[-1,-1]:#Sí si existe la solución entonces hasta encontrar el nodo [-1,-1] que fue con lo que se lleno y me dice que son todos los puntos
+        path.insert(0,[r,c])#Voy agregando en la posicion cero cada una de las coordenadas que es el punto anterior
+        [r,c]=p_nodes[r,c]
             
         
     print("El camino necesito de "+str(steps)+" pasos para ser calculado")
