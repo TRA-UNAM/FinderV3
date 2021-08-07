@@ -14,7 +14,8 @@ import Servidor_Obtencion_ruta as ruta
 import os
 import sys
 import Servidor_de_control_para_mover_el_robot as mr
-
+from geometry_msgs.msg import Twist
+import math
 
 
 class Nodo:
@@ -81,6 +82,7 @@ class Nodo:
             posicion_robot=self.cliente_posicion_robot(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,width=self.dato.width,height=self.dato.height,resolution=self.dato.resolution)
             self.pos_x_robot=posicion_robot.posicion_x_robot
             self.pos_y_robot=posicion_robot.posicion_y_robot
+            self.robot_a=posicion_robot.robot_a
             
         
         except rospy.ServiceException as e:
@@ -91,8 +93,9 @@ class Nodo:
         print("La posicion del robot es: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
 
         #---------------------------------------------------------------------
-
-
+        #vp.visualizacion_objetivos(self,self.pos_x_robot, self.pos_y_robot)
+        
+        
         #----------------Obtencion_mapa_inflado--------------------------------
         print("Esperando al servicio_del_mapa_inflado")
         rospy.wait_for_service('/servicio_mapa_inflado')#Espero hasta que el servicio este habilitado
@@ -133,52 +136,57 @@ class Nodo:
         print("Esperando la obtencion de puntos frontera")
         self.puntos_frontera=Spf.Busqueda_Puntos_frontera(self,self.mapa_inflado)
         print("Ya obtuve el los puntos frontera\n")       
-
-        if len(self.puntos_frontera)<10:
-            sys.exit("Ya termine de explorar") 
-            
         #---------------------------------------------------------------------
+        
         error=[]
+        
         #----------------Obtencion_centroides--------------------------------
         if len(self.puntos_frontera)>0:
             self.centroides=km.k_means(self.puntos_frontera)
+        
         if len(self.centroides)!=0:
             print("Esperando la obtencion los centroides de los puntos frontera")
             print("Ya obtuve los centroides: "+str(self.centroides)+"\n")
             print("Obtendre el punto objetivo")
-            distancia_1=np.square(((self.centroides[0][0]-self.pos_x_robot)**2)+((self.centroides[0][1]-self.pos_y_robot)**2))
-            distancia_2=np.square(((self.centroides[1][0]-self.pos_x_robot)**2)+((self.centroides[1][1]-self.pos_y_robot)**2))
-            if distancia_1>distancia_2:
-                punto_objetivo=self.centroides[0]
-            else:
-                punto_objetivo=self.centroides[1]
             
-            for i in range(len(self.puntos_frontera)):
-                error.append(np.square(((punto_objetivo[0]-self.puntos_frontera[i][0])**2)+((punto_objetivo[1]-self.puntos_frontera[i][1])**2)))
-            punto_objetivo=np.where(error==min(error))[0]
-            print(punto_objetivo[0])
+        for i in range(len(self.centroides)):
+            error_a=(math.atan2(self.centroides[i][0]-self.pos_y_robot,self.centroides[i][1]-self.pos_x_robot))-self.robot_a#Obtengo el error de angulo
+            if abs(error_a)>(math.pi+(math.pi)/3):
+                pass
+            else:
+                punto_objetivo=self.centroides[i]
+                
+        
+        for (x,y) in self.puntos_frontera:
+            error.append(math.sqrt(((punto_objetivo[0] - x)**2 + ((punto_objetivo[1] - y)**2))))
 
-            print("El punto objetivo es: "+str(self.puntos_frontera[punto_objetivo[0]])+"\n")
+        
+        indice=min(error)
+        for i in range(len(error)):
+            if error[i]==indice:
+                break
+        punto_objetivo=self.puntos_frontera[i]
         #---------------------------------------------------------------------
-
+        
         #----------------Obtención de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
-            if self.pos_x_robot!=0 and self.pos_y_robot!=0:
-                
-                
-                self.path=ruta.a_star(int(self.pos_y_robot),int(self.pos_x_robot),self.puntos_frontera[punto_objetivo[0]][0],self.puntos_frontera[punto_objetivo[0]][1],self.mapa_inflado,self.mapa_de_costos,self)
-                self.path=ruta.get_smooth_path(self.path,0.9,0.1)
-                #self.path.append([self.pos_y_robot,self.pos_x_robot])
-        #----------------Visualización de objetivos--------------------------------
+        if self.pos_x_robot!=0 and self.pos_y_robot!=0:
             
-                
-                while True:
-                    #vp.visualizacion_objetivos(self,[(int(self.pos_y_robot),int(self.pos_x_robot)),self.puntos_frontera[punto_objetivo[0]]])
-                    vp.visualizacion_objetivos(self,self.path)
-                    #mr.mover_robot(self.path,self.dato.posicion_x,self.dato.posicion_y,self.dato.width,self.dato.height,self.dato.resolution,self.cliente_posicion_robot)  
-        #---------------Mover el robot al punto deseado----------------------------
+            
+            #self.path=ruta.a_star(int(self.pos_y_robot),int(self.pos_x_robot),self.puntos_frontera[punto_objetivo[0]][0],self.puntos_frontera[punto_objetivo[0]][1],self.mapa_inflado,self.mapa_de_costos,self)
+            #if len(self.path)!=0:
+                #self.path=ruta.get_smooth_path(self.path,0.7,0.1)
+            #self.path.append([self.pos_y_robot,self.pos_x_robot])
+    #----------------Visualización de objetivos--------------------------------
+        
+        
+            #while True:
+                #vp.visualizacion_objetivos(self,self.puntos_frontera[punto_objetivo[0]],self.pos_y_robot,self.pos_x_robot)
+            
+            mr.mover_robot(self,self.puntos_frontera[i],self.dato.posicion_x,self.dato.posicion_y,self.dato.width,self.dato.height,self.dato.resolution,self.cliente_posicion_robot)  
+    #---------------Mover el robot al punto deseado----------------------------
 
-
+            
 
 
 
@@ -188,4 +196,7 @@ if __name__== "__main__":
     while not rospy.is_shutdown():
         loop.sleep()
         nodo.prueba_exploracion()
-        
+    
+
+    pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    pub_cmd_vel.publish(Twist())

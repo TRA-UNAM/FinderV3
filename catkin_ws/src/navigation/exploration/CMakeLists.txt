@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   tf2
   message_generation
+  tf
 )
 
 ## System dependencies are found with CMake's conventions

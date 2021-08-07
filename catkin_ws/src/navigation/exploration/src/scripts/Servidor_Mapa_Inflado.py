@@ -20,7 +20,7 @@ class Servicio:
 
         grafo=np.array(req.mapa).reshape((req.height, req.width))
         num_celdas_inflar=req.celdas_a_inflar
-        print ("Calculando el mapa inflando con " +str(num_celdas_inflar) + " celdas\n")
+        print ("Calculando el mapa inflando con " +str(num_celdas_inflar) + " celdas")
         pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
         c, l=np.shape(grafo)
         self.mapa_inflado=np.copy(grafo)

@@ -6,7 +6,7 @@ import rospy
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 
-def visualizacion_objetivos(self,objetivo):
+def visualizacion_objetivos(self,objetivo,pos_x,pos_y):
     
     
     pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
@@ -23,24 +23,29 @@ def visualizacion_objetivos(self,objetivo):
     puntos.scale.y=0.08
     puntos.scale.z=0.08
     #Los puntos seran verdes
-    puntos.color.b=1.0#Color  
+    #puntos.color.r=1.0#Color  
+    puntos.color.b=1.0#Color 
     puntos.color.a=1.0#Nitidez
 
-    
+    p=Point()
+    p.x=pos_x#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
+    p.y=pos_y
+    p.z=0
+    puntos.points.append(p)
     
     
     
     
     for i in range(len(objetivo)):
         p=Point()
-        p.x=objetivo[i][1]*self.dato.resolution#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
-        p.y=objetivo[i][0]*self.dato.resolution
+        p.x=objetivo[1]*self.dato.resolution#[i]*self.dato.resolution#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
+        p.y=objetivo[0]*self.dato.resolution#[i]*self.dato.resolution
         p.z=0
         puntos.points.append(p)
-
-    rate=rospy.Rate(20)
+    
+    
     
     pub.publish(puntos)
-    rate.sleep()
+    
     
 

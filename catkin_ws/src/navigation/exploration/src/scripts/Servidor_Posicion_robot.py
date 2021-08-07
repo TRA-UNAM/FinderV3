@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 #Autor: Axel Javier Rojas Mosqueda
 import math
 import rospy
-from nav_msgs.msg import Odometry
+import tf
 from exploration.srv import Posicion_robot,Posicion_robotResponse
 import numpy as np
 import Metodos_de_navegacion_autonoma as md
@@ -23,16 +23,26 @@ class Servicio:
        self.resolucion=0
        self.posicion_x=0
        self.posicion_y=0
+       self.listener=tf.TransformListener()
        self.Datos_rviz_Posicion_robot()
 
 
-    def posicion_robot_callback(self,dato):
+    def posicion_robot_callback(self):
         
-        self.angulo_robot=2*math.atan2(dato.pose.pose.orientation.z,dato.pose.pose.orientation.w)#Se trata de un cuaternion, por ello debo de hacer esto con dichas componentes
-        correcion_x=0.7*math.cos(self.angulo_robot)
-        correcion_y=0.7*math.sin(self.angulo_robot)
-        self.pos_y_robot=(correcion_y/self.resolution)+abs(self.posicion_y/self.resolution)#Estan intercambiados en el mapa, por eso necesito invertirlos
-        self.pos_x_robot=(correcion_x/self.resolution)+abs(self.posicion_x/self.resolution)#Se ajusta y se suman 4 metros para que este justo en el laser
+        try:
+            (trans, rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
+            self.robot_a = 2*math.atan2(rot[2], rot[3])
+            if self.robot_a > math.pi:
+                self.robot_a -= 2*math.pi
+            elif self.robot_a<=-math.pi:
+                self.robot_a += 2*math.pi
+
+            
+            self.robot_x = (abs(self.posicion_x)/self.resolution)+(trans[0]/self.resolution)+(0.7*math.cos(self.robot_a)/self.resolution)
+            self.robot_y = (abs(self.posicion_y)/self.resolution)+(trans[1]/self.resolution)+(0.7*math.sin(self.robot_a)/self.resolution)
+            
+        except:
+            pass
         
         
         
@@ -44,9 +54,10 @@ class Servicio:
         self.posicion_y=req.posicion_y
         self.width=req.width
         self.height=req.height
-        rospy.Subscriber('/odom',Odometry,self.posicion_robot_callback,queue_size=50)
+        #rospy.Subscriber('/tf',Odometry,self.posicion_robot_callback,queue_size=10)
+        self.posicion_robot_callback()
         print("Ya se obtuvo la posición del robot")
-        return Posicion_robotResponse(posicion_x_robot=int(self.pos_x_robot),posicion_y_robot=int(self.pos_y_robot),robot_a=self.angulo_robot)
+        return Posicion_robotResponse(posicion_x_robot=int(self.robot_x),posicion_y_robot=int(self.robot_y),robot_a=self.robot_a)
 
 
 
