@@ -4,18 +4,17 @@
 
 
 import rospy
-from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos
+from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Puntos_Objetivo
 from nav_msgs.msg import OccupancyGrid
 import numpy as np
-import Servidor_Puntos_Frontera as Spf
 import Servidor_K_means as km
-import Servidor_Visualización_de_puntos as vp
-import Servidor_Obtencion_ruta as ruta
+#import Servidor_Obtencion_ruta as ruta
 import os
 import sys
-import Servidor_de_control_para_mover_el_robot as mr
+#import Servidor_de_control_para_mover_el_robot as mr
 from geometry_msgs.msg import Twist
 import math
+import matplotlib.pyplot as plt
 
 
 class Nodo:
@@ -27,8 +26,8 @@ class Nodo:
         self.dato_mc=0
         self.dato_pf=0
         self.mapa_inflado=0
-        self.celdas_a_inflar=5#número de celdas a inflar, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
-        self.celdas_de_costo=5#número de celdas de costo desde el obstaculo, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
+        self.celdas_a_inflar=0.3#metros a inflar, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
+        self.celdas_de_costo=0.3#metros desde el obstaculo, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
         self.puntos_frontera=[]
         self.path=[]
         self.pos_x_robot=0
@@ -37,18 +36,26 @@ class Nodo:
         self.mapa_de_costos=0
         self.costos_rutas=0
         self.centroides=0
-        self.celdas_a_inflar=5
         self.cliente_mapa_costos=0
         self.cliente_mapa=0
         self.cliente_posicion_robot=0
         self.cliente_mapa_inflado=0
+        self.cliente_puntos_frontera=0
+        self.dato_pf=0
+        self.coord_pf_x=[]
+        self.coord_pf_y=[]
+        self.cliente_visualizacion=0
+        self.dato_v=0
+        self.cliente_puntos_objetivo=0
+        self.dato_po=0
 
         
 
     
 
     def prueba_exploracion(self):
-        os.system("clear")
+        os.system("clear")#Limpiar terminal
+
         #---------------Obtencion de mapa------------------------------------
         print("Esperando al servicio_del_mapa")
         rospy.wait_for_service('/servicio_mapa')#Espero hasta que el servicio este habilitado
@@ -71,7 +78,7 @@ class Nodo:
         #----------------------------------------------------------------------
         
             
-        #----------------Obtención de la posición del robot--------------------------------
+        #----------------Obtención de la posición del robot en [m]--------------------------------
 
         
         print("Esperando al servicio_posicion_robot")
@@ -90,10 +97,10 @@ class Nodo:
 
         
         print("Ya obtuve la posicion del robot")
-        print("La posicion del robot es: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
+        print("La posicion del robot en [m] es: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
 
         #---------------------------------------------------------------------
-        #vp.visualizacion_objetivos(self,self.pos_x_robot, self.pos_y_robot)
+        
         
         
         #----------------Obtencion_mapa_inflado--------------------------------
@@ -103,7 +110,7 @@ class Nodo:
             if self.cliente_mapa_inflado==0:
                 self.cliente_mapa_inflado=rospy.ServiceProxy('/servicio_mapa_inflado',Inflar_mapa)#Creo un handler para poder llamar al servicio
             self.dato_mi=self.cliente_mapa_inflado(celdas_a_inflar=self.celdas_a_inflar,seq=self.dato.seq,stamp=self.dato.stamp,frame_id=self.dato.frame_id,posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,orientacion_x=self.dato.orientacion_x,orientacion_y=self.dato.orientacion_y,orientacion_z=self.dato.orientacion_z,orientacion_w=self.dato.orientacion_w,width=self.dato.width,height=self.dato.height,resolution=self.dato.resolution,mapa=self.dato.mapa)
-            
+            self.mapa_inflado=self.dato_mi.mapa_inflado#Asigno el mapa inflado una vez lo obtuve del servicio
         
         except rospy.ServiceException as e:
             print("Fallo la solicitud del servidor inflar mapa: %s"%e)
@@ -111,7 +118,7 @@ class Nodo:
         
         print("Ya obtuve el mapa inflado\n")
 
-        self.mapa_inflado=self.dato_mi.mapa_inflado
+        
         #-------------------------------------------------------------------------
 
         #----------------Obtencion_mapa de costos---------------------------------
@@ -120,57 +127,94 @@ class Nodo:
         try:
             if self.cliente_mapa_costos==0:
                 self.cliente_mapa_costos=rospy.ServiceProxy('/servicio_mapa_costos',Mapa_Costos)#Creo un handler para poder llamar al servicio
-            self.dato_mc=self.cliente_mapa_costos(num_celdas_costo=self.celdas_a_inflar,width=self.dato.width,height=self.dato.height,mapa=self.mapa_inflado)
-            
+            self.dato_mc=self.cliente_mapa_costos(num_celdas_costo=self.celdas_a_inflar,width=self.dato.width,height=self.dato.height,mapa=self.mapa_inflado,resolution=self.dato.resolution)
+            self.mapa_de_costos=self.dato_mc.mapa_costos#Asigno el mapa de costos una vez lo obtuve del servicio
         
         except rospy.ServiceException as e:
             print("Fallo la solicitud del servidor mapa de costos: %s"%e)
 
         
-        print("Ya obtuve el mapa inflado\n")
+        print("Ya obtuve el mapa de costos\n")
 
-        self.mapa_de_costos=self.dato_mc.mapa_costos
+        
         #-------------------------------------------------------------------------
 
         #----------------Obtencion puntos frontera--------------------------------
-        print("Esperando la obtencion de puntos frontera")
-        self.puntos_frontera=Spf.Busqueda_Puntos_frontera(self,self.mapa_inflado)
-        print("Ya obtuve el los puntos frontera\n")       
-        #---------------------------------------------------------------------
+        print("Esperando al servicio_puntos_frontera")
+        rospy.wait_for_service('/servicio_puntos_frontera')#Espero hasta que el servicio este habilitado
+        try:
+            if self.cliente_puntos_frontera==0:
+                self.cliente_puntos_frontera=rospy.ServiceProxy('/servicio_puntos_frontera',Puntos_Frontera)#Creo un handler para poder llamar al servicio
+            self.dato_pf=self.cliente_puntos_frontera(width=self.dato.width,height=self.dato.height,resolution=self.dato.resolution,mapa_inflado=self.mapa_inflado)
+            self.coord_pf_x=self.dato_pf.coord_x#Asigno las coordenadas de x para los puntos frontera
+            self.coord_pf_y=self.dato_pf.coord_y#Asigno las coordenadas de x para los puntos frontera
         
-        error=[]
-        
-        #----------------Obtencion_centroides--------------------------------
-        if len(self.puntos_frontera)>0:
-            self.centroides=km.k_means(self.puntos_frontera)
-        
-        if len(self.centroides)!=0:
-            print("Esperando la obtencion los centroides de los puntos frontera")
-            print("Ya obtuve los centroides: "+str(self.centroides)+"\n")
-            print("Obtendre el punto objetivo")
-            
-        for i in range(len(self.centroides)):
-            error_a=(math.atan2(self.centroides[i][0]-self.pos_y_robot,self.centroides[i][1]-self.pos_x_robot))-self.robot_a#Obtengo el error de angulo
-            if abs(error_a)>(math.pi+(math.pi)/3):
-                pass
-            else:
-                punto_objetivo=self.centroides[i]
-                
-        
-        for (x,y) in self.puntos_frontera:
-            error.append(math.sqrt(((punto_objetivo[0] - x)**2 + ((punto_objetivo[1] - y)**2))))
+        except rospy.ServiceException as e:
+            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
 
         
-        indice=min(error)
-        for i in range(len(error)):
-            if error[i]==indice:
-                break
-        punto_objetivo=self.puntos_frontera[i]
+        print("Ya obtuve los puntos frontera\n") 
+        print("Encontre un total de "+str(len(self.coord_pf_x))+" candidatos\n")
+
+
+
+        
+        #---------------------------------------------------------------------
+
+        
+
+        #----------------Obtener centroides--------------------------------
+        print("Esperando al servicio punto objetivo")
+        rospy.wait_for_service('/servicio_punto_objetivo')#Espero hasta que el servicio este habilitado
+        try:
+            if self.cliente_puntos_objetivo==0:
+                self.cliente_puntos_objetivo=rospy.ServiceProxy('/servicio_punto_objetivo',Puntos_Objetivo)#Creo un handler para poder llamar al servicio
+              
+            self.dato_po=self.cliente_puntos_objetivo(coord_x=self.coord_pf_x,coord_y=self.coord_pf_y)
+            
+        
+        except rospy.ServiceException as e:
+            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+
+        
+        print("Ya se tienen los puntos objetivo a partir de {} clusters\n".format(self.dato_po.k)) 
+        
+
+
+        
+        #---------------------------------------------------------------------
+        
+
+
+
+        
+        #----------------Visualizar Puntos--------------------------------
+        print("Esperando al servicio_visualizacion")
+        rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
+        try:
+            if self.cliente_visualizacion==0:
+                self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+               
+            self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
+            
+        
+        except rospy.ServiceException as e:
+            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+
+        
+        print("Ya se pueden visualizar los puntos\n") 
+        
+
+
+
+        
+        #---------------------------------------------------------------------
+        
         #---------------------------------------------------------------------
         
         #----------------Obtención de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
-        if self.pos_x_robot!=0 and self.pos_y_robot!=0:
+        #if self.pos_x_robot!=0 and self.pos_y_robot!=0:
             
             
             #self.path=ruta.a_star(int(self.pos_y_robot),int(self.pos_x_robot),self.puntos_frontera[punto_objetivo[0]][0],self.puntos_frontera[punto_objetivo[0]][1],self.mapa_inflado,self.mapa_de_costos,self)
@@ -183,10 +227,10 @@ class Nodo:
             #while True:
                 #vp.visualizacion_objetivos(self,self.puntos_frontera[punto_objetivo[0]],self.pos_y_robot,self.pos_x_robot)
             
-            mr.mover_robot(self,self.puntos_frontera[i],self.dato.posicion_x,self.dato.posicion_y,self.dato.width,self.dato.height,self.dato.resolution,self.cliente_posicion_robot)  
+            #mr.mover_robot(self,self.puntos_frontera[i],self.dato.posicion_x,self.dato.posicion_y,self.dato.width,self.dato.height,self.dato.resolution,self.cliente_posicion_robot)  
     #---------------Mover el robot al punto deseado----------------------------
 
-            
+          
 
 
 

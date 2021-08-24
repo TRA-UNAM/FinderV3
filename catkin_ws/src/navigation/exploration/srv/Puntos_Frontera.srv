@@ -1,10 +1,11 @@
 
-float32   num_celdas_costo
+
 uint32 width
 uint32 height
-int8[] mapa
+int8[] mapa_inflado
 float32 resolution
 -----------------
 
-int8[] mapa_costos
+float32[] coord_x
+float32[] coord_y
 
