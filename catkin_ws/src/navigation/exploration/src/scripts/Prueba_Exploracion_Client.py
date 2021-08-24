@@ -7,7 +7,6 @@ import rospy
 from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Puntos_Objetivo
 from nav_msgs.msg import OccupancyGrid
 import numpy as np
-import Servidor_K_means as km
 #import Servidor_Obtencion_ruta as ruta
 import os
 import sys
@@ -147,7 +146,7 @@ class Nodo:
                 self.cliente_puntos_frontera=rospy.ServiceProxy('/servicio_puntos_frontera',Puntos_Frontera)#Creo un handler para poder llamar al servicio
             self.dato_pf=self.cliente_puntos_frontera(width=self.dato.width,height=self.dato.height,resolution=self.dato.resolution,mapa_inflado=self.mapa_inflado)
             self.coord_pf_x=self.dato_pf.coord_x#Asigno las coordenadas de x para los puntos frontera
-            self.coord_pf_y=self.dato_pf.coord_y#Asigno las coordenadas de x para los puntos frontera
+            self.coord_pf_y=self.dato_pf.coord_y#Asigno las coordenadas de y para los puntos frontera
         
         except rospy.ServiceException as e:
             print("Fallo la solicitud del servidor puntos frontera: %s"%e)
@@ -185,16 +184,13 @@ class Nodo:
         #---------------------------------------------------------------------
         
 
-
-
-        
         #----------------Visualizar Puntos--------------------------------
         print("Esperando al servicio_visualizacion")
         rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
         try:
             if self.cliente_visualizacion==0:
                 self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
-               
+            
             self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
             
         
@@ -206,11 +202,14 @@ class Nodo:
         
 
 
+        
+        
+
 
         
         #---------------------------------------------------------------------
         
-        #---------------------------------------------------------------------
+        
         
         #----------------Obtención de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
