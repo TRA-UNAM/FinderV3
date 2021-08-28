@@ -39,8 +39,7 @@ class Servicio:
         p.z=0
         puntos.points.append(p)
         
-        
-        
+      
         
         for i in range(len(req.coord_x)):
             p=Point()

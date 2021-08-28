@@ -4,7 +4,7 @@
 
 
 import rospy
-from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Puntos_Objetivo
+from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Puntos_Objetivo, Objetivo
 from nav_msgs.msg import OccupancyGrid
 import numpy as np
 #import Servidor_Obtencion_ruta as ruta
@@ -47,6 +47,9 @@ class Nodo:
         self.dato_v=0
         self.cliente_puntos_objetivo=0
         self.dato_po=0
+        self.cliente_objetivo=0
+        self.dato_o=0
+
 
         
 
@@ -163,11 +166,11 @@ class Nodo:
         
 
         #----------------Obtener centroides--------------------------------
-        print("Esperando al servicio punto objetivo")
-        rospy.wait_for_service('/servicio_punto_objetivo')#Espero hasta que el servicio este habilitado
+        print("Esperando al servicio centroides")
+        rospy.wait_for_service('/servicio_centroides')#Espero hasta que el servicio este habilitado
         try:
             if self.cliente_puntos_objetivo==0:
-                self.cliente_puntos_objetivo=rospy.ServiceProxy('/servicio_punto_objetivo',Puntos_Objetivo)#Creo un handler para poder llamar al servicio
+                self.cliente_puntos_objetivo=rospy.ServiceProxy('/servicio_centroides',Puntos_Objetivo)#Creo un handler para poder llamar al servicio
               
             self.dato_po=self.cliente_puntos_objetivo(coord_x=self.coord_pf_x,coord_y=self.coord_pf_y)
             
@@ -183,6 +186,32 @@ class Nodo:
         
         #---------------------------------------------------------------------
         
+        #----------------Obtener el punto objetivo--------------------------------
+        print("Esperando al servicio punto objetivo")
+        rospy.wait_for_service('/servicio_objetivo')#Espero hasta que el servicio este habilitado
+        try:
+            if self.cliente_objetivo==0:
+                self.cliente_objetivo=rospy.ServiceProxy('/servicio_objetivo',Objetivo)#Creo un handler para poder llamar al servicio
+              
+            self.dato_o=self.cliente_objetivo(coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot,robot_a=self.robot_a)
+            
+        
+        except rospy.ServiceException as e:
+            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+
+        
+        print("Ya se tienen el punto objetivo: {},{}".format(self.dato_o.obj_x,self.dato_o.obj_y)) 
+        objetivo_x=[self.dato_o.obj_x]
+        objetivo_y=[self.dato_o.obj_y]
+        
+
+
+        
+        #---------------------------------------------------------------------
+        
+
+
+
 
         #----------------Visualizar Puntos--------------------------------
         print("Esperando al servicio_visualizacion")
@@ -190,8 +219,8 @@ class Nodo:
         try:
             if self.cliente_visualizacion==0:
                 self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
-            
-            self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
+            while True:
+                self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=objetivo_x,coord_y=objetivo_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
             
         
         except rospy.ServiceException as e:
@@ -220,17 +249,11 @@ class Nodo:
             #if len(self.path)!=0:
                 #self.path=ruta.get_smooth_path(self.path,0.7,0.1)
             #self.path.append([self.pos_y_robot,self.pos_x_robot])
-    #----------------Visualización de objetivos--------------------------------
-        
-        
-            #while True:
-                #vp.visualizacion_objetivos(self,self.puntos_frontera[punto_objetivo[0]],self.pos_y_robot,self.pos_x_robot)
-            
+   
+        #---------------Mover el robot al punto deseado----------------------------
+
             #mr.mover_robot(self,self.puntos_frontera[i],self.dato.posicion_x,self.dato.posicion_y,self.dato.width,self.dato.height,self.dato.resolution,self.cliente_posicion_robot)  
-    #---------------Mover el robot al punto deseado----------------------------
-
-          
-
+    
 
 
 if __name__== "__main__":

@@ -6,4 +6,5 @@
 <node pkg="exploration" type="Servidor_Puntos_Frontera.py" name="Servidor_Puntos_Frontera" respawn="false" output="screen"></node>
 <node pkg="exploration" type="Servidor_Visualizacion_de_puntos.py" name="Servidor_Visualizar" respawn="false" output="screen"></node>
 <node pkg="exploration" type="Servidor_K_means_skl.py" name="Servidor_Puntos_Objetivo" respawn="false" output="screen"></node>
+<node pkg="exploration" type="Servidor_Seleccion_Objetivo.py" name="Servidor_Objetivo" respawn="false" output="screen"></node>
 </launch>

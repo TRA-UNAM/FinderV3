@@ -49,7 +49,7 @@ class Servicio:
 
     def Puntos_Objetivo(self):
             
-        rospy.Service('/servicio_punto_objetivo', Puntos_Objetivo, self.handle)
+        rospy.Service('/servicio_centroides', Puntos_Objetivo, self.handle)
         print("Listo para obtener los puntos objetivo")
             
     
