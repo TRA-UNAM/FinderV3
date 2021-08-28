@@ -14,7 +14,7 @@ class Servicio:
     def __init__(self):
         
        
-       
+       self.f=0
        self.pos_x_robot=0
        self.pos_y_robot=0
        self.angulo_robot=0
@@ -56,6 +56,7 @@ class Servicio:
         self.height=req.height
         self.posicion_robot_callback()
         print("Ya se obtuvo la posición del robot")
+        self.f=1
         return Posicion_robotResponse(posicion_x_robot=self.robot_x,posicion_y_robot=self.robot_y,robot_a=self.robot_a)
 
 
@@ -63,13 +64,14 @@ class Servicio:
 
     def Datos_rviz_Posicion_robot(self):
         
-        rospy.Service('/servicio_posicion_robot', Posicion_robot, self.handle_Posicion_robot)
+        S=rospy.Service('/servicio_posicion_robot', Posicion_robot, self.handle_Posicion_robot)
         print("Listo para devolver la posicion del robot")
-        
+        if self.f==1:
+            S.shutdown()
     
 
             
-            #------------------------------------------------------------------   
+            
     
 if __name__ == "__main__":
     rospy.init_node('Servidor_Posicion_robot')

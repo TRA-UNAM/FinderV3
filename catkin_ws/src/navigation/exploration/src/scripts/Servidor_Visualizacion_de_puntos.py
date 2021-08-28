@@ -9,6 +9,8 @@ from exploration.srv import Visualizar_Puntos,Visualizar_PuntosResponse
 
 
 class Servicio:
+    def __init__(self):
+        self.f=0
 
 
    
@@ -28,7 +30,7 @@ class Servicio:
         puntos.scale.x=0.1#Tamaño de los puntos
         puntos.scale.y=0.1
         puntos.scale.z=0.1
-        #Los puntos seran verdes
+        #Los puntos seran Azules
         #puntos.color.r=1.0#Color  
         puntos.color.b=1.0#Color 
         puntos.color.a=1.0#Nitidez
@@ -51,18 +53,20 @@ class Servicio:
         
         
         pub.publish(puntos)
+        self.f=1
         return Visualizar_PuntosResponse()
         
 
     def Visualizar_objetivos(self):
             
-        rospy.Service('/servicio_visualizacion', Visualizar_Puntos, self.handle)
+        S=rospy.Service('/servicio_visualizacion', Visualizar_Puntos, self.handle)
         print("Listo para dibujar los puntos")
-            
+        if self.f==1:
+            S.shutdown()   
     
 
             
-            #------------------------------------------------------------------   
+            
     
 if __name__ == "__main__":
     rospy.init_node('Servidor_Visualizar')

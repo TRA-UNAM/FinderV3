@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #!/usr/bin/env python3
 # coding=utf-8
 import sys
@@ -7,15 +6,14 @@ import math
 import numpy as np
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-from exploration.srv import Posicion_robot
 from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
-import Servidor_Visualización_de_puntos as vp
+from exploration.srv import Mover_robot, Mover_robotResponse, Visualizar_Puntos, Posicion_robot
 
 class Servicio:
 
-    def __init__(self,datos,objetivo,posicion_x,posicion_y,width,height,resolution,cliente):
+    def __init__(self):
 
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.pub_markers = rospy.Publisher('/visualization_marker', Marker, queue_size=100)
@@ -23,46 +21,20 @@ class Servicio:
         self.robot_a=0
         self.robot_x=0
         self.robot_y=0
-        self.objetivo=objetivo
-        self.posicion_x=posicion_x
-        self.posicion_y=posicion_y
-        self.width=width
-        self.height=height
-        self.resolution=resolution
-        self.cliente_posicion_robot=cliente
+        self.obj_x=0
+        self.obj_y=0
+        self.posicion_x=0
+        self.posicion_y=0
         self.laser_readings=[]
-        self.datos=datos
-        self.follow_path()
-
-
-
-    
-    def get_force_marker(self,robot_x, robot_y, force_x, force_y, color, id):
-        mrk = Marker()
-        mrk.header.frame_id = "map"
-        mrk.header.stamp    = rospy.Time.now()
-        mrk.ns = "pot_fields"
-        mrk.id = id
-        mrk.type   = Marker.ARROW
-        mrk.action = Marker.ADD
-        mrk.color.r, mrk.color.g, mrk.color.b, mrk.color.a = color
-        mrk.scale.x, mrk.scale.y, mrk.scale.z = [0.07, 0.1, 0.15]
-        mrk.points.append(Point())
-        mrk.points.append(Point())
-        mrk.points[0].x, mrk.points[0].y = robot_x,  robot_y
-        mrk.points[1].x, mrk.points[1].y = robot_x - force_x, robot_y - force_y
-        mrk.pose.orientation.w=1
-        return mrk
-
-
-
-
-    def draw_force_markers(self,robot_x, robot_y, attr_x, attr_y, rej_x, rej_y, res_x, res_y, pub_markers):
-        pub_markers.publish(self.get_force_marker(robot_x, robot_y, attr_x, attr_y, [0,0,1,1]  , 0))
-        pub_markers.publish(self.get_force_marker(robot_x, robot_y, rej_x,  rej_y,  [1,0,0,1]  , 1))
-        pub_markers.publish(self.get_force_marker(robot_x, robot_y, res_x,  res_y,  [0,0.6,0,1], 2))
-
-
+        self.cliente_visualizacion=0
+        self.dato_v=0
+        self.dato_pr=0
+        self.cliente_posicion_robot=0
+        self.width=0
+        self.height=0
+        self.resolution=0
+        self.mover_robot()
+        
 
     def callback_scan(self,msg):
         
@@ -75,15 +47,31 @@ class Servicio:
         print("Esperando al servicio_posicion_robot")
         rospy.wait_for_service('/servicio_posicion_robot')#Espero hasta que el servicio este habilitado
         try:
-            posicion_robot=self.cliente_posicion_robot(posicion_x=self.posicion_x,posicion_y=self.posicion_y,width=self.width,height=self.height,resolution=self.resolution)
-            self.robot_x=posicion_robot.posicion_x_robot*self.resolution
-            self.robot_y=posicion_robot.posicion_y_robot*self.resolution
-            self.robot_a=posicion_robot.robot_a
+            
+            self.cliente_posicion_robot=rospy.ServiceProxy('/servicio_posicion_robot',Posicion_robot)#Creo un handler para poder llamar al servicio
+            self.dato_pr=self.cliente_posicion_robot(posicion_x=self.posicion_x,posicion_y=self.posicion_y,width=self.width,height=self.height,resolution=self.resolution)
+            self.robot_x=self.dato_pr.posicion_x_robot
+            self.robot_y=self.dato_pr.posicion_y_robot
+            self.robot_a=self.dato_pr.robot_a
         except rospy.ServiceException as e:
             print("Fallo la solicitud del servidor posicion del robot: %s"%e)
             
         rospy.Subscriber('/scan',LaserScan,self.callback_scan,queue_size=10)
     
+    def visualizar_puntos(self):
+        print("Esperando al servicio_visualizacion")
+        rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
+        try:
+            
+            self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+            self.dato_v=self.cliente_visualizacion(posicion_x=self.posicion_x,posicion_y=self.posicion_y,coord_x=self.obj_x,coord_y=self.obj_y,posicion_x_robot=self.robot_x,posicion_y_robot=self.robot_y)
+            
+        
+        except rospy.ServiceException as e:
+            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+
+    
+        print("Ya se pueden visualizar los puntos\n")
 
     def calculate_control(self,robot_x, robot_y, robot_a, goal_x, goal_y):
         cmd_vel = Twist()
@@ -147,7 +135,7 @@ class Servicio:
         force_x=0
         force_y=0
         d0=0.6#A partir de 0.8 metros del robot no voy a contar la resolusion
-        intensidad_repulsion=3
+        intensidad_repulsion=4
         i=0
         
         for lectura_ls in laser_readings:
@@ -179,39 +167,53 @@ class Servicio:
         idx=0
         #[robot_x,robot_y]=self.path[id0]
         self.obtener_pos_robot()
-        
         #[goal_x,goal_y]=self.path[idx]#Se trata del punto objetivo
         epsilon=0.5
-        dist_to_goal=math.sqrt(((self.objetivo[1]*self.resolution) - self.robot_x)**2 + ((self.objetivo[0]*self.resolution) - self.robot_y)**2)
+        dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
         
         
-        while dist_to_goal>0.5:
+        while dist_to_goal>0.3:
             
             rospy.Subscriber("/scan", LaserScan, self.callback_scan)
-            [fax, fay] = self.attraction_force(self.robot_x, self.robot_y, self.objetivo[1]*self.resolution, self.objetivo[0]*self.resolution)#Calculamos la fuerza de atraccion
+            [fax, fay] = self.attraction_force(self.robot_x, self.robot_y, self.obj_x[0], self.obj_y[0])#Calculamos la fuerza de atraccion
             [frx, fry] = self.rejection_force (self.robot_x, self.robot_y, self.robot_a,self.laser_readings)#Calculamos la fuerza de repulsion
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
             [px,py]=[self.robot_x-epsilon*fx,self.robot_y-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
-            vp.visualizacion_objetivos(self.datos,self.objetivo,self.robot_x, self.robot_y)
             msg_cmd_vel=self.calculate_control(self.robot_x,self.robot_y,self.robot_a,px,py)
+            self.visualizar_puntos()
             self.pub_cmd_vel.publish(msg_cmd_vel)
-            #print(fax, fay, frx, fry, fx, fy)
-            #self.draw_force_markers(self.robot_x, self.robot_y, fax, fay, frx, fry, fx, fy, self.pub_markers)#Para dibujar las fuerzas
             self.loop.sleep()
             self.obtener_pos_robot()
-            dist_to_goal=math.sqrt(((self.objetivo[1]*self.resolution)-self.robot_x)**2+((self.objetivo[0]*self.resolution)-self.robot_y)**2)#Calculo el error global
+            dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
             
             
         self.pub_cmd_vel.publish(Twist())
         
 
+    def handle(self,req):
+        self.obj_x=req.obj_x
+        self.obj_y=req.obj_y
+        self.posicion_x=req.posicion_x
+        self.posicion_y=req.posicion_y
+        self.width=req.width
+        self.height=req.height
+        self.resolution=req.resolution
+        self.follow_path()
+        return Mover_robotResponse()
+        
 
-def mover_robot(datos,objetivo,posicion_x,posicion_y,width,height,resolution,servicio):
-    
-    servicio=Servicio(datos,objetivo,posicion_x,posicion_y,width,height,resolution,servicio)
+
+    def mover_robot(self):
+        print("Listo para mover_robot")
+        rospy.Service('/servicio_mover_robot', Mover_robot, self.handle)
+        
+        
     
     
 
-
+if __name__ == "__main__":
+    rospy.init_node('Servidor_Mover_robot')
+    servicio=Servicio()
+    rospy.spin()
 
 
