@@ -1,0 +1,9 @@
+uint32 width
+uint32 height
+int8[] mapa_inflado
+float32 resolution
+-----------------
+
+float32[] coord_x
+float32[] coord_y
+

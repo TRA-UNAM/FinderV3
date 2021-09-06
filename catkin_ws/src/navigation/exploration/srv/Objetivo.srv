@@ -1,0 +1,11 @@
+float64 posicion_x_robot
+float64 posicion_y_robot
+float64 robot_a
+float32[] coord_x
+float32[] coord_y
+
+
+-----------------
+
+float32 obj_x
+float32 obj_y

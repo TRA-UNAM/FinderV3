@@ -12,8 +12,8 @@ else:
   import tty, termios
 
 #--------------------Variables para definir el tope de comandos o valores--------------------
-FINDER_MAX_LIN_VEL = 0.4
-FINDER_MAX_ANG_VEL = 0.4
+FINDER_MAX_LIN_VEL = 0.5
+FINDER_MAX_ANG_VEL = 2
 FLIPPER_MAX_VALUE= 64
 SHOULDER_MAX_VALUE=0.9
 ELBOW_MIN_VALUE=-2.3
@@ -245,7 +245,7 @@ if __name__=="__main__":
     control_angular_flipper10= 1.6
     #--------------------Varaibles para definir los pasos--------------------
     LIN_VEL_STEP_SIZE=0.1
-    ANG_VEL_STEP_SIZE=0.2
+    ANG_VEL_STEP_SIZE=0.1
     ANG_FLIPPER_STEP_SIZE=5
     #--------------------Variables para guardar las velocidades de las juntas--------------------
     target_angular_flipper0=0.0
@@ -274,18 +274,22 @@ if __name__=="__main__":
             pos[3]=0
             
             if key == 'w' :
+                target_angular_vel =0.0
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
                 status = status + 1
                 print(vels(target_linear_vel,target_angular_vel))
             elif key == 'x' :
+                target_angular_vel =0.0
                 target_linear_vel = checkLinearLimitVelocity(target_linear_vel - LIN_VEL_STEP_SIZE)
                 status = status + 1
                 print(vels(target_linear_vel,target_angular_vel))
             elif key == 'a' :
+                target_linear_vel =0.0
                 target_angular_vel = checkAngularLimitVelocity(target_angular_vel + ANG_VEL_STEP_SIZE)
                 status = status + 1
                 print(vels(target_linear_vel,target_angular_vel))
             elif key == 'd' :
+                target_linear_vel =0.0
                 target_angular_vel = checkAngularLimitVelocity(target_angular_vel - ANG_VEL_STEP_SIZE)
                 status = status + 1
                 print(vels(target_linear_vel,target_angular_vel))

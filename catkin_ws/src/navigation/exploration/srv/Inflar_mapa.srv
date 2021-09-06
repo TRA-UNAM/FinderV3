@@ -1,0 +1,19 @@
+
+float32 celdas_a_inflar
+uint32 seq
+time stamp
+string frame_id
+float32 resolution
+uint32 width
+uint32 height
+float64 posicion_x
+float64 posicion_y
+float64 orientacion_x
+float64 orientacion_y
+float64 orientacion_z
+float64 orientacion_w
+int8[] mapa
+-----------------
+
+int8[] mapa_inflado
+

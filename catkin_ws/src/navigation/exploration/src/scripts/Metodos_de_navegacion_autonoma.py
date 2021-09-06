@@ -1,65 +1,364 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=utf-8
 import rospy
 import numpy as np
 #import networkx as nx
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
-
-def calcularDistancias(self):
-    caminos=[]
-    #Tengo que hacer un ajuste, ya que necesito saber la posicion del laser para poder buscar la distancia minima, por lo cual le sumo a la distancia de base_link 0.45 en x para saber la posicion y le sumo 0.1 a todos para asegurar que se encuentre dentro de mi matriz, es una celda despues de donde esta el laser
-    abscisas=[]
-    ordenadas=[]
-    for (x,y) in self.objetivos:
-        abscisas.append(x)
-        ordenadas.append(y)
-    a=np.where(ordenadas>=int(214+(self.pos_y/self.dato.info.resolution)))[0]
-    coordenadas=(abscisas[a[0]],ordenadas[0])
-    nx.shortest_path(self.nuevo_grafo,source=coordenadas)
-    for i in self.objetivos:
-       caminos.append(nx.shortest_path(self.nuevo_grafo,source=coordenadas,target=i))
-    return caminos
+import sys
+from nav_msgs.msg import OccupancyGrid
+from nav_msgs.srv import GetMap
+from nav_msgs.srv import GetMapResponse
+from nav_msgs.srv import GetMapRequest
+from nav_msgs.msg import Odometry
+import heapq
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+import copy
+import math
+import time
 
 
-def visualizacion_objetivos(objetivos,mapa):
+#El mapa de Inflado 2 infla todos los puntos alrededor de un obstaculo el número de celdas que le digas
+def mapa_inflado_2(self,num_celdas_inflar,grafo):
     
-    pub =rospy.Publisher('/visualization_marker',Marker, queue_size=50)
-    puntos=Marker(ns="puntos_objetivo",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
-    puntos.header.stamp=rospy.Time()
-    puntos.header.frame_id="/map"
-    puntos.pose.orientation.w=1.0
-    #Esta es la posicion de la marca
-    puntos.pose.position.x=mapa.info.origin.position.x+0.025 #La referencia se encuentra en la esquina inferior derecha se se ve el robot avanzando hacia enfrente, en el punto más alejado verde en una esquina, y se encuentra a -10.275 positivos en ambos ejes
-    puntos.pose.position.y=mapa.info.origin.position.y+0.025
-    puntos.pose.position.z=0
-    #Puntos
-    puntos.scale.x=0.04
-    puntos.scale.y=0.04
-    #Los puntos seran rojos
-    puntos.color.g=1.0
-    puntos.color.a=1.0
+    print ("Calculando el mapa inflando " +str(num_celdas_inflar) + " cells\n")
+    pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
+    c, l=np.shape(grafo)
+    mapa_inflado=np.copy(grafo)
+    #Voy a inflar el mapa para poder obtener las rutas y que el robot se aleje de las paredes del mapa, entonces sobre el original cada vez que me encuentre 
     
-    """o=Point()
-    o.x=0
-    o.y=0
-    o.z=0
-    puntos.points.append(o)"""
-    #Son las posiciones de los puntos
+    for i in range(c):
+        for j in range(l): 
+            if grafo[i,j]==100:#checamos para cada punto del mapa si esta ocupado y si lo esta entonces inflamos
+                for k1 in range(i-num_celdas_inflar,i+num_celdas_inflar+1):#Aqui voy a iterar para inflar las filas
+                    for k2 in range(j-num_celdas_inflar,j+num_celdas_inflar+1):#Aqui para inflar las columnas
+                        mapa_inflado[k1,k2]=grafo[i,j]#Con k1 y k2 delimito el cuadrado que voy a llenar y marco como ocupada el cuadro al rededor del punto segun el numero de celdas que desean
     
-    for (x,y) in objetivos:
-        p=Point()
-        p.x=y*(mapa.info.resolution)#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
-        p.y=x*(mapa.info.resolution)
-        p.z=0
-        puntos.points.append(p)
+    print("Acabe de inflar el mapa\n")  
+    #Voy a publicar el mapa inflado para observarlo, por ello debo poner otro mapa
+    mapa_ocupacion = OccupancyGrid()
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.header.stamp=self.dato.header.stamp
+    mapa_ocupacion.header.frame_id=self.dato.header.frame_id
+    mapa_ocupacion.info.resolution=self.dato.info.resolution
+    mapa_ocupacion.info.width = self.dato.info.width
+    mapa_ocupacion.info.height = self.dato.info.height
+    mapa_ocupacion.info.origin.position.x =self.dato.info.origin.position.x
+    mapa_ocupacion.info.origin.position.y =self.dato.info.origin.position.y
+    mapa_ocupacion.info.origin.orientation.x =self.dato.info.origin.orientation.x
+    mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
+    mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
+    mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
+    pub_inflated.publish(mapa_ocupacion)
     
     
-    rate = rospy.Rate(20)#defino que los datos se publicaran 15/s
-    pub.publish(puntos)
-    rate.sleep()
+    return mapa_inflado
+#El mapa de Inflado 1 infla solo los puntos que se encuentran al lado de espacio conocido, pero requiere muchas más operaciones
+def mapa_inflado_1(self,num_celdas_inflar,grafo):
+    print ("Calculando el mapa inflando " +str(num_celdas_inflar) + " cells\n")
+    c, l=np.shape(grafo)
+    mapa_inflado=np.copy(grafo)
+    #Voy a inflar el mapa para poder obtener las rutas y que el robot se aleje de las paredes del mapa, entonces sobre el original cada vez que me encuentre 
+    #Voy a inflar con 5 celdas
+    for i in range(c):
+        for j in range(l): 
+            
+            if i>=0 and i<(num_celdas_inflar+1) and j==0:#CASO 1
+               
+               if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+
+            elif i>0 and i<(num_celdas_inflar+1) and j>0 and j<(num_celdas_inflar+1):#CASO 2
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+   
+            elif i>0 and i<(num_celdas_inflar+1) and j>=(num_celdas_inflar+1) and j<(l-(num_celdas_inflar+1)):#CASO 3
+
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+                    
+            elif i>0 and i<(num_celdas_inflar+1) and j>=(l-(num_celdas_inflar+1)) and j<(l-1):#CASO 4
+
+
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100
+                        
+            elif i>=0 and i<(num_celdas_inflar+1) and j==l-1:#CASO 5
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[0:i,j]=100         
+                        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j==0:#CASO 6
+               
+               if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>=(num_celdas_inflar+1) and j<(l-num_celdas_inflar+1):#CASO 7
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+  
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j==(l-1):#CASO 8
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+            
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j==0:#CASO 9
+
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+                        
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>0 and j<(num_celdas_inflar+1):#CASO 10
+               
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+      
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>=(num_celdas_inflar+1) and j<(l-(num_celdas_inflar+1)):#CASO 11
+
+
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100
+            
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j>=(l-(num_celdas_inflar+1)) and j<(l-1):#CASO 12
+
+
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100         
+                
+            elif i>=(c-(num_celdas_inflar+1)) and i<=(c-1) and j==(l-1):#CASO 13
+               
+               if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j]=100#Solo me inflo del lado de lo conocido
+                
+
+               if (grafo[i,j]+grafo[i-1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:(c-1),j]=100    
+                        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>0 and j<(num_celdas_inflar+1):#CASO 14
+                
+                if (grafo[i,j]+grafo[i,j+1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j:j+num_celdas_inflar]=100
+                    else:
+                        mapa_inflado[i,0:j]=100
+                
+
+                if (grafo[i,j]+grafo[i+1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100
+                    else:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100    
         
-        
+            elif i>=(num_celdas_inflar+1) and i<(c-num_celdas_inflar+1) and j>=(l-(num_celdas_inflar+1)) and j<(c-1):#CASO 15
+                
+                if (grafo[i,j]+grafo[i,j-1])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i,j-num_celdas_inflar:j]=100
+                    else:
+                        mapa_inflado[i,j:(l-1)]=100
+                
+
+                if (grafo[i,j]+grafo[i-1,j])==101:
+                    
+                    if grafo[i,j]==100:
+                        mapa_inflado[i-num_celdas_inflar:i,j]=100
+                    else:
+                        mapa_inflado[i:i+num_celdas_inflar,j]=100  
+                        
+    print("Acabe de inflar el mapa\n")  
+    #Voy a publicar el mapa inflado para observarlo, por ello debo poner otro mapa
+    mapa_ocupacion = OccupancyGrid()
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.header.stamp=self.dato.header.stamp
+    mapa_ocupacion.header.frame_id=self.dato.header.frame_id
+    mapa_ocupacion.info.resolution=self.dato.info.resolution
+    mapa_ocupacion.header.seq=self.dato.header.seq
+    mapa_ocupacion.info.width = self.dato.info.width
+    mapa_ocupacion.info.height = self.dato.info.height
+    mapa_ocupacion.info.origin.position.x =self.dato.info.origin.position.x
+    mapa_ocupacion.info.origin.position.y =self.dato.info.origin.position.y
+    mapa_ocupacion.info.origin.orientation.x =self.dato.info.origin.orientation.x
+    mapa_ocupacion.info.origin.orientation.y =self.dato.info.origin.orientation.y
+    mapa_ocupacion.info.origin.orientation.z =self.dato.info.origin.orientation.z
+    mapa_ocupacion.info.origin.orientation.w =self.dato.info.origin.orientation.w
+    mapa_ocupacion.data= np.ravel(np.reshape(mapa_inflado, (len(self.dato.data), 1)))
+    pub_inflated.publish(mapa_ocupacion)
+    return mapa_inflado
+
+def mapa_de_costos(self,num_celdas_costo,grafo):
+    
+    print ("Calculando el mapa de costos con " +str(num_celdas_costo) + " celdas\n")
+    cost_map = np.copy(grafo)
+    [height, width] = grafo.shape
+    
+    for i in range(height):
+        for j in range(width):
+            if grafo[i,j]==100:#checamos para cada punto del mapa si esta ocupado 
+                for k1 in range(-num_celdas_costo,num_celdas_costo+1):#Voy a ir de menos el radio hasta más el radio
+                    for k2 in range(-num_celdas_costo,num_celdas_costo+1):#Aqui para inflar las columnas
+                        cost=num_celdas_costo-max(abs(k1),abs(k2))#Se resta el radio de costo a la cordenada en valor absoluto mayor 
+                        if cost>cost_map[i+k1,j+k2]:#Si el costo es mayor a el valor que tenia la celda entonces si la pongo, si no es así, se queda igual
+                            cost_map[i+k1,j+k2]=cost+1#Con k1 y k2 delimito el cuadrado que voy a llenar y voy a tener que comparar para ver si sustituyo
+    
+    
+                    
+    return cost_map
+          
 def convertir_matriz(grafo):
     """#Entra un grafo de 40x40 que es subgrafo que envuelve al robot en un area cuadrada, en la cual se hara la busqueda de objetivos.
     #Este grafo fue modificado colocando como 1 los valores conocidos, esto porque se consideran grafos conectados, y a los demas valores se les ha colocado un 0.
@@ -190,10 +489,8 @@ def convertir_matriz(grafo):
                 
 
     return nuevo_grafo
-
-
-                
-def Busqueda_Objetivos(grafo):
+#Busqueda de Objetivos encuentra los puntos frontera en el mapa inflado                
+def Busqueda_Objetivos(self,grafo):
 
     c, l=np.shape(grafo)
     nodos_objetivo=[]
@@ -203,17 +500,17 @@ def Busqueda_Objetivos(grafo):
             
             if i==0 and j==0:
                
-               if (grafo[i,j]+grafo[i,j+1])==1:
+               if (grafo[i,j]+grafo[i,j+1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j+1))
                 
 
-               if (grafo[i,j]+grafo[i+1,j])==1:
+               if (grafo[i,j]+grafo[i+1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
@@ -221,63 +518,63 @@ def Busqueda_Objetivos(grafo):
             elif i==0 and j>0 and j!=l-1:
                
 
-                if (grafo[i,j]+grafo[i,j+1])==1:
+                if (grafo[i,j]+grafo[i,j+1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j+1))
 
-                if (grafo[i,j]+grafo[i+1,j])==1:
+                if (grafo[i,j]+grafo[i+1,j])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
 
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
             elif i==0 and j==l-1:
                 
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
-                if (grafo[i,j]+grafo[i+1,j])==1:
+                if (grafo[i,j]+grafo[i+1,j])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
 
             elif i>0 and i !=c-1 and j==0:
                 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
 
                     else:
                         nodos_objetivo.append((i-1,j))
 
-                if (grafo[i,j]+grafo[i+1,j])==1:
+                if (grafo[i,j]+grafo[i+1,j])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
 
-                if (grafo[i,j]+grafo[i,j+1])==1:
+                if (grafo[i,j]+grafo[i,j+1])==-1:
 
-                   if grafo[i,j]==1:
+                   if grafo[i,j]==0:
 
                         nodos_objetivo.append((i,j))
                    else:
@@ -285,198 +582,311 @@ def Busqueda_Objetivos(grafo):
                 
             elif i>0 and i!=c-1 and j>0 and j!=l-1:
                 
-                if (grafo[i,j]+grafo[i,j+1])==1:
+                if (grafo[i,j]+grafo[i,j+1])==-1:
 
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j+1))
 
-                if (grafo[i,j]+grafo[i+1,j])==1:
+                if (grafo[i,j]+grafo[i+1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
 
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
 
             elif i>0 and i!=c-1 and j==l-1:
                 
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
                    
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
 
-                if (grafo[i,j]+grafo[i+1,j])==1:
+                if (grafo[i,j]+grafo[i+1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i+1,j))
                 
             elif i==c-1 and j==0:
                 
-                if (grafo[i,j]+grafo[i,j+1])==1:
+                if (grafo[i,j]+grafo[i,j+1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j+1))
 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
 
             elif i==c-1 and j>0 and j!=l-1:
                 
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
 
-                if (grafo[i,j]+grafo[i,j+1])==1:
+                if (grafo[i,j]+grafo[i,j+1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j+1))
 
             elif i==c-1 and j==l-1:
                
-                if (grafo[i,j]+grafo[i,j-1])==1:
+                if (grafo[i,j]+grafo[i,j-1])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i,j-1))
 
-                if (grafo[i,j]+grafo[i-1,j])==1:
+                if (grafo[i,j]+grafo[i-1,j])==-1:
                     
-                    if grafo[i,j]==1:
+                    if grafo[i,j]==0:
                         nodos_objetivo.append((i,j))
                     else:
                         nodos_objetivo.append((i-1,j))
+
+
+    print("Ya termine de calcular los puntos objetivo\n")
+    print("Encontre un total de "+str(len(nodos_objetivo))+" candidatos\n")
+    return nodos_objetivo    
+
+#Me permite visualizar el número de puntos objetivos encontrados en el mapa a explorar   
+def visualizacion_objetivos(self,objetivos,mapa):
+    
+    
+    pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
+    puntos=Marker(ns="puntos_objetivo",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+    puntos.header.stamp=rospy.Time()
+    puntos.header.frame_id="/map"
+    puntos.pose.orientation.w=1.0
+    #Esta es la posicion de la marca
+    puntos.pose.position.x=mapa.info.origin.position.x+0.025 #La referencia se encuentra en la esquina inferior derecha se se ve el robot avanzando hacia enfrente, en el punto más alejado verde en una esquina, y se encuentra a -10.275 positivos en ambos ejes
+    puntos.pose.position.y=mapa.info.origin.position.y+0.025
+    puntos.pose.position.z=0
+    #Puntos
+    puntos.scale.x=0.07#Tamaño de los puntos
+    puntos.scale.y=0.07
+    puntos.scale.z=0.07
+    #Los puntos seran verdes
+    puntos.color.r=1.0#Color 
+    puntos.color.a=1.0#Nitidez
+
+    
+    o=Point()
+    o.x=int(self.pos_x_robot)*mapa.info.resolution
+    o.y=int(self.pos_y_robot)*mapa.info.resolution
+    o.z=0
+    puntos.points.append(o)
+    
+    
+    for (x,y) in objetivos:
+        p=Point()
+        
+        p.x=y*(mapa.info.resolution)#Se hizo una regla de tres o se multiplico por la resolución del mapa para ajustar los valores de la matriz a los valores de 
+        p.y=x*(mapa.info.resolution)
+        p.z=0
+        puntos.points.append(p)
+    
+    rate=rospy.Rate(20)
+    
+    pub.publish(puntos)
+    rate.sleep()
+    time.sleep(50)
+    
+def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map,static_map_info):
+    
+    g_values=np.full(np.shape(grid_map),sys.maxint)#Creo un arreglo para almacenar todas las g del mapa y lo lleno de valores muy grandes inicialmente para poder comparar e ir agregando las g, en este caso me sirve para poder ir llenando las g de los primeros puntos
+    f_values=np.full(np.shape(grid_map),sys.maxint)#Creo un arreglo para almacenar todas las f del mapa y lo lleno de valores muy grandes inicialmente para poder comparar e ir agregando las f, en este caso me sirve para poder ir llenando las f de los primeros puntos
+    p_nodes=np.full((np.shape(grid_map)[0],np.shape(grid_map)[1],2),-1)#Creo la lista de puntos anteriores para cada nodo con 2 dimensiones y la tercera con un valor de 2 ya que no lo necesitaremos, y los inicio con un valor de -1 para saber el limite
+    in_open_list=np.full(np.shape(grid_map),False)#Estoy creando los verificadores de si esta en la lista cerrada o abierta y los llena de puros Falsos
+    in_close_list=np.full(np.shape(grid_map),False)#Lista de puntos visitados
+    
+    open_list=[]#lista de puntos candidatos
+    heapq.heappush(open_list,(0,[start_r,start_c]))#Agrego a la lista en la posicion 0 el punto inicial
+    g_values[start_r,start_c]=0
+    f_values[start_r,start_c]=0
+    in_open_list[start_r,start_c]=True
+    [r,c]=[start_r,start_c]#r,c sera el nodo actual, iniciando por la posicion del robot
+    steps=0
+    path=[]
+    while len(open_list)>0 and [r,c]!=[goal_r,goal_c]:
+        [r,c]=heapq.heappop(open_list)[1]#Estoy sacando el elemento con mayor prioridad y como me regresa la prioridad y el elemento entonces me interesa saolo sacar el elemento que es el 2 del arreglo
+        in_close_list[r,c]=True#Decimos que ya visitamos el nodo que acabo de extraer 
+        neighbors=[[r+1,c],[r-1,c],[r,c+1],[r,c-1]]#Sacamos los vecinos del punto actual
+        for [nr,nc] in neighbors:#Para cada uno de los vecinos
+            
+            if grid_map[nr,nc]!=0 or in_close_list[nr,nc]:#Si el nodo vecino esta ocupado=100 o es desconocido=-1 o ya fue visitado se omite
+                continue
+            g=g_values[r,c]+1+cost_map[r,c]#Genero la g del punto anterios más 1, en este caso no es g=0 porque lo llene con un valor muy grande, pero no importa, ya que tiene el mismo efecto que empezar con g=0 y le agrego ademas una función de costos que es la distancia que hay de puntos a obstaculos ya que no quiero que el robot se acerque a obstaculos
+            f=g+(np.abs(goal_r-nr)+np.abs(goal_c-nc))#Calculo la f con la g y la distancia de manhatan
+            if g<g_values[nr,nc]:#Si el costo del nodo vecino de r,c es menor al costo del nodo vecino nr, nc entonces cambio la g del nodo vecino, ya que con ello digo que al nodo vecino llegue por otra ruta mejor
+                g_values[nr,nc]=g #Aqui lo que hago es que yo llegue por una ruta al punto nr, nc y si la g fue menor que la g que ya se tenia, tal vez por otra ruta, eso quiere decir que la ruta nueva es mejor y debo cambiar esa g
+                f_values[nr,nc]=f #Aqui lo que hago es que yo llegue por una ruta al punto nr, nc y si la g fue menor que la g que ya se tenia, tal vez por otra ruta, eso quiere decir que la ruta nueva es mejor y debo cambiar esa g
+                p_nodes[nr,nc]=[r,c]#Aquí estoy agregando el predecesor del vecino si se encuentra que el costo es menor que el costo ya calculado por otra ruta tal vez
+            if not in_open_list[nr,nc]: #Si el punto candidato no esta en la lista abierta entonces le cambio el valor, con esto podria agregar dicho punto a la lista abierta para buscar en ellos
+                in_open_list[nr,nc]=True
+                heapq.heappush(open_list,(f,[nr,nc]))#Agrego el punto candidato a la lista abierta si es que no estaba ya y le agrego la g para ordenar de menor g a mayor g e irlos sacando en ese orden
                 
+            steps+=1#Aumento el número de pasos que le tomo al algoritmo calcular la ruta y vuelvo a hacer lo mismo para cada punto de la lista abierta hasta terminar
 
-    return nodos_objetivo
+     
+    if[r,c]!=[goal_r,goal_c] or steps<=500:#Una vez checo para todos losn nodos, si el valor de r,c no es igual al objetivo es que no hay solucion
+        print("Cannot calculate path by A* :c")
+        return[]
+        
+    if steps>500:
+    #Aqui r, c ya se quedo con los valores meta, por lo cual el punto anterior
+    #Preguntar sobre p_nodes
+        while [p_nodes[r,c][0],p_nodes[r,c][1]]!=[-1,-1]:#Sí si existe la solución entonces hasta encontrar el nodo [-1,-1] que fue con lo que se lleno y me dice que son todos los puntos
+            path.insert(0,[r,c])#Voy agregando en la posicion cero cada una de las coordenadas que es el punto anterior
+            [r,c]=p_nodes[r,c]
+            
+        
+    print("The path has had "+str(steps)+" steps for been calculated")
+    
 
-def Filtrado_de_objetivos(self):
-    abscisas=[]
-    ordenadas=[]
-    for (x,y) in self.objetivos:
-        abscisas.append(x)
-        ordenadas.append(y)
+    return path
+
+def get_smooth_path(original_path, alpha, beta):
     
+
+    smooth_path  = copy.deepcopy(original_path)            # At the beginnig, the smooth path is the same than the original path.
+    tolerance    = 0.00001                                 # If gradient magnitude is less than a tolerance, we consider.
+    gradient_mag = tolerance + 1                           # we have reached the local minimum.
+    gradient     = [[0,0] for i in range(len(smooth_path))]# Gradient has N components of the form [x,y]. 
+    epsilon      = 0.5   
     
-    objetivos_izq=[]
-    objetivos_arr=[]
-    objetivos_aba=[]
-    objetivos_der=[]
-    puntos=[]
-    #print(sorted(ordenadas))
-    a=np.where(abscisas==np.min(abscisas))[0]
-    c=np.where(ordenadas==np.min(ordenadas))[0]
-    
-    
-    #(X_min,Y_max) Izquierda
-    for i in a:
-        objetivos_izq.append(ordenadas[i])
-    b=np.where(objetivos_izq==np.max(objetivos_izq))[0]
-    objetivos_izq=[(abscisas[a[0]],objetivos_izq[b[0]])]
-    #(X_min,Y_min) Arriba
-    for i in a:
-        objetivos_arr.append(ordenadas[i])
-    b=np.where(objetivos_arr==np.min(objetivos_arr))[0]
-    objetivos_arr=[(abscisas[a[0]],objetivos_arr[b[0]])]
-    
-    #(X_min,Y_max) Abajo
-    for i in a:
-        objetivos_aba.append(ordenadas[i])
-    b=np.where(objetivos_aba==np.max(objetivos_aba))[0]
-    objetivos_aba=[(abscisas[a[0]],objetivos_aba[b[0]])]
-    
-    #(X_max,Y_min) Derecha
-    for i in c:
-        objetivos_der.append(abscisas[i])
-    b=np.where(objetivos_der==np.max(objetivos_der))[0]
-    objetivos_der=[(objetivos_der[b[0]],ordenadas[c[0]])]
+    #print("Smoothing path with "+str(len(smooth_path))+ " points, using " +str(alpha)+ " as alpha and " +str(beta)+ " as beta")                                  # This variable will weight the calculated gradient.
+    while gradient_mag>tolerance:#En este caso es decir que el gradiente o derivada sea mayor que casi 0, hasta que se tengo un valor menor o igual a la tolerancia se rompe el while
+        gradient_mag=0
+        [xi,yi]=smooth_path[0]#El punto 0
+        [xn,yn]=smooth_path[1]#El punto sigueinte o 1
+        [xq,yq]=original_path[0]#El punto del original en cero
+        gx=alpha*(xi-xn)+beta*(xi-xq)#Este es el gradiente para el primer elemento
+        gy=alpha*(yi-yn)+beta*(yi-yq)#Este es el gradiente para el primer elemento
+        [xi,yi]=[xi-epsilon*gx,yi-epsilon*gy]#actualizo el punto
+        smooth_path[0]=[xi,yi]#Para el primer punto
+        gradient_mag+=gx**2+gy**2 #Aumento el gradiente
+        for i in range(1,len(smooth_path)-1):#Voy a empezar en i=1 hasta el final porque las listas tienen len()-1
+            [xp,yp]=smooth_path[i-1]#El punto anterior
+            [xi,yi]=smooth_path[i]#Obtengo el punto de la ruta
+            [xn,yn]=smooth_path[i+1]#El punto siguiente, no marca error porque el [1,len(smooth_path)-1) agarra el primero, pero el ultimo lo excluye o es el anterior a él el limite
+            [xq,yq]=original_path[i]#Valor del mapa original
+            gx=alpha*(2*xi-xp-xn)+beta*(xi-xq)#Este es el gradiente o la derivada
+            gy=alpha*(2*yi-yp-yn)+beta*(yi-yq)
+            [xi,yi]=[xi-epsilon*gx,yi-epsilon*gy]#actualizo el punto
+            smooth_path[i]=[xi,yi]
+            gradient_mag+=gx**2+gy**2 #Aumento el gradiente
         
-    puntos=[]
-    #Izquierda
-    if objetivos_izq[0][0]<self.min_x_anterior or objetivos_izq[0][1]<=self.max_y_anterior:
-        
-        self.min_x_anterior=objetivos_izq[0][0]
-        self.max_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_izq[0][0]+12,objetivos_izq[0][1]-8]==1 and self.mapa[objetivos_izq[0][0]-8,objetivos_izq[0][1]-8]==0 : 
-            
-            
-            puntos.append((objetivos_izq[0][0]+14,objetivos_izq[0][1]-14))
+        #Para el ultimo punto se calcula el gradiente
+        [xi,yi]=smooth_path[-1]#El ultimo
+        [xp,yp]=smooth_path[-2]#El penultimo
+        [xq,yq]=original_path[-1]
+        gx=alpha*(xi-xp)+beta*(xi-xq)#Este es el gradiepte para el primer elemento
+        gy=alpha*(yi-yp)+beta*(yi-yq)#Este es el gradiente para el primer elemento
+        [xi,yi]=[xi-epsilon*gx,yi-epsilon*gy]#actualizo el punto
+        smooth_path[-1]=[xi,yi]#Para el primer punto
+        gradient_mag+=gx**2+gy**2
+        gradient_mag=math.sqrt(gradient_mag)
+
+
     
-    #Abajo    
-    elif objetivos_aba[0][1]>self.max_y_anterior:
-        self.max_y_anterior=objetivos_aba[0][1]
-        
-        if self.mapa[objetivos_aba[0][0]+8,objetivos_aba[0][1]+8]==0 and self.mapa[objetivos_aba[0][0]+8,objetivos_aba[0][1]-12]==1:
-            puntos.append((objetivos_aba[0][0]+14,objetivos_aba[0][1]-14))
-    
-    #Arriba
-    elif objetivos_arr[0][1]<self.min_y_anterior:
-        #Si entra en el caso de Y _min  
-        self.min_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_arr[0][0]+8,objetivos_arr[0][1]+12]==1 and self.mapa[objetivos_arr[0][0]+8,objetivos_arr[0][1]-8]==0 : 
-            puntos.append((objetivos_arr[0][0]+14,objetivos_arr[0][1]+14))
-       
-            
-    #Derecha 
-    elif objetivos_der[0][0]>self.max_x_anterior or objetivos_der[0][1]<=self.min_y_anterior:
-        #Si entra en el caso de Y _min  
-        self.max_x_anterior=objetivos_der[0][1]
-        self.min_y_anterior=objetivos_arr[0][1]
-        
-        if self.mapa[objetivos_der[0][0]-12,objetivos_der[0][1]+8]==1 and self.mapa[objetivos_der[0][0]+8,objetivos_der[0][1]+8]==0 : 
-            
-            
-            puntos.append((objetivos_der[0][0]-14,objetivos_der[0][1]+14))
-        
-       
-        
+    return smooth_path
+
+def inicializar_centroides(objetivos,k=2):
     
     
-    return puntos
+    (centroid_min_x,centroid_min_y)=(min(objetivos[:][0]),min(objetivos[:][1]))
+    (centroid_max_x,centroid_max_y)=(max(objetivos[:][0]),max(objetivos[:][1]))
     
+    centroides=[]
+
+    for centroide in range (k):#Para el número de clusters voy a adquirir un centroide para cada uno
+        centroide_x=np.random.uniform(centroid_min_x,centroid_max_x)#Adquiero un número random entre el valor minimo y máximo de x y de y abajo
+        centroide_y=np.random.uniform(centroid_min_y,centroid_max_y)
+        centroid=(int(centroide_x),int(centroide_y))#Los convierto a enteros y los aligno para agregarlos a mi lista de centroides
+        centroides.append(centroid)
+    
+    return centroides
+
+def suma_del_error_al_cuadrado(objetivos, centroides):
+
+    grupo_1=[]
+    grupo_2=[]
+    grupos=[]
+    if len(centroides)>0:#Por el momento se contemplan 2 clusters, si se desean más entonces agregar más errores
+        for i in range(len(centroides)-1):
+            for j in objetivos:
+
+                error_1=np.square(((j[0]-centroides[i][0])**2)+((j[1]-centroides[i][1])**2))
+                error_2=np.square(((j[0]-centroides[i+1][0])**2)+((j[1]-centroides[i+1][1])**2))
+                
+                if error_1<error_2:
+                    grupo_1.append([j[0],j[1]])
+                else:
+                    grupo_2.append([j[0],j[1]])
+    else:
+        print("No se puede calcular ya que solo se indico que existe un cluster")
+
+    grupos.append(grupo_1)
+    grupos.append(grupo_2)
+
+    return grupos
+
+def actualizar_centroide(grupos,k=2):
+  
+    centroides=[]
+   
+
+    
+    for l in range(k):#Para el número de clusters voy a adquirir un centroide para cada uno
+        centroide_x,centroide_y=np.mean(grupos[l][:],axis=0)
+        centroid=(int(centroide_x),int(centroide_y))#Los convierto a enteros y los aligno para agregarlos a mi lista de centroides
+        centroides.append(centroid)
+    
+    
+    
+    return centroides

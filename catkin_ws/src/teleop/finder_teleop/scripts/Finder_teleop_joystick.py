@@ -158,18 +158,18 @@ class Nodo():
         7  START
         8  POWER
         9  PALANCA IZQ (PRESIONAR) 
-        10  PALANCA DER (PRESIONAR) 
+        10 PALANCA DER (PRESIONAR) 
             
         Axes name on the Xbox One Controller:
 
-        0   Palanca Izq Horizontal LS (Izq= 1.0)
-        1   Palanca Izq Vertical LS (Arriba= 1.0)
+        0   Palanca Izq Horizontal LS (Izq= 1.0, Der=-1.0)
+        1   Palanca Izq Vertical LS (Arriba= 1.0, Abajo=-1.0)
         2   LT (Sin presionar= 1.0)
-        3   Palanca Der Horizontal LS (Izq= 1.0)
-        4   Palanca Der Vertical RS(Arriba= 1.0)
+        3   Palanca Der Horizontal RS (Izq= 1.0, Der=-1.0)
+        4   Palanca Der Vertical RS (Arriba= 1.0, Abajo=-1.0)
         5   RT (Sin presionar= 1.0)
-        6   Cruceta Horizontal (Izq=1.0)
-        7   Cruceta Vertical (Arriba=1.0)
+        6   Cruceta Horizontal (Izq=1.0, Der=-1.0)
+        7   Cruceta Vertical (Arriba=1.0, Abajo=-1.0)
         """
         #------------------Move base of finder ------------
         if self.botones[4]>-0.2 and self.botones[4]<0.2 and self.botones[5]>-0.2 and self.botones[5]<0.2:
@@ -178,18 +178,18 @@ class Nodo():
             self.pos[2]=0
             self.pos[3]=0
             if self.palancas[1]>0.2 :
-                self.target_linear_vel = self.checkLinearLimitVelocity(self.palancas[1]*0.4)#((self.target_linear_vel+self.palancas[1])*0.4) #------Palanca izquierda-----
+                self.target_linear_vel = self.checkLinearLimitVelocity(self.palancas[1]*0.5)#((self.target_linear_vel+self.palancas[1])*0.4) #------Palanca izquierda-----
                 print(self.vels())
             if self.palancas[1]<-0.2  :
-                self.target_linear_vel = self.checkLinearLimitVelocity(self.palancas[1]*0.4)#((self.target_linear_vel+self.palancas[1])*0.4)
+                self.target_linear_vel = self.checkLinearLimitVelocity(self.palancas[1]*0.5)#((self.target_linear_vel+self.palancas[1])*0.4)
                 print(self.vels())
                 
             if self.palancas[3]>0.2 :
-                self.target_angular_vel = self.checkAngularLimitVelocity(self.palancas[3]*0.4)#((self.target_angular_vel+self.palancas[3])*0.4) #----- Palanca Derecha-----
+                self.target_angular_vel = self.checkAngularLimitVelocity(self.palancas[3]*1.5)#((self.target_angular_vel+self.palancas[3])*0.4) #----- Palanca Derecha-----
                 print(self.vels())
                 
             if self.palancas[3]<-0.2 :
-                self.target_angular_vel = self.checkAngularLimitVelocity(self.palancas[3]*0.4)#((self.target_angular_vel+self.palancas[3])*0.4)
+                self.target_angular_vel = self.checkAngularLimitVelocity(self.palancas[3]*1.5)#((self.target_angular_vel+self.palancas[3])*0.4)
                 print(self.vels())
                 
             
@@ -591,11 +591,11 @@ class Nodo():
         """
         
         #--------------------Varaibles para definir los pasos--------------------
-        self.LIN_VEL_STEP_SIZE=0.4
-        self.ANG_VEL_STEP_SIZE=0.4
+        self.LIN_VEL_STEP_SIZE=0.5
+        self.ANG_VEL_STEP_SIZE=2
         self.ANG_FLIPPER_STEP_SIZE=0.3
-        self.FINDER_MAX_LIN_VEL = 0.4
-        self.FINDER_MAX_ANG_VEL = 0.4
+        self.FINDER_MAX_LIN_VEL = 0.5
+        self.FINDER_MAX_ANG_VEL = 1.5
         self.FLIPPER_MAX_VALUE= 64
         self.SHOULDER_MAX_VALUE=0.9
         self.ELBOW_MIN_VALUE=-2.3

@@ -6,10 +6,7 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import MagneticField #Es el necesario para poder obtener la orientacion 
 
-<<<<<<< HEAD
-=======
 ser=serial.Serial("/dev/finder_XDK",9600)
->>>>>>> 36b809df6baf033473b82e4981ccaf605a70f74e
 
 def main():
 	rospy.init_node('bridge', anonymous=True)
@@ -41,7 +38,7 @@ def main():
 			for x in sMag.split(','):
 				axesM[i]=float(x)
 				i+=1
-			frame_id = rospy.get_param('~frame_id', 'bridge')
+			frame_id = rospy.get_param('~frame_id', 'imu_link')
 			seq=0
 			msg.header.stamp = rospy.Time.now()
 			msg.header.frame_id = frame_id
@@ -68,8 +65,7 @@ def main():
 
 if __name__ == '__main__':
     try:
-        
-        ser =serial.Serial('/dev/ttyACM2',9600)
+        #ser =serial.Serial('/dev/ttyACM2',9600)
         main()
     except rospy.ROSInterruptException:
         pass
