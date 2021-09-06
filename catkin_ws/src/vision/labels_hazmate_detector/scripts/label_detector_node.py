@@ -79,7 +79,7 @@ def label_detection_node():
   global flag
   rospy.init_node('label_detection_node')
   #rospy.Subscriber('/camera4/usb_cam4/image_raw/compressed', CompressedImage, callback)
-  rospy.Subscriber('/camera0/usb_cam0/image_raw', Image, callback)
+  rospy.Subscriber('/cam0/image_raw_local', Image, callback)
   rospy.Subscriber('/vision/label_flag', Bool, flag_callback)
   pub = rospy.Publisher('/vision/detected_labels', Int16MultiArray, queue_size=1)
 	#fps
