@@ -13,7 +13,7 @@ fondo = []
 flag = False
 
 #Area minima del area que se considera movimiento
-contourMinArea = 5000
+contourMinArea = 4500
 
 def movement_detection_node():
   global image
@@ -48,7 +48,8 @@ def movement_detection_node():
     #Diferencia entre imagen anterior y reciente
     resta = cv2.absdiff(fondo, gris)
     # La imagen se pasa a blanco y negro con un umbral
-    umbral = cv2.threshold(resta, 10, 255, cv2.THRESH_BINARY)[1]
+    umbral = cv2.threshold(resta, 4, 255, cv2.THRESH_BINARY)[1]
+    #umbral = cv2.adaptiveThreshold(resta,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     #Erosionamos el umbral para quitar ruido
     umbral = cv2.erode(umbral, None, iterations=2)
     # Dilatamos el umbral para tapar agujeros
@@ -56,7 +57,7 @@ def movement_detection_node():
     # Copiamos el umbral para detectar los contornos
     contornosimg = umbral.copy()
     #Se buscan los contornos de los elementos encontrados
-    contornos, hier = cv2.findContours(contornosimg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    contornos, hier = cv2.findContours(contornosimg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
     num_targets = 0
     totalContornos =[
 100000, 100000, 100000, 100000,
