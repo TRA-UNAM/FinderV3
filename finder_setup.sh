@@ -49,6 +49,7 @@ sudo udevadm trigger
 #Paquetes de navegación
 sudo apt-get install ros-melodic-amcl
 sudo apt-get install ros-melodic-base-local-planner
+sudo apt-get install ros-melodic-dwa-local-planner
 sudo apt-get install ros-melodic-move-base
 
 #Descarga modelo de IA entrenado para detección de audio
