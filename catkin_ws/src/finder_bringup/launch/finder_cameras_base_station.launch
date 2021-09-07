@@ -1,4 +1,10 @@
 <launch>
  <node pkg="image_transport" type="republish" name="rawlocal1" args="theora in:=/camera0/usb_cam0/image_raw raw out:=/cam0/image_raw_local">
  </node>
+ <group ns="vision_base_station">
+  <node name ="movement_display_node" pkg="motion_tracker" type="movement_display_node.py">
+  </node>
+  <node name ="label_image_display" pkg="labels_hazmate_detector" type="label_image_display.py">
+  </node>
+ </group>
 </launch>

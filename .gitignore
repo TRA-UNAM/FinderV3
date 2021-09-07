@@ -12,4 +12,8 @@ stubs/
 **/*~
 **/**~
 **.pyc
+#Temporary files for audio recognition
+catkin_ws/src/audio/number_detection/src/scripts/myNumber.wav
+catkin_ws/src/audio/number_detection/src/scripts/mfcc_cnn_model_all.h5
+catkin_ws/src/audio/number_detection/src/scripts/tmp/tmp/myNumber.png
 

@@ -53,4 +53,12 @@
     <param name="io_method" value="mmap"/>
   </node>
  </group>
+ <group ns="vision">
+  <node name ="movement_detection_node" pkg="motion_tracker" type="movement_detection_node.py">
+  </node>
+  <node name ="qr_barcode_detection_node" pkg="qr_reader" type="qr_barcode_detection_node.py">
+  </node>
+  <node name ="label_detector_node" pkg="labels_hazmate_detector" type="label_detector_node.py">
+  </node>
+ </group>
 </launch>
