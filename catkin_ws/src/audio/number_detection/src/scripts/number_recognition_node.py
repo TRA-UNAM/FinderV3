@@ -6,33 +6,24 @@ import struct
 import wave
 import math
 import sys
+import os
 
-import random
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
-
-from keras.preprocessing import image
-from keras_preprocessing.image import ImageDataGenerator
+#Tensorflow
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import models
+import tensorflow.keras.backend as K
+K.clear_session()
 
 #Para creacion de imagen desde archivo wav
 from matplotlib import pyplot as plt
-import matplotlib.cm as cm
+from matplotlib import cm
 from pylab import plot, show, figure, imshow
+from essentia.standard import *
 
 #ROS MSGS
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Int16
 from std_msgs.msg import Bool
-
-
-from essentia.standard import *
-import keras.backend as K
-K.clear_session()
-
-
-from keras import models
 
 nrow = 450
 ncol = 450
@@ -44,7 +35,6 @@ LEN = 1.5 * RATE   # n seconds
 MAX_SILENCE_START = 40
 MAX_SILENCE_END = 40
 #Import Database
-#model = tf.keras.models.load_model(sys.path[0] + '/sp_recog.h5')
 model = models.load_model(sys.path[0] + '/mfcc_cnn_model_all.h5')
 
 flag = True
@@ -64,6 +54,9 @@ def number_recognition_node():
   rospy.Subscriber('/audio/detection_flag', Bool, flag_callback)
   #Block samples / second
   rate = rospy.Rate(int(2*(RATE/BLOCKSIZE)))
+  #Creates folder for image files
+  if not os.path.exists(sys.path[0] + '/tmp/tmp'):
+    os.makedirs(sys.path[0] + '/tmp/tmp/')
   #Constantly publishes number detected
   while not rospy.is_shutdown():
     #If the audio recognition flag is up, starts recognition
@@ -234,10 +227,8 @@ def predict(image_file):
             target_size=(nrow, ncol),
             batch_size=1,
             class_mode='sparse')
-
   # Load the model
   Xts, _ = test_generator.next()
-
   # Predict the probability of each class
   yts = model.predict(Xts)
   if np.max(yts) < 0.8:
@@ -245,6 +236,7 @@ def predict(image_file):
   else:
     # Choose the most likely class
     res = np.argmax(yts)
+    print(res)
   return res
 
 
@@ -310,3 +302,11 @@ if __name__ == '__main__':
   except rospy.ROSInterruptException:
     pass
   
+#import random
+#import tensorflow as tf
+#from tensorflow.keras.models import Sequential
+#from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten
+#from tensorflow.keras.layers import Conv2D, MaxPooling2D
+#from tensorflow import keras
+#from tensorflow.keras.preprocessing import image
+#import matplotlib.cm as cm
