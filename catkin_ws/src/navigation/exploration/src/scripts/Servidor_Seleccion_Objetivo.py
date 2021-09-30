@@ -26,7 +26,7 @@ class Servicio:
                 error_a=error_a+2*math.pi
 
             
-            if abs(error_a)>1.74532925199:#Si es mayor a +-100 grados
+            if abs(error_a)>1.658062789:#Si es mayor a +-90 grados
                 pass
             else:
                 objetivo_x.append(req.coord_x[i])
