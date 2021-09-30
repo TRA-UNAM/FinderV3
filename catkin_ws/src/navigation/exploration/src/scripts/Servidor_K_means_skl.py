@@ -33,8 +33,8 @@ class Servicio:
             wcss_resta.append(wcss[i]-wcss[i+1])
 
         #A través de los valores de wcss voy a obtener el numero optimo de clusters
-        for i in range(len(wcss)):
-            if np.mean(wcss_resta)< wcss[i]:
+        for i in range(len(wcss_resta)):
+            if np.mean(wcss_resta)< wcss_resta[i]:
                 pass
             else:
                 k=i
