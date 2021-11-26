@@ -17,7 +17,7 @@ BLOCKSIZE = int(RATE/333) #128
 WIDTH = 2
 CHANNELS = 1
 #Detection flag
-flag = True;
+flag = True
 
 def microphone_listener_node():
   global flag
@@ -25,7 +25,7 @@ def microphone_listener_node():
   pub = rospy.Publisher('/audio/mic_samples', Int16MultiArray, queue_size=800)
   rospy.Subscriber('/audio/detection_flag', Bool, flag_callback)
   #Block samples / second
-  rate = rospy.Rate(int(RATE/BLOCKSIZE))
+  rate = rospy.Rate(int(RATE))
   #Start audio stream from microphone
   p = pyaudio.PyAudio()
   stream = p.open(format = p.get_format_from_width(WIDTH),

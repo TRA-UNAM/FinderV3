@@ -1,0 +1,6 @@
+<launch>
+ <group ns="microphone_base">
+  <node name="audio_stream_node" pkg="finder_microphones" type="audio_stream_node.py">
+  </node>
+ </group>
+</launch>

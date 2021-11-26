@@ -1,6 +1,15 @@
 <launch>
- <node pkg="image_transport" type="republish" name="rawlocal1" args="theora in:=/camera0/usb_cam0/image_raw raw out:=/cam0/image_raw_local">
+ <node pkg="image_transport" type="republish" name="rawlocal0" args="theora in:=/camera0/usb_cam0/image_raw raw out:=/cam0/image_raw_local">
  </node>
+ <node pkg="image_transport" type="republish" name="rawlocal1" args="theora in:=/camera1/usb_cam0/image_raw raw out:=/cam1/image_raw_local">
+ </node>
+ <node pkg="image_transport" type="republish" name="rawlocal2" args="theora in:=/camera2/usb_cam0/image_raw raw out:=/cam2/image_raw_local">
+ </node>
+ <node pkg="image_transport" type="republish" name="rawlocal3" args="theora in:=/camera3/usb_cam0/image_raw raw out:=/cam3/image_raw_local">
+ </node>
+ <node pkg="image_transport" type="republish" name="rawlocal4" args="theora in:=/camera4/usb_cam0/image_raw raw out:=/cam4/image_raw_local">
+ </node>
+ 
  <group ns="vision_base_station">
   <node name ="movement_display_node" pkg="motion_tracker" type="movement_display_node.py">
   </node>
