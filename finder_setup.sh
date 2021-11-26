@@ -3,6 +3,8 @@
 
 #Link para instalar OPENCV 
 #https://cyaninfinite.com/installing-opencv-in-ubuntu-for-python-3/
+#Configura el entorno de ROS
+source /opt/ros/melodic/setup.bash
 sudo apt-get update
 sudo apt-get install build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
 sudo apt-get install python3.6-dev
@@ -52,13 +54,17 @@ sudo apt-get install ros-melodic-base-local-planner
 sudo apt-get install ros-melodic-dwa-local-planner
 sudo apt-get install ros-melodic-move-base
 
-#Descarga modelo de IA entrenado para detección de audio
-gdown --id 19Bopb9qhcGjwvkn2pmlFt2xWOQX3lxWz --output ~/FinderV3/catkin_ws/src/audio/number_detection/src/scripts/mfcc_cnn_model_all.h5
-
-cd ~/
-echo "done"
-
-
+#Download AI trained model for number recognition
+FILE=~/FinderV3/catkin_ws/src/audio/number_detection/src/scripts/mfcc_cnn_model_all.h5
+[ -f $FILE ] && echo "$FILE exists."
+[ -f $FILE ] || gdown --id 19Bopb9qhcGjwvkn2pmlFt2xWOQX3lxWz --output $FILE
+#Tensorflow compatibility isues
+pip uninstall protobuf
+pip install protobuf==3.9
 #File to install the eBUS_SDK for thermal camera (Preguntar a Nacho sobre el proceso completo)
 cd ~/FinderV3/ToInstall/
-sudo ./eBUS_SDK_4.1.7.3988_Ubuntu-14.04-x86_64.run
+FOLD=/opt/pleora/ebus_sdk
+[ -d $FOLD ] && echo "$FOLD exists."
+[ -d $FOLD ] || sudo ./eBUS_SDK_4.1.7.3988_Ubuntu-14.04-x86_64.run
+cd ~/
+echo "done"
