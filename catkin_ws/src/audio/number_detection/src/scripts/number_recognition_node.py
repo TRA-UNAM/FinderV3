@@ -23,7 +23,7 @@ from essentia.standard import *
 #ROS MSGS
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Int16
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 
 nrow = 450
 ncol = 450
@@ -48,13 +48,18 @@ def number_recognition_node():
   global audioBuffer
   sample = None
   stop = False
+  global THRESHOLD_COEF
+  THRESHOLD_COEF = 0
   rospy.init_node('number_recognition_node')
-  pub = rospy.Publisher('/audio/detected_numbers', Int16, queue_size=1)
+  pub = rospy.Publisher('/audio/detected_numbers', String, queue_size=1)
+  threspub = rospy.Publisher('/audio/threshold_up', Bool, queue_size=1)
   rospy.Subscriber('/audio/mic_samples', Int16MultiArray, audio_callback)
   rospy.Subscriber('/audio/detection_flag', Bool, flag_callback)
+  rospy.Subscriber('/audio/threshold_val', Int16, threshold_callback)
   #Block samples / second
-  rate = rospy.Rate(int(2*(RATE/BLOCKSIZE)))
+  rate = rospy.Rate(int((RATE/BLOCKSIZE)))
   #Creates folder for image files
+  print(str(flag))
   if not os.path.exists(sys.path[0] + '/tmp/tmp'):
     os.makedirs(sys.path[0] + '/tmp/tmp/')
   #Constantly publishes number detected
@@ -62,7 +67,7 @@ def number_recognition_node():
     #If the audio recognition flag is up, starts recognition
     if flag and audioBuffer != []:
       #Published message
-      message = Int16()
+      message = String()
       #Starts defining threshold value with 20 samples
       print('Defining volume threshold..')
       prevAudioBuffer = []
@@ -72,6 +77,7 @@ def number_recognition_node():
           prevAudioBuffer.append(audioBuffer.pop(0))
       THRESHOLD, THRESHOLD_O = def_threshold(prevAudioBuffer)
       print('Start talking')
+      #pub.publish(String('Start talking'))
       # Wait until voice detected. Once detected, breaks the loop
       # Also saves up to n prevSamples samples before threshold is reached
       prevAudioBuffer = []
@@ -82,10 +88,12 @@ def number_recognition_node():
           prevAudioBuffer.append(sample)
           if len(prevAudioBuffer) > MAX_SILENCE_START + 5:
             prevAudioBuffer.pop(0)
+            threspub.publish(Bool(False))
             #Test 5 last samples with threshold to detect input
             if input_detected_start(prevAudioBuffer, THRESHOLD):
               break
-      print('Input detected')
+      #print('Input detected')
+      threspub.publish(Bool(True))
       if rospy.is_shutdown(): break
       #Once an input is detected, threshold is adjusted down 
       THRESHOLD = THRESHOLD_O
@@ -115,7 +123,7 @@ def number_recognition_node():
             break
         else:
           silence_count = 0
-
+      threspub.publish(Bool(False))
       #Closes WAV file
       output_wf.close()
       #Cleans audio buffer
@@ -124,11 +132,15 @@ def number_recognition_node():
       #CNN prediction
       try:
         to_png(sys.path[0] + '/myNumber.wav', sys.path[0] + '/tmp/tmp/myNumber.png')
-        message.data = predict(sys.path[0] + '/myNumber.png')
+        message.data = str(predict(sys.path[0] + '/myNumber.png'))
         print('Predicted as: %s' % (message.data))
-        pub.publish(message)
+        if message.data != "None":
+          message.data = "Predicted as: " + message.data
+          pub.publish(message)
       except:
         print('Short sample')
+    #print("wait")
+    rate.sleep()
 
 
 def save_sample(sample):
@@ -171,8 +183,15 @@ def def_threshold(thresholdBuffer):
   amp = amp / samples
   #return (amp) * ( 1 + (2 * ( 1 - amp )))
   #return math.sqrt(sum_squares / (BLOCKSIZE / 2)) * 2
-  return 1 - (amp - 1) * (amp - 1), amp * 1.1
-
+  sqramp = (1 - (amp - 1) * (amp - 1))
+  sqramp = sqramp + (1-sqramp) * (THRESHOLD_COEF/100)
+  examp  = amp * 1.1
+  examp = examp + (1-examp) * (THRESHOLD_COEF/100)
+  return sqramp, examp
+def threshold_callback(val):
+  global THRESHOLD_COEF
+  THRESHOLD_COEF = val.data
+  return
 def flag_callback(currentFlag):
   global flag
   flag = currentFlag.data
