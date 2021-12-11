@@ -77,12 +77,12 @@ class MainWindowDesign(QtWidgets.QMainWindow, Ui_MainWindowDesign):
     self.launchCommand = [
       "roslaunch finder_bringup finder_cameras.launch",
       "roslaunch finder_bringup finder_cameras_base_station.launch",
-      "roslaunch finder_bringup finder_visualization.launch",
-      "roslaunch finder_bringup finder_visualization.launch",
+      "roslaunch finder_fake finder_fake.launch",
       "roslaunch finder_bringup finder_microphone.launch",
-      "roslaunch finder_bringup finder_microphone_base.launch","","","",""]
+      "roslaunch finder_bringup finder_microphone_base.launch",
+      "","","","",""]
     #0 = Local; 1 = master 
-    self.launchLocationIndex = [1,0,1,0,0,0,0,0,0,0]
+    self.launchLocationIndex = [1,0,1,1,0,0,0,0,0,0]
     self.launchLocation = range(self.totalLaunch)
     self.launchModifyCheck = range(self.totalLaunch)
     self.launchCommandLine = range(self.totalLaunch)
@@ -129,9 +129,9 @@ class MainWindowDesign(QtWidgets.QMainWindow, Ui_MainWindowDesign):
     #Video Subscribers
     self.videoSubscribers = range(self.totalVideoStream)
     #Initialconfigs
-    self.videoCurrentChannel = [0,0,0,0,2,5,6]
-    self.videoChannelsDescription = [      "Video 0: Main camera",      "Video 1:",      "Video 2:",      "Video 3:",      "Video 4:",
-      "Video 5: Detected Labels",      "Video 6: Motion detection"]
+    self.videoCurrentChannel = [0,1,2,3,2,5,6]
+    self.videoChannelsDescription = ["Video 0","Video 1","Video 2:","Video 3:","Video 4:",
+      "Detected Labels","Motion detection"]
     self.videoChannels = ["/cam0/image_raw_local","/cam1/image_raw_local","/cam2/image_raw_local",
     "/cam3/image_raw_local","/cam4/image_raw_local","/vision/detected_labels_image_raw","/vision/movement_detected_image_raw"]
     self.videoDetections = ["/vision/label_flag","/vision/movement_flag","/vision/qr_flag","",
@@ -350,7 +350,10 @@ class MainWindowDesign(QtWidgets.QMainWindow, Ui_MainWindowDesign):
       os.system("echo 'Launching local...'")
       self.launchProcess[indx].readyReadStandardOutput.connect(lambda: self.LaunchPrint(indx))
       #Run Launch command
-      self.launchProcess[indx].start(str(self.launchCommand[indx])) #self.launchCommandLine[indx].text()))
+      #self.launchProcess[indx].start(self.launchCommand[indx]) #self.launchCommandLine[indx].text()))
+      #self.launchProcess[indx].start("echo hi")
+      #self.launchProcess[indx].waitForStarted()
+      self.launchProcess[indx].start(self.launchCommand[indx])#(str(self.launchCommandLine[indx].text()))#(self.launchCommand[indx]) #self.launchCommandLine[indx].text()))
       self.launchProcess[indx].waitForStarted()
       os.system("echo 'Launched'")
 
@@ -437,7 +440,10 @@ class MainWindowDesign(QtWidgets.QMainWindow, Ui_MainWindowDesign):
     for i in range(self.totalAudioChecks):
       self.audioPublishers[i] = rospy.Publisher(self.audioCheckTopics[i],Bool,queue_size=1)        
     for indx in range(self.totalVideoStream):
-      self.videoSubscribers[indx] = rospy.Subscriber((self.videoChannels[self.videoMenu[indx].currentIndex()]), Image, self.videoCallback, queue_size = 1)
+      print(indx)
+      #self.videoSubscribers[indx] = rospy.Subscriber((self.videoChannels[self.videoMenu[indx].currentIndex()]), Image, self.videoCallback, queue_size = 1)
+      self.videoSubscribers[indx] = rospy.Subscriber((self.videoChannels[indx]), Image, self.videoCallback, queue_size = 1)
+
 
     return
 
@@ -569,7 +575,7 @@ class MainWindowDesign(QtWidgets.QMainWindow, Ui_MainWindowDesign):
     
     
 
-  def __exit__(self):
+  def __del__(self):
     #Terminates process
     print("Killing process")
     self.coreProcess.kill()
