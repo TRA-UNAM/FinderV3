@@ -6,7 +6,7 @@ import rospy
 from nav_msgs.msg import OccupancyGrid
 from exploration.srv import Datos_rviz_mapeo,Datos_rviz_mapeoResponse
 import numpy as np
-import Metodos_de_navegacion_autonoma as md
+#import Metodos_de_navegacion_autonoma as md
 
 
 class Servicio:
