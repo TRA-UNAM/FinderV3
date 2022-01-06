@@ -34,7 +34,7 @@ def qr_barcode_detection_node():
   while not rospy.is_shutdown():
     #Toma la imagen y la convierte al formato de zbar
     if not flag:
-      qr_pub.publish('NULL')
+      #qr_pub.publish('NULL')
       rate.sleep()
       continue
     img = image.copy()
@@ -47,12 +47,12 @@ def qr_barcode_detection_node():
     cont = 0
     for barcode in zbar_img:
       #Publica el tipo de dato (qr/barra) y lo que contiene
-      result = str(barcode.type) + '-->' + barcode.data
+      result = str(barcode.type) + ': ' + barcode.data
       qr_pub.publish(result)
       rospy.loginfo(result)
       cont += 1
     if cont == 0:
-      qr_pub.publish('NULL')
+      pass#qr_pub.publish('NULL')
     rate.sleep()
 
 def flag_callback(currentFlag):

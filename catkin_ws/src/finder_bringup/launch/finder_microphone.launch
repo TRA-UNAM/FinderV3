@@ -1,0 +1,8 @@
+<launch>
+ <group ns="microphone">
+  <node name="microphone_listener_node" pkg="finder_microphones" type="microphone_listener.py">
+  </node>
+  <node name="number_recognition_node" pkg="number_detection" type="number_recognition_node.py">
+  </node>
+ </group>
+</launch>
