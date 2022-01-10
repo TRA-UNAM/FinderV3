@@ -23,7 +23,7 @@ class Servicio:
         np.asarray(puntos)
 
 
-        for i in range(1, 5):#Los 11 representa que como maximo tendria 10 grupos
+        for i in range(1, 5):#Los 5 representa que como maximo tendria 4 grupos
             kmeans = KMeans(n_clusters = i, init = "k-means++", max_iter = 300, n_init = 10, random_state = 0)
             kmeans.fit(puntos)
             wcss.append(kmeans.inertia_)#El valor de wcss para cada uno de los k

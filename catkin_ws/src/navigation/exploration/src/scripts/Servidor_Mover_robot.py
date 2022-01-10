@@ -180,7 +180,7 @@ class Servicio:
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
             [px,py]=[self.robot_x-epsilon*fx,self.robot_y-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
             msg_cmd_vel=self.calculate_control(self.robot_x,self.robot_y,self.robot_a,px,py)
-            self.visualizar_puntos()
+            #self.visualizar_puntos()
             self.pub_cmd_vel.publish(msg_cmd_vel)
             self.loop.sleep()
             self.obtener_pos_robot()

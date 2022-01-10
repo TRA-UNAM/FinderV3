@@ -34,13 +34,13 @@ class Servicio:
         #puntos.color.r=1.0#Color  
         puntos.color.b=1.0#Color 
         puntos.color.a=1.0#Nitidez
-
+        """
         p=Point()
         p.x=req.posicion_x_robot#Para visualizar la posicion del robot
         p.y=req.posicion_y_robot
         p.z=0
         puntos.points.append(p)
-        
+        """
       
         
         for i in range(len(req.coord_x)):
