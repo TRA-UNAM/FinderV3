@@ -160,7 +160,7 @@ class Nodo:
         print("Encontre un total de "+str(len(self.coord_pf_x))+" candidatos\n")
 
 
-
+        """
         
         #---------------------------------------------------------------------
 
@@ -264,7 +264,7 @@ class Nodo:
             
         
 
-        
+        """
         """
         #----------------Visualizar Puntos--------------------------------
         print("Esperando al servicio_visualizacion")
@@ -308,8 +308,8 @@ if __name__== "__main__":
     nodo=Nodo()
     loop=rospy.Rate(20)
     while not rospy.is_shutdown():
-        loop.sleep()
         nodo.prueba_exploracion()
+        loop.sleep()
     
 
     pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
