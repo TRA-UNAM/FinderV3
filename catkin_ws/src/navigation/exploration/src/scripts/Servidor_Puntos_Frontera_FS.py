@@ -20,19 +20,24 @@ class Servicio():
     def handle(self,req):
         
         grafo=np.array(req.mapa_inflado).reshape((req.height, req.width))
-        c, l=np.shape(grafo)
+        #c, l=np.shape(grafo)
         grafo.flags.writeable = True
         grafo[grafo==-1]=255#Desconocido
         grafo[grafo==0]=0#Conocido
-        #grafo[grafo==100]=255
+        grafo[grafo==100]=255
         grafo = np.uint8(grafo)
+        #cv.imshow("Result", grafo) 
         x=cv.Sobel(grafo,cv.CV_16S,1,0)
         y=cv.Sobel(grafo,cv.CV_16S,0,1)
+        
         absX = cv.convertScaleAbs(x)   # Transferencia de regreso a uint8  
         absY = cv.convertScaleAbs(y) 
         bordes= cv.addWeighted(absX,0.5,absY,0.5,0)  
         #bordes=cv.Canny(grafo.T,200,255)
-        cv.imshow("Result", bordes.T)  
+        ret,bordes=cv.threshold(bordes,130,255,cv.THRESH_BINARY)
+        kernel = np.ones((5,5),np.uint8)
+        bordes = cv.morphologyEx(bordes, cv.MORPH_CLOSE, kernel) 
+        cv.imshow("Result", bordes)  
         cv.waitKey(0)  
         cv.destroyAllWindows()
         
