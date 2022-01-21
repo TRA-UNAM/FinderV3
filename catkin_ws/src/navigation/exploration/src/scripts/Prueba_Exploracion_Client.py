@@ -123,7 +123,7 @@ class Nodo:
 
         
         #-------------------------------------------------------------------------
-
+        """
         #----------------Obtencion_mapa de costos---------------------------------
         print("Esperando al servicio_del_mapa_costos")
         rospy.wait_for_service('/servicio_mapa_costos')#Espero hasta que el servicio este habilitado
@@ -141,7 +141,7 @@ class Nodo:
 
         
         #-------------------------------------------------------------------------
-
+        """
         #----------------Obtencion puntos frontera--------------------------------
         print("Esperando al servicio_puntos_frontera")
         rospy.wait_for_service('/servicio_puntos_frontera')#Espero hasta que el servicio este habilitado

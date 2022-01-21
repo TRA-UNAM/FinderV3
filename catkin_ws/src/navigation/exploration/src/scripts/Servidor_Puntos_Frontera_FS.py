@@ -24,15 +24,15 @@ class Servicio():
         grafo.flags.writeable = True
         grafo[grafo==-1]=255#Desconocido
         grafo[grafo==0]=0#Conocido
-        grafo[grafo==100]=255
+        #grafo[grafo==100]=255
         grafo = np.uint8(grafo)
-        #x=cv.Sobel(grafo,cv.CV_8U,1,0)
-        #y=cv.Sobel(grafo,cv.CV_8U,0,1)
-        #absX = cv.convertScaleAbs(x)   # Transferencia de regreso a uint8  
-        #absY = cv.convertScaleAbs(y) 
-        #bordes= cv.addWeighted(absX,0.5,absY,0.5,0)  
-        bordes=cv.Canny(grafo,200,255)
-        cv.imshow("Result", bordes)  
+        x=cv.Sobel(grafo,cv.CV_16S,1,0)
+        y=cv.Sobel(grafo,cv.CV_16S,0,1)
+        absX = cv.convertScaleAbs(x)   # Transferencia de regreso a uint8  
+        absY = cv.convertScaleAbs(y) 
+        bordes= cv.addWeighted(absX,0.5,absY,0.5,0)  
+        #bordes=cv.Canny(grafo.T,200,255)
+        cv.imshow("Result", bordes.T)  
         cv.waitKey(0)  
         cv.destroyAllWindows()
         
