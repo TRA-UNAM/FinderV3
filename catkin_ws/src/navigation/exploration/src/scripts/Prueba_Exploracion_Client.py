@@ -160,11 +160,11 @@ class Nodo:
         print("Encontre un total de "+str(len(self.coord_pf_x))+" candidatos\n")
 
 
-        """
+        
         
         #---------------------------------------------------------------------
 
-        
+        """
 
         #----------------Obtener centroides--------------------------------
         print("Esperando al servicio centroides")
@@ -264,26 +264,27 @@ class Nodo:
             
         
 
+        
         """
-        """
-        #----------------Visualizar Puntos--------------------------------
-        print("Esperando al servicio_visualizacion")
-        rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
-        try:
-            if self.cliente_visualizacion==0:
-                self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+        while not rospy.is_shutdown():
+            #----------------Visualizar Puntos--------------------------------
+            print("Esperando al servicio_visualizacion")
+            rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
+            try:
+                if self.cliente_visualizacion==0:
+                    self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+                    
+                    
+                self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.coord_pf_x,coord_y=self.coord_pf_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
                 
-                
-            self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=objetivo_x,coord_y=objetivo_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
             
-        
-        except rospy.ServiceException as e:
-            print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+            except rospy.ServiceException as e:
+                print("Fallo la solicitud del servidor puntos frontera: %s"%e)
 
+            
+            print("Ya se pueden visualizar los puntos\n") 
         
-        print("Ya se pueden visualizar los puntos\n") 
         
-
 
         
         
@@ -291,7 +292,7 @@ class Nodo:
 
         
         #---------------------------------------------------------------------
-        """
+        
         
         #----------------Obtención de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])

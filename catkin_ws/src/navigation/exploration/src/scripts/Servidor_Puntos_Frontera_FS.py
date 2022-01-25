@@ -34,13 +34,17 @@ class Servicio():
         absY = cv.convertScaleAbs(y) 
         bordes= cv.addWeighted(absX,0.5,absY,0.5,0)  
         #bordes=cv.Canny(grafo.T,200,255)
-        ret,bordes=cv.threshold(bordes,130,255,cv.THRESH_BINARY)
-        kernel = np.ones((5,5),np.uint8)
+        ret,bordes=cv.threshold(bordes,200,255,cv.THRESH_BINARY)
+        kernel = np.ones((9,9),np.uint8)
         bordes = cv.morphologyEx(bordes, cv.MORPH_CLOSE, kernel) 
-        cv.imshow("Result", bordes)  
-        cv.waitKey(0)  
-        cv.destroyAllWindows()
+        self.y=(np.where(bordes==255)[0])*req.resolution
+        self.x=(np.where(bordes==255)[1])*req.resolution
+        #print(x[0],y[0])
+        #cv.imshow("Result", bordes.T)  
+        #cv.waitKey(0)  
+        #cv.destroyAllWindows()
         
+          
         print("Ya termine de calcular los puntos frontera\n")
         return Puntos_FronteraResponse(coord_x=self.x,coord_y=self.y)#Devolver todo en [m] 
 
