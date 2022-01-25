@@ -13,7 +13,7 @@ import sys
 #import Servidor_de_control_para_mover_el_robot as mr
 from geometry_msgs.msg import Twist
 import math
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 class Nodo:
@@ -81,7 +81,7 @@ class Nodo:
         #----------------------------------------------------------------------
         
             
-        #----------------Obtención de la posición del robot en [m]--------------------------------
+        #----------------Obtencion de la posicion del robot en [m]--------------------------------
 
         
         print("Esperando al servicio_posicion_robot")
@@ -194,9 +194,9 @@ class Nodo:
 
         
             #---------------------------------------------------------------------
-        """
         
-
+        
+        """
         #----------------Obtener centroides--------------------------------
         print("Esperando al servicio centroides")
         rospy.wait_for_service('/servicio_centroides')#Espero hasta que el servicio este habilitado
@@ -217,6 +217,7 @@ class Nodo:
 
         
         #---------------------------------------------------------------------
+        
         """
         #----------------Visualizar Centroides--------------------------------
         print("Esperando al servicio_visualizacion")
@@ -237,7 +238,7 @@ class Nodo:
         
         
         #---------------------------------------------------------------------
-
+        
         """
         
         #----------------Obtener el punto objetivo--------------------------------
@@ -293,8 +294,8 @@ class Nodo:
             
             #---------------------------------------------------------------------
             
-       
-        #----------------Obtención de la ruta--------------------------------------
+        
+        #----------------Obtencion de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
         #if self.pos_x_robot!=0 and self.pos_y_robot!=0:
             
