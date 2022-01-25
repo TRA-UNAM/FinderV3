@@ -23,24 +23,25 @@ class Servicio:
         np.asarray(puntos)
 
 
-        for i in range(1, 5):#Los 5 representa que como maximo tendria 4 grupos
-            kmeans = KMeans(n_clusters = i, init = "k-means++", max_iter = 300, n_init = 10, random_state = 0)
+        for i in range(1, 9):#Los 9 representa que como maximo tendria 8 grupos
+            kmeans = KMeans(n_clusters = i, init = "k-means++", max_iter = 300, n_init = 10, random_state = 0)#n_init representa el numero de veces que el algoritmo de k-means correra con diferente semilla de centroide diferentes. Los resultados finales seran la mejor salida de ejecuciones ejecutivas en terminos de inercia.
             kmeans.fit(puntos)
-            wcss.append(kmeans.inertia_)#El valor de wcss para cada uno de los k
-
+            wcss.append(kmeans.inertia_)#kmeans.inertia_ calcula la suma de los cuadrados de las distancias que existe entre los vectores de cada cluster a su centroide
+        #wcss contiene dichas sumas, y entre mas clusters tengamos, menor seran esas distancias.
         wcss_resta=[]
-        for i in range(3):
-            wcss_resta.append(wcss[i]-wcss[i+1])
+        for i in range(7):
+            wcss_resta.append(wcss[i]-wcss[i+1])#Obtengo las diferencias en el valor de wcss que se da cuando se aumenta en 1 el numero de clusters
 
-        #A través de los valores de wcss voy a obtener el numero optimo de clusters
+        #A traves de los valores de wcss voy a obtener el numero optimo de clusters
         for i in range(len(wcss_resta)):
-            if np.mean(wcss_resta)< wcss_resta[i]:
-                pass
-            else:
+            if np.mean(wcss_resta)> wcss_resta[i]:#Si el cambio en el valor de wcss es mayor a la media de todos los cambios, entonces no selecciono k, en caso contrario, cuando la media de los cambios es menor ese es el valor de k
                 k=i
+            else:
+                pass
         
         kmeans = KMeans(n_clusters = k, init="k-means++", max_iter = 300, n_init = 10, random_state = 0)
-        y_kmeans = kmeans.fit_predict(puntos)
+        kmeans.fit(puntos)
+        #y_kmeans = kmeans.fit_predict(puntos)
         centroides_x=kmeans.cluster_centers_[:,0]
         centroides_y=kmeans.cluster_centers_[:,1]
         print("Ya termine de obtener los centroides\n")

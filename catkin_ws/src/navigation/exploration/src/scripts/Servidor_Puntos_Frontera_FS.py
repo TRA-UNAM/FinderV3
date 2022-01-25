@@ -21,22 +21,22 @@ class Servicio():
         
         grafo=np.array(req.mapa_inflado).reshape((req.height, req.width))
         #c, l=np.shape(grafo)
-        grafo.flags.writeable = True
-        grafo[grafo==-1]=255#Desconocido
-        grafo[grafo==0]=0#Conocido
-        grafo[grafo==100]=255
+        #grafo.flags.writeable = True
         grafo = np.uint8(grafo)
         #cv.imshow("Result", grafo) 
         x=cv.Sobel(grafo,cv.CV_16S,1,0)
         y=cv.Sobel(grafo,cv.CV_16S,0,1)
-        
         absX = cv.convertScaleAbs(x)   # Transferencia de regreso a uint8  
         absY = cv.convertScaleAbs(y) 
-        bordes= cv.addWeighted(absX,0.5,absY,0.5,0)  
+        #print(absX[100,100])
+        bordes= cv.addWeighted(absX,0.2,absY,0.2,0)  
         #bordes=cv.Canny(grafo.T,200,255)
-        ret,bordes=cv.threshold(bordes,200,255,cv.THRESH_BINARY)
-        kernel = np.ones((9,9),np.uint8)
-        bordes = cv.morphologyEx(bordes, cv.MORPH_CLOSE, kernel) 
+        ret,bordes=cv.threshold(bordes,90,255,cv.THRESH_BINARY)
+        kernel = np.ones((2,2),np.uint8)
+        bordes=cv.dilate(bordes,kernel)
+        bordes=cv.erode(bordes,kernel)
+        bordes=cv.erode(bordes,kernel)
+        #bordes = cv.morphologyEx(bordes, cv.MORPH_CLOSE, kernel) 
         self.y=(np.where(bordes==255)[0])*req.resolution
         self.x=(np.where(bordes==255)[1])*req.resolution
         #print(x[0],y[0])

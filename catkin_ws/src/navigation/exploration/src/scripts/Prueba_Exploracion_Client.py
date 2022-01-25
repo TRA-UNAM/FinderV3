@@ -164,7 +164,38 @@ class Nodo:
         
         #---------------------------------------------------------------------
 
+         
+
         """
+        
+        while not rospy.is_shutdown():
+            #----------------Visualizar Puntos Frontera--------------------------------
+            print("Esperando al servicio_visualizacion")
+            rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
+            try:
+                if self.cliente_visualizacion==0:
+                    self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+                    
+                    
+                self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.coord_pf_x,coord_y=self.coord_pf_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
+                
+            
+            except rospy.ServiceException as e:
+                print("Fallo la solicitud del servidor puntos frontera: %s"%e)
+
+            
+            print("Ya se pueden visualizar los puntos\n") 
+        
+        
+
+        
+        
+
+
+        
+            #---------------------------------------------------------------------
+        """
+        
 
         #----------------Obtener centroides--------------------------------
         print("Esperando al servicio centroides")
@@ -186,8 +217,8 @@ class Nodo:
 
         
         #---------------------------------------------------------------------
-
-        #----------------Visualizar Puntos--------------------------------
+        """
+        #----------------Visualizar Centroides--------------------------------
         print("Esperando al servicio_visualizacion")
         rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
         try:
@@ -207,7 +238,7 @@ class Nodo:
         
         #---------------------------------------------------------------------
 
-
+        """
         
         #----------------Obtener el punto objetivo--------------------------------
         print("Esperando al servicio punto objetivo")
@@ -255,45 +286,14 @@ class Nodo:
             
 
 
+        
             
-            
-
+        
 
             
             #---------------------------------------------------------------------
             
-        
-
-        
-        """
-        while not rospy.is_shutdown():
-            #----------------Visualizar Puntos--------------------------------
-            print("Esperando al servicio_visualizacion")
-            rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
-            try:
-                if self.cliente_visualizacion==0:
-                    self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
-                    
-                    
-                self.dato_v=self.cliente_visualizacion(posicion_x=self.dato.posicion_x,posicion_y=self.dato.posicion_y,coord_x=self.coord_pf_x,coord_y=self.coord_pf_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot)
-                
-            
-            except rospy.ServiceException as e:
-                print("Fallo la solicitud del servidor puntos frontera: %s"%e)
-
-            
-            print("Ya se pueden visualizar los puntos\n") 
-        
-        
-
-        
-        
-
-
-        
-        #---------------------------------------------------------------------
-        
-        
+       
         #----------------Obtención de la ruta--------------------------------------
             #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
         #if self.pos_x_robot!=0 and self.pos_y_robot!=0:
