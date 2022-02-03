@@ -2,9 +2,10 @@
 <launch>
   
   <arg name="model" default="finder"/>
-  <arg name="x_pos" default="1.3"/>
-  <arg name="y_pos" default="9.3"/>
+  <arg name="x_pos" default="2.5030"/>
+  <arg name="y_pos" default="8.5555"/>
   <arg name="z_pos" default="0.0"/>
+  <arg name="yaw_value"   default="-1.570403"/>
 
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -22,7 +23,7 @@
   <!-- Launch control launch file -->
   <include file="$(find finder_gazebo)/launch/finder_base_control.launch"/>
 
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -Y $(arg yaw_value) -param robot_description" />
 
 
   

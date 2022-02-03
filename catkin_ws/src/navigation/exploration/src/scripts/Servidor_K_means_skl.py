@@ -5,7 +5,7 @@
 import rospy
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
-from exploration.srv import Puntos_Objetivo,Puntos_ObjetivoResponse
+from exploration.srv import Centroides,CentroidesResponse
 import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -39,7 +39,7 @@ class Servicio:
             wcss_resta.append(wcss[i]-wcss[i+1])#Obtengo las diferencias en el valor de wcss que se da cuando se aumenta en 1 el numero de clusters
 
         desv_est=np.std(wcss)
-        #print(wcss_resta,desv_est)
+        print(wcss_resta,desv_est)
         #dato=int(input())
 
 

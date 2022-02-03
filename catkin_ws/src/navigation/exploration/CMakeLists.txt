@@ -66,8 +66,8 @@ find_package(catkin REQUIRED COMPONENTS
    Mapa_Costos.srv
    Puntos_Frontera.srv
    Visualizar_Puntos.srv
-   Puntos_Objetivo.srv
    Objetivo.srv
+   Centroides.srv
    Mover_robot.srv
 
  )

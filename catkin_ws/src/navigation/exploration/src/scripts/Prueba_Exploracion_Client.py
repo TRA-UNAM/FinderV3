@@ -4,7 +4,7 @@
 
 
 import rospy
-from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Puntos_Objetivo, Objetivo, Mover_robot
+from exploration.srv import Datos_rviz_mapeo, Inflar_mapa, Puntos_Frontera, Posicion_robot, Mapa_Costos, Puntos_Frontera, Visualizar_Puntos, Centroides, Objetivo, Mover_robot
 from nav_msgs.msg import OccupancyGrid
 import numpy as np
 #import Servidor_Obtencion_ruta as ruta
@@ -13,6 +13,7 @@ import sys
 #import Servidor_de_control_para_mover_el_robot as mr
 from geometry_msgs.msg import Twist
 import math
+import heapq
 #import matplotlib.pyplot as plt
 
 
@@ -50,6 +51,9 @@ class Nodo:
         self.cliente_objetivo=0
         self.dato_o=0
         self.cliente_mr=0
+        self.obj_x=[]
+        self.obj_y=[]
+        
 
 
         
@@ -240,15 +244,15 @@ class Nodo:
         #---------------------------------------------------------------------
         
         
-        """
+        
         #----------------Obtener el punto objetivo--------------------------------
         print("Esperando al servicio punto objetivo")
         rospy.wait_for_service('/servicio_objetivo')#Espero hasta que el servicio este habilitado
         try:
             if self.cliente_objetivo==0:
                 self.cliente_objetivo=rospy.ServiceProxy('/servicio_objetivo',Objetivo)#Creo un handler para poder llamar al servicio
-              
-            self.dato_o=self.cliente_objetivo(coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot,robot_a=self.robot_a)
+
+            self.dato_o=self.cliente_objetivo(coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot,robot_a=self.robot_a,width=self.dato.width,height=self.dato.height,obj_x=self.obj_x,obj_y=self.obj_y)
             
         
         except rospy.ServiceException as e:
@@ -285,7 +289,7 @@ class Nodo:
             
             print("Ya movi el robot hasta el punto seleccionado\n") 
             
-        """
+        
 
         
             
