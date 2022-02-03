@@ -8,6 +8,8 @@ from geometry_msgs.msg import Point
 from exploration.srv import Puntos_Objetivo,Puntos_ObjetivoResponse
 import numpy as np
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
 
 
 class Servicio:
@@ -28,16 +30,25 @@ class Servicio:
             kmeans.fit(puntos)
             wcss.append(kmeans.inertia_)#kmeans.inertia_ calcula la suma de los cuadrados de las distancias que existe entre los vectores de cada cluster a su centroide
         #wcss contiene dichas sumas, y entre mas clusters tengamos, menor seran esas distancias.
+        #plt.plot([1,2,3,4,5,6,7,8],wcss)
+        #plt.show()
+        
+        
         wcss_resta=[]
         for i in range(7):
             wcss_resta.append(wcss[i]-wcss[i+1])#Obtengo las diferencias en el valor de wcss que se da cuando se aumenta en 1 el numero de clusters
 
+        desv_est=np.std(wcss)
+        #print(wcss_resta,desv_est)
+        #dato=int(input())
+
+
         #A traves de los valores de wcss voy a obtener el numero optimo de clusters
         for i in range(len(wcss_resta)):
-            if np.mean(wcss_resta)> wcss_resta[i]:#Si el cambio en el valor de wcss es mayor a la media de todos los cambios, entonces no selecciono k, en caso contrario, cuando la media de los cambios es menor ese es el valor de k
-                k=i
+            if wcss_resta[i]>desv_est:#Si el cambio en el valor de wcss es mayor a la desviacion estandar de wcss entonces lo dejo pasar
+                k=i+2
             else:
-                pass
+                break
         
         kmeans = KMeans(n_clusters = k, init="k-means++", max_iter = 300, n_init = 10, random_state = 0)
         kmeans.fit(puntos)

@@ -218,7 +218,7 @@ class Nodo:
         
         #---------------------------------------------------------------------
         
-        """
+        
         #----------------Visualizar Centroides--------------------------------
         print("Esperando al servicio_visualizacion")
         rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
@@ -239,8 +239,8 @@ class Nodo:
         
         #---------------------------------------------------------------------
         
-        """
         
+        """
         #----------------Obtener el punto objetivo--------------------------------
         print("Esperando al servicio punto objetivo")
         rospy.wait_for_service('/servicio_objetivo')#Espero hasta que el servicio este habilitado
@@ -285,7 +285,7 @@ class Nodo:
             
             print("Ya movi el robot hasta el punto seleccionado\n") 
             
-
+        """
 
         
             

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <param name="robot_description" command="$(find xacro)/xacro.py $(find finder_description)/robot/finder_base_8w.urdf.xacro" />
+  <!-- Launch control launch file -->
+  <include file="$(find finder_gazebo)/launch/finder_base_control.launch"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="debug" value="false"/>
+    <arg name="world_name" value="$(find finder_gazebo)/worlds/apartment_fast.world"/>
+  </include>
+
+
+
+
+
+  
+</launch>
