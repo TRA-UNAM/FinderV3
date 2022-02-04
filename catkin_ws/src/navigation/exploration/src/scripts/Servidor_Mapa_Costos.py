@@ -22,15 +22,15 @@ class Servicio:
         num_celdas_costo=int(req.num_celdas_costo/req.resolution)
         print ("Calculando el mapa de costos con " +str(num_celdas_costo) + " celdas\n")
         cost_map = np.copy(grafo)
-        [height, width] = grafo.shape
         
-        for i in range(height):
-            for j in range(width):
+        
+        for i in range(req.height):
+            for j in range(req.width):
                 if grafo[i,j]==100:#checamos para cada punto del mapa si esta ocupado 
-                    for k1 in range(-num_celdas_costo,num_celdas_costo+1):#Voy a ir de menos el radio hasta más el radio
+                    for k1 in range(-num_celdas_costo,num_celdas_costo+1):#Voy a ir de menos el radio hasta mas el radio
                         for k2 in range(-num_celdas_costo,num_celdas_costo+1):#Aqui para inflar las columnas
                             cost=num_celdas_costo-max(abs(k1),abs(k2))#Se resta el radio de costo a la cordenada en valor absoluto mayor 
-                            if cost>cost_map[i+k1,j+k2]:#Si el costo es mayor a el valor que tenia la celda entonces si la pongo, si no es así, se queda igual
+                            if cost>cost_map[i+k1,j+k2]:#Si el costo es mayor a el valor que tenia la celda entonces si la pongo, si no es asi, se queda igual
                                 cost_map[i+k1,j+k2]=cost+1#Con k1 y k2 delimito el cuadrado que voy a llenar y voy a tener que comparar para ver si sustituyo
         
         

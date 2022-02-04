@@ -17,7 +17,7 @@ class Servicio:
 
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.pub_markers = rospy.Publisher('/visualization_marker', Marker, queue_size=100)
-        self.loop=rospy.Rate(20)
+        self.loop=rospy.Rate(10)
         self.robot_a=0
         self.robot_x=0
         self.robot_y=0
@@ -134,8 +134,8 @@ class Servicio:
         #
         force_x=0
         force_y=0
-        d0=0.8#A partir de 0.8 metros del robot empezara la repulsion
-        intensidad_repulsion=4
+        d0=0.6#A partir de 0.6 metros del robot empezara la repulsion
+        intensidad_repulsion=3
         i=0
         
         for lectura_ls in laser_readings:
@@ -180,7 +180,7 @@ class Servicio:
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
             [px,py]=[self.robot_x-epsilon*fx,self.robot_y-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
             msg_cmd_vel=self.calculate_control(self.robot_x,self.robot_y,self.robot_a,px,py)
-            self.visualizar_puntos()
+            #self.visualizar_puntos()
             self.pub_cmd_vel.publish(msg_cmd_vel)
             self.loop.sleep()
             self.obtener_pos_robot()

@@ -14,7 +14,8 @@ class Servicio:
     
     def handle(self,req):
         
-        mapa_cts=np.array(req.mapa_costos).reshape((req.height, req.width))
+        #mapa_cts=np.array(req.mapa_costos).reshape((req.height, req.width))
+        #print(mapa_cts)
         h=[]
         for i in range(len(req.centroides_x)):
             
@@ -26,20 +27,27 @@ class Servicio:
                 error_a=error_a+2*math.pi
 
             error_d=math.sqrt((req.centroides_x[i] - req.posicion_x_robot)**2 + (req.centroides_y[i] - req.posicion_y_robot)**2)
+            #costo=mapa_cts[int(req.centroides_y[i]/req.resolution),int(req.centroides_x[i]/req.resolution)]
+            #print(costo)
+            heapq.heappush(h,(int((error_a**2+error_d)),(req.centroides_x[i],req.centroides_y[i])))
             
-            h.append(int(abs(error_a)+error_d+mapa_cts[req.centroides_y[i]//req.resolution][req.centroides_x[i]//req.resolution]))
             
-        indice=np.where(h==min(h))[0]
-
-        obj_x=req.centroides_x[indice]
-        obj_y=req.centroides_y[indice]
-        req.centroides_x.remove(obj_x)
-        req.centroides_y.remove(obj_y)
         
-        return ObjetivoResponse(obj_x=obj_x,obj_y=obj_y,centroides_x=req.centroides_x,centroides_y=req.centroides_y)
+        
+        
+        
+        
+        (objetivo_x,objetivo_y)=heapq.heappop(h)[1]
+        
+        
+        
+        list(req.centroides_x).remove(objetivo_x)
+        list(req.centroides_y).remove(objetivo_y)
+        #print(objetivo_x,objetivo_y)
+        return ObjetivoResponse(obj_x=objetivo_x,obj_y=objetivo_y,centroides_x=req.centroides_x,centroides_y=req.centroides_y)
         
 
-    def Objetivo(self):
+    def Servicio_Objetivo(self):
             
         rospy.Service('/servicio_objetivo', Objetivo, self.handle)
         print("Listo para obtener el objetivo")
@@ -51,6 +59,7 @@ class Servicio:
     
 if __name__ == "__main__":
     rospy.init_node('Servidor_Objetivo')
-    Objetivo()
+    servicio=Servicio()
+    servicio.Servicio_Objetivo()
     rospy.spin()
     

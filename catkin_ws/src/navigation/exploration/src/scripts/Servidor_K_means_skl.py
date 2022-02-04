@@ -39,7 +39,7 @@ class Servicio:
             wcss_resta.append(wcss[i]-wcss[i+1])#Obtengo las diferencias en el valor de wcss que se da cuando se aumenta en 1 el numero de clusters
 
         desv_est=np.std(wcss)
-        print(wcss_resta,desv_est)
+        #print(wcss_resta,desv_est)
         #dato=int(input())
 
 
@@ -62,7 +62,7 @@ class Servicio:
     def Centroides(self):
             
         rospy.Service('/servicio_centroides', Centroides, self.handle)
-        print("Listo para obtener los puntos objetivo")
+        print("Listo para obtener los centroides")
             
     
 
