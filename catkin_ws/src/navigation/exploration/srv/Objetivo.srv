@@ -1,15 +1,15 @@
 float64 posicion_x_robot
 float64 posicion_y_robot
 float64 robot_a
-float32[] coord_x
-float32[] coord_y
+float32[] centroides_x
+float32[] centroides_y
+int8[] mapa_costos
 uint32 width
 uint32 height
-float32[] obj_x
-float32[] obj_y
-
-
+float32 resolution
 -----------------
 
+float32[] centroides_x
+float32[] centroides_y
 float32 obj_x
 float32 obj_y

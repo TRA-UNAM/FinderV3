@@ -35,7 +35,6 @@ class Nodo:
         self.costos=0
         self.mapa_de_costos=0
         self.costos_rutas=0
-        self.centroides=0
         self.cliente_mapa_costos=0
         self.cliente_mapa=0
         self.cliente_posicion_robot=0
@@ -53,6 +52,8 @@ class Nodo:
         self.cliente_mr=0
         self.obj_x=[]
         self.obj_y=[]
+        self.centroides_x=[]
+        self.centroides_y=[]
         
 
 
@@ -127,7 +128,7 @@ class Nodo:
 
         
         #-------------------------------------------------------------------------
-        """
+        
         #----------------Obtencion_mapa de costos---------------------------------
         print("Esperando al servicio_del_mapa_costos")
         rospy.wait_for_service('/servicio_mapa_costos')#Espero hasta que el servicio este habilitado
@@ -145,7 +146,7 @@ class Nodo:
 
         
         #-------------------------------------------------------------------------
-        """
+        
         #----------------Obtencion puntos frontera--------------------------------
         print("Esperando al servicio_puntos_frontera")
         rospy.wait_for_service('/servicio_puntos_frontera')#Espero hasta que el servicio este habilitado
@@ -206,7 +207,7 @@ class Nodo:
         rospy.wait_for_service('/servicio_centroides')#Espero hasta que el servicio este habilitado
         try:
             if self.cliente_puntos_objetivo==0:
-                self.cliente_puntos_objetivo=rospy.ServiceProxy('/servicio_centroides',Puntos_Objetivo)#Creo un handler para poder llamar al servicio
+                self.cliente_puntos_objetivo=rospy.ServiceProxy('/servicio_centroides',Centroides)#Creo un handler para poder llamar al servicio
               
             self.dato_po=self.cliente_puntos_objetivo(coord_x=self.coord_pf_x,coord_y=self.coord_pf_y)
             
@@ -216,12 +217,13 @@ class Nodo:
 
         
         print("Ya se tienen los puntos objetivo a partir de {} clusters\n".format(self.dato_po.k)) 
-        
+        self.centroides_x=np.concatenate((self.centroides_x, self.dato_po.centroides_x))
+        self.centroides_y=np.concatenate((self.centroides_y, self.dato_po.centroides_y))
 
 
         
         #---------------------------------------------------------------------
-        
+        """
         
         #----------------Visualizar Centroides--------------------------------
         print("Esperando al servicio_visualizacion")
@@ -243,7 +245,7 @@ class Nodo:
         
         #---------------------------------------------------------------------
         
-        
+        """
         
         #----------------Obtener el punto objetivo--------------------------------
         print("Esperando al servicio punto objetivo")
@@ -252,7 +254,7 @@ class Nodo:
             if self.cliente_objetivo==0:
                 self.cliente_objetivo=rospy.ServiceProxy('/servicio_objetivo',Objetivo)#Creo un handler para poder llamar al servicio
 
-            self.dato_o=self.cliente_objetivo(coord_x=self.dato_po.centroides_x,coord_y=self.dato_po.centroides_y,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot,robot_a=self.robot_a,width=self.dato.width,height=self.dato.height,obj_x=self.obj_x,obj_y=self.obj_y)
+            self.dato_o=self.cliente_objetivo(centroides_x=self.centroides_x,centroides_y=self.centroides_x,posicion_x_robot=self.pos_x_robot,posicion_y_robot=self.pos_y_robot,robot_a=self.robot_a ,mapa_costos=self.mapa_de_costos,width=self.dato.width,height=self.dato.height,resolution=self.dato.resolution)
             
         
         except rospy.ServiceException as e:
@@ -260,14 +262,16 @@ class Nodo:
 
         
         print("Ya se tienen el punto objetivo: {},{}".format(self.dato_o.obj_x,self.dato_o.obj_y)) 
+        self.centroides_x=self.dato_o.centroides_x
+        self.centroides_y=self.dato_o.centroides_y
         objetivo_x=[self.dato_o.obj_x]
         objetivo_y=[self.dato_o.obj_y]
         
-
+        print(len(self.centroides_x))
 
         
         #---------------------------------------------------------------------
-        
+        """
 
         if len(objetivo_x)!=0:
             #----------------Mover al Robot--------------------------------
@@ -294,7 +298,7 @@ class Nodo:
         
             
         
-
+        """
             
             #---------------------------------------------------------------------
             

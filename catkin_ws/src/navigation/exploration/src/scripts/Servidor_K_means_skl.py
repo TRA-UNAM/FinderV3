@@ -56,12 +56,12 @@ class Servicio:
         centroides_x=kmeans.cluster_centers_[:,0]
         centroides_y=kmeans.cluster_centers_[:,1]
         print("Ya termine de obtener los centroides\n")
-        return Puntos_ObjetivoResponse(centroides_x=centroides_x,centroides_y=centroides_y,k=k)
+        return CentroidesResponse(centroides_x=centroides_x,centroides_y=centroides_y,k=k)
         
 
-    def Puntos_Objetivo(self):
+    def Centroides(self):
             
-        rospy.Service('/servicio_centroides', Puntos_Objetivo, self.handle)
+        rospy.Service('/servicio_centroides', Centroides, self.handle)
         print("Listo para obtener los puntos objetivo")
             
     
@@ -72,6 +72,6 @@ class Servicio:
 if __name__ == "__main__":
     rospy.init_node('Servidor_Puntos_Objetivo')
     servicio=Servicio()
-    servicio.Puntos_Objetivo()
+    servicio.Centroides()
     rospy.spin()
     
