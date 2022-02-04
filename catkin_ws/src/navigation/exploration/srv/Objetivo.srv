@@ -9,7 +9,7 @@ float32[] centroides_y
 #float32 resolution
 -----------------
 
-float32[] centroides_x
-float32[] centroides_y
+#float32[] centroides_x
+#loat32[] centroides_y
 float64 obj_x
 float64 obj_y

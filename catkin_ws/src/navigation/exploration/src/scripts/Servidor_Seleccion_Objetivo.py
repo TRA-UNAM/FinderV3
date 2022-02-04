@@ -6,14 +6,14 @@ import rospy
 from exploration.srv import Objetivo,ObjetivoResponse
 import numpy as np
 import math
-import random
 import sys
 import heapq
 
 class Servicio:
     
     def handle(self,req):
-        
+        alpha=0.8
+        betha=0.2
         #mapa_cts=np.array(req.mapa_costos).reshape((req.height, req.width))
         #print(mapa_cts)
         h=[]
@@ -29,22 +29,19 @@ class Servicio:
             error_d=math.sqrt((req.centroides_x[i] - req.posicion_x_robot)**2 + (req.centroides_y[i] - req.posicion_y_robot)**2)
             #costo=mapa_cts[int(req.centroides_y[i]/req.resolution),int(req.centroides_x[i]/req.resolution)]
             #print(costo)
-            heapq.heappush(h,(int((error_a**2+error_d)),(req.centroides_x[i],req.centroides_y[i])))
+            heapq.heappush(h,((alpha*(error_a**2)+betha*error_d),(req.centroides_x[i],req.centroides_y[i])))
             
             
-        
-        
-        
-        
+
         
         (objetivo_x,objetivo_y)=heapq.heappop(h)[1]
         
         
         
-        list(req.centroides_x).remove(objetivo_x)
-        list(req.centroides_y).remove(objetivo_y)
+        #list(req.centroides_x).remove(objetivo_x)
+        #list(req.centroides_y).remove(objetivo_y)
         #print(objetivo_x,objetivo_y)
-        return ObjetivoResponse(obj_x=objetivo_x,obj_y=objetivo_y,centroides_x=req.centroides_x,centroides_y=req.centroides_y)
+        return ObjetivoResponse(obj_x=objetivo_x,obj_y=objetivo_y)#,centroides_x=req.centroides_x,centroides_y=req.centroides_y)
         
 
     def Servicio_Objetivo(self):

@@ -17,7 +17,7 @@ class Servicio:
 
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.pub_markers = rospy.Publisher('/visualization_marker', Marker, queue_size=100)
-        self.loop=rospy.Rate(10)
+        self.loop=rospy.Rate(5)
         self.robot_a=0
         self.robot_x=0
         self.robot_y=0
@@ -135,7 +135,7 @@ class Servicio:
         force_x=0
         force_y=0
         d0=0.6#A partir de 0.6 metros del robot empezara la repulsion
-        intensidad_repulsion=3
+        intensidad_repulsion=4
         i=0
         
         for lectura_ls in laser_readings:
@@ -172,7 +172,7 @@ class Servicio:
         dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
         
         
-        while dist_to_goal>0.3:
+        while dist_to_goal>0.5:
             
             rospy.Subscriber("/scan", LaserScan, self.callback_scan)
             [fax, fay] = self.attraction_force(self.robot_x, self.robot_y, self.obj_x[0], self.obj_y[0])#Calculamos la fuerza de atraccion
