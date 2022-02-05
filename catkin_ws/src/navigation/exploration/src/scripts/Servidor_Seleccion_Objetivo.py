@@ -35,11 +35,14 @@ class Servicio:
 
         
         (objetivo_x,objetivo_y)=heapq.heappop(h)[1]
+        list(req.centroides_x).remove(objetivo_x)
+        list(req.centroides_y).remove(objetivo_y)
+
+        if objetivo_x==req.obj_ant_x and objetivo_y==req.obj_ant_y:
+            (objetivo_x,objetivo_y)=heapq.heappop(h)[1]
         
         
         
-        #list(req.centroides_x).remove(objetivo_x)
-        #list(req.centroides_y).remove(objetivo_y)
         #print(objetivo_x,objetivo_y)
         return ObjetivoResponse(obj_x=objetivo_x,obj_y=objetivo_y)#,centroides_x=req.centroides_x,centroides_y=req.centroides_y)
         

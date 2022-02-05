@@ -55,7 +55,7 @@ class Servicio:
         self.width=req.width
         self.height=req.height
         self.posicion_robot_callback()
-        print("Ya se obtuvo la posición del robot")
+        print("Ya se obtuvo la posicion del robot")
         self.f=1
         return Posicion_robotResponse(posicion_x_robot=self.robot_x,posicion_y_robot=self.robot_y,robot_a=self.robot_a)
 

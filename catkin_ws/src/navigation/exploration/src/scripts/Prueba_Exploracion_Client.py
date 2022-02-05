@@ -46,8 +46,8 @@ class Nodo:
         self.cliente_mr=0
         self.centroides_x=[]
         self.centroides_y=[]
-        self.obj_x=[]
-        self.obj_y=[]
+        self.obj_ant_x=0
+        self.obj_ant_y=0
         
 
 
@@ -241,7 +241,7 @@ class Nodo:
                 if self.cliente_objetivo==0:
                     self.cliente_objetivo=rospy.ServiceProxy('/servicio_objetivo',Objetivo)#Creo un handler para poder llamar al servicio
 
-                self.dato_o=self.cliente_objetivo(centroides_x=self.dato_km.centroides_x,centroides_y=self.dato_km.centroides_y,posicion_x_robot=self.dato_pr.posicion_x_robot,posicion_y_robot=self.dato_pr.posicion_y_robot,robot_a=self.dato_pr.robot_a) 
+                self.dato_o=self.cliente_objetivo(centroides_x=self.dato_km.centroides_x,centroides_y=self.dato_km.centroides_y,posicion_x_robot=self.dato_pr.posicion_x_robot,posicion_y_robot=self.dato_pr.posicion_y_robot,robot_a=self.dato_pr.robot_a,obj_ant_x=self.obj_ant_x,obj_ant_y=self.obj_ant_y) 
                 
             
             except rospy.ServiceException as e:
@@ -319,6 +319,8 @@ class Nodo:
             self.pos_x_robot_ant=self.dato_pr.posicion_x_robot
             self.pos_y_robot_ant=self.dato_pr.posicion_y_robot
             self.robot_a_ant=self.dato_pr.robot_a
+            self.obj_ant_x=self.dato_o.obj_x
+            self.obj_ant_y=self.dato_o.obj_y
 
             #---------------------------------------------------------------------
             #----------------Obtencion de la ruta--------------------------------------

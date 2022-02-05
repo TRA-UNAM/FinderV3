@@ -10,6 +10,7 @@ from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 from exploration.srv import Mover_robot, Mover_robotResponse, Visualizar_Puntos, Posicion_robot
+from time import time
 
 class Servicio:
 
@@ -170,9 +171,9 @@ class Servicio:
         #[goal_x,goal_y]=self.path[idx]#Se trata del punto objetivo
         epsilon=0.5
         dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
+        inicio=time()
         
-        
-        while dist_to_goal>0.5:
+        while dist_to_goal>0.3:
             
             rospy.Subscriber("/scan", LaserScan, self.callback_scan)
             [fax, fay] = self.attraction_force(self.robot_x, self.robot_y, self.obj_x[0], self.obj_y[0])#Calculamos la fuerza de atraccion
@@ -185,7 +186,8 @@ class Servicio:
             self.loop.sleep()
             self.obtener_pos_robot()
             dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
-            
+            if (inicio-time())>300:
+                break
             
         self.pub_cmd_vel.publish(Twist())
         
