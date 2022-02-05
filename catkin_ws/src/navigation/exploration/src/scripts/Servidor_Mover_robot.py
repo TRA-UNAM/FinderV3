@@ -116,7 +116,7 @@ class Servicio:
         # where force_x and force_y are the X and Y components
         # of the resulting attraction force w.r.t. map.
         #
-        intensidad_atraccion=1
+        intensidad_atraccion=3
         force_x=(intensidad_atraccion/math.sqrt((robot_x-goal_x)**2+(robot_y-goal_y)**2))*(robot_x-goal_x)
         force_y=(intensidad_atraccion/math.sqrt((robot_x-goal_x)**2+(robot_y-goal_y)**2))*(robot_y-goal_y)
 
@@ -135,8 +135,8 @@ class Servicio:
         #
         force_x=0
         force_y=0
-        d0=0.6#A partir de 0.6 metros del robot empezara la repulsion
-        intensidad_repulsion=4
+        d0=1#A partir de 1 metros del robot empezara la repulsion
+        intensidad_repulsion=8
         i=0
         
         for lectura_ls in laser_readings:
@@ -173,7 +173,7 @@ class Servicio:
         dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
         inicio=time()
         
-        while dist_to_goal>0.3:
+        while dist_to_goal>0.5:
             
             rospy.Subscriber("/scan", LaserScan, self.callback_scan)
             [fax, fay] = self.attraction_force(self.robot_x, self.robot_y, self.obj_x[0], self.obj_y[0])#Calculamos la fuerza de atraccion
@@ -186,8 +186,10 @@ class Servicio:
             self.loop.sleep()
             self.obtener_pos_robot()
             dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
-            if (inicio-time())>300:
+            
+            if (time()-inicio)>30:
                 break
+            
             
         self.pub_cmd_vel.publish(Twist())
         

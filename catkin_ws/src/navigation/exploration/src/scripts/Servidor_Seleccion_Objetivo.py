@@ -12,8 +12,8 @@ import heapq
 class Servicio:
     
     def handle(self,req):
-        alpha=0.8
-        betha=0.2
+        alpha=0.7
+        betha=0.3
         #mapa_cts=np.array(req.mapa_costos).reshape((req.height, req.width))
         #print(mapa_cts)
         h=[]

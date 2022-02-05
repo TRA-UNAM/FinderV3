@@ -27,12 +27,12 @@ class Servicio:
         puntos.pose.position.y=req.posicion_y+0.025
         puntos.pose.position.z=0
         #Puntos
-        puntos.scale.x=0.1#Tamaño de los puntos
-        puntos.scale.y=0.1
-        puntos.scale.z=0.1
+        puntos.scale.x=0.2#Tamaño de los puntos
+        puntos.scale.y=0.2
+        puntos.scale.z=0.2
         #Los puntos seran Azules
         #puntos.color.r=1.0#Color  
-        puntos.color.b=1.0#Color 
+        puntos.color.r=1.0#Color 
         puntos.color.a=1.0#Nitidez
         """
         p=Point()
