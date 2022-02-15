@@ -20,7 +20,7 @@ import heapq
 class Nodo:
 
     def __init__(self):
-        self.init_node=rospy.init_node("Exploration_and_Mapping", anonymous=True)
+        self.init_node=rospy.init_node("Exploration_and_Mapping")
         self.dato=0
         self.dato_mi=0
         self.dato_mc=0
