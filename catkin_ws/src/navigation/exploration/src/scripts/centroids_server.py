@@ -28,7 +28,7 @@ class Server:
             try:
                 
                 client_boundary_points=rospy.ServiceProxy('/navigation/mapping/get_boundary_points',GetBoundaryPoints)#Creo un handler para poder llamar al servicio
-                data_bp=client_boundary_points(inflated_map=req.inflated_map)
+                data_bp=client_boundary_points(map=req.map)
                 self.boundary_points=data_bp.points
         
             except rospy.ServiceException as e:

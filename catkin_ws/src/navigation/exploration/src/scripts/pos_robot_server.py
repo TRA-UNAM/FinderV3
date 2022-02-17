@@ -18,16 +18,13 @@ class Server:
        self.pos_x_robot=0
        self.pos_y_robot=0
        self.robot_a=0
-       self.width=0
-       self.height=0
-       self.resolution=0
        self.map_origin_pos_x=0
        self.map_origin_pos_y=0
        self.listener=tf.TransformListener()
        
 
 
-    def callback_GetPosRobot(self):
+    def GetPosRobot(self):
         
         try:
             (trans, rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
@@ -39,7 +36,7 @@ class Server:
 
             
             self.pos_x_robot = (abs(self.map_origin_pos_x))+(trans[0])+(0.7*math.cos(self.robot_a))
-            self.pos_y_robot = (abs(self.map_origin_pos_x))+(trans[1])+(0.7*math.sin(self.robot_a))
+            self.pos_y_robot = (abs(self.map_origin_pos_y))+(trans[1])+(0.7*math.sin(self.robot_a))
             
         except:
             pass
@@ -49,12 +46,9 @@ class Server:
 
 
     def handle_GetPosRobot(self,req):
-        self.resolution=req.resolution
         self.map_origin_pos_x=req.map_origin_pos_x
         self.map_origin_pos_y=req.map_origin_pos_y
-        self.width=req.width
-        self.height=req.height
-        self.callback_GetPosRobot()
+        self.GetPosRobot()
         print("We already get the position of the robot")
         return GetPosRobotResponse(pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,robot_a=self.robot_a)
 

@@ -5,7 +5,7 @@
 
 import rospy
 from nav_msgs.msg import OccupancyGrid
-from exploration.srv import GetMap,GetMapResponse
+from nav_msgs.srv import GetMap,GetMapResponse
 
 
 

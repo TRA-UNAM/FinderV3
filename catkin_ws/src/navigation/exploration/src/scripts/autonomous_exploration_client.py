@@ -1,12 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 #Autor: Axel Javier Rojas Mosqueda
 
 
 import rospy
-from exploration.srv import GetMap, GetPosRobot, GetInflatedMap, GetBoundaryPoints, GetPointsVisualization, Objetivo, Mover_robot
+from exploration.srv import GetInflatedMap, GetBoundaryPoints, GetPointsVisualization, Objetivo, Mover_robot
 import os
 from geometry_msgs.msg import Twist
+from nav_msgs.srv import GetMap
+import math
+import tf
 
 
 class Node:
@@ -36,8 +39,26 @@ class Node:
         self.centroid_y=[]
         self.last_obj_x=0
         self.last_obj_y=0
+        self.robot_a=0
+        self.pos_x_robot=0
+        self.pos_y_robot=0
+        self.listener=tf.TransformListener()
         
+    def getPosRobot(self,map_origin_pos_x,map_origin_pos_y):
 
+        
+        ([x, y, z], rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
+        self.robot_a = 2*math.atan2(rot[2], rot[3])
+        if self.robot_a > math.pi:
+            self.robot_a = self.robot_a- 2*math.pi
+        elif self.robot_a<=-math.pi:
+            self.robot_a = self.robot_a+ 2*math.pi
+
+        
+        self.pos_x_robot = (abs(map_origin_pos_x))+(x)+(0.7*math.cos(self.robot_a))
+        self.pos_y_robot = (abs(map_origin_pos_y))+(y)+(0.7*math.sin(self.robot_a))
+        
+    
 
     def autonomous_exploration_client(self):
 
@@ -65,29 +86,7 @@ class Node:
         
         #----------------------------------------------------------------------
         
-            
-        #----------------Pos Robot Client [m]--------------------------------
-
-        
-        print("Establishing the connection with Pos Robot Server")
-        rospy.wait_for_service('/navigation/localization/get_pos_robot')#Espero hasta que el servicio este habilitado
-        try:
-            if self.client_pos_robot==0:
-                self.client_pos_robot=rospy.ServiceProxy('/navigation/localization/get_pos_robot',GetPosRobot)#Creo un handler para poder llamar al servicio
-            
-            self.data_pr=self.client_pos_robot(width=self.data_mp.map.info.width,height=self.data_mp.map.info.height,resolution=self.data_mp.map.info.resolution,map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y)
-
-        except rospy.ServiceException as e:
-            print("The request for the pos robot server failed: %s"%e)
-
-        
-        print("Already we get the data related with the GetPosRobot service\n")
-        print("The position of the robot in [m] is: "+str((self.data_pr.pos_x_robot,self.data_pr.pos_y_robot))+"\n")
-
-        #---------------------------------------------------------------------
-        
-            
-        if self.data_pr.pos_x_robot!=self.last_pos_x_robot or self.data_pr.robot_a!=self.last_robot_a or self.data_pr.pos_y_robot!=self.last_pos_x_robot:
+        if self.pos_x_robot!=self.last_pos_x_robot or self.robot_a!=self.last_robot_a or self.pos_y_robot!=self.last_pos_x_robot:
             
 
         
@@ -116,7 +115,7 @@ class Node:
                 if self.client_boundary_points==0:
                     self.client_boundary_points=rospy.ServiceProxy('/navigation/mapping/get_boundary_points',GetBoundaryPoints)#Creo un handler para poder llamar al servicio
                 
-                self.data_bp=self.client_boundary_points(inflated_map=self.data_im.inflated_map)
+                self.data_bp=self.client_boundary_points(map=self.data_im.inflated_map)
                 
         
             except rospy.ServiceException as e:
@@ -165,7 +164,7 @@ class Node:
                 if self.client_centroids==0:
                     self.client_centroids=rospy.ServiceProxy('/navigation/mapping/get_boundary_points_clustered',GetBoundaryPoints)#Creo un handler para poder llamar al servicio
                 
-                self.data_centroids=self.client_centroids(inflated_map=self.data_im.inflated_map)
+                self.data_centroids=self.client_centroids(map=self.data_im.inflated_map)
                 
             
             except rospy.ServiceException as e:
@@ -188,7 +187,7 @@ class Node:
                     self.client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
                     
                     
-                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.data_pr.pos_x_robot,pos_y_robot=self.data_pr.pos_y_robot,points=self.data_centroids.points)
+                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,points=self.data_centroids.points)
                 
             
             except rospy.ServiceException as e:
@@ -261,25 +260,44 @@ class Node:
             
             #---------------------------------------------------------------------
             
-            
+        """
             #-----------------------Refresco la posicion del robot anterior----------------------------------------
-            self.pos_x_robot_ant=self.dato_pr.posicion_x_robot
-            self.pos_y_robot_ant=self.dato_pr.posicion_y_robot
-            self.robot_a_ant=self.dato_pr.robot_a
-            self.obj_ant_x=self.dato_o.obj_x
-            self.obj_ant_y=self.dato_o.obj_y
+            self.pos_x_robot_ant=self.pos_x_robot
+            self.pos_y_robot_ant=self.pos_y_robot
+            self.robot_a_ant=self.robot_a
+            #self.obj_ant_x=self.dato_o.obj_x
+            #self.obj_ant_y=self.dato_o.obj_y
 
             #---------------------------------------------------------------------
+            #--------------------------GetRobotPos---------------------------------
+        
+            self.getPosRobot(self.data_mp.map.info.origin.position.x,self.data_mp.map.info.origin.position.y)
+
+            print("Already we get the data related with the GetPosRobot service\n")
+            print("The position of the robot in [m] is: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
+            #----------------------------------------------------------------------
+                
+        """
+        #----------------Pos Robot Client [m]--------------------------------
+
+        
+        print("Establishing the connection with Pos Robot Server")
+        rospy.wait_for_service('/navigation/localization/get_pos_robot')#Espero hasta que el servicio este habilitado
+        try:
+            if self.client_pos_robot==0:
+                self.client_pos_robot=rospy.ServiceProxy('/navigation/localization/get_pos_robot',GetPosRobot)#Creo un handler para poder llamar al servicio
+            
+            self.data_pr=self.client_pos_robot(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y)
+
+        except rospy.ServiceException as e:
+            print("The request for the pos robot server failed: %s"%e)
+
+        
+        print("Already we get the data related with the GetPosRobot service\n")
+        print("The position of the robot in [m] is: "+str((self.data_pr.pos_x_robot,self.data_pr.pos_y_robot))+"\n")
+
+        #---------------------------------------------------------------------
         """    
-            #----------------Obtencion de la ruta--------------------------------------
-                #print(self.pos_x_robot,self.pos_y_robot,punto_objetivo[0],punto_objetivo[1])
-            #if self.pos_x_robot!=0 and self.pos_y_robot!=0:
-                
-                
-                #self.path=ruta.a_star(int(self.pos_y_robot),int(self.pos_x_robot),self.puntos_frontera[punto_objetivo[0]][0],self.puntos_frontera[punto_objetivo[0]][1],self.mapa_inflado,self.mapa_de_costos,self)
-                #if len(self.path)!=0:
-                    #self.path=ruta.get_smooth_path(self.path,0.7,0.1)
-                #self.path.append([self.pos_y_robot,self.pos_x_robot])
     
 
 if __name__== "__main__":

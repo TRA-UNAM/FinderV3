@@ -1,7 +1,7 @@
 <launch>
 <node pkg="exploration" type="map_server.py" name="map_server" respawn="false" output="screen"></node>
 
-<node pkg="exploration" type="pos_robot_server.py" name="pos_robot_server" respawn="false" output="screen"></node>
+<!-- <node pkg="exploration" type="pos_robot_server.py" name="pos_robot_server" respawn="false" output="screen"></node> -->
 
 <node pkg="exploration" type="inflated_map_server.py" name="inflated_map_server" respawn="false" output="screen"></node>
 

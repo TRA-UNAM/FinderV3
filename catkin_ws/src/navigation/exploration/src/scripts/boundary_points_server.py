@@ -19,7 +19,7 @@ class Server():
 
     def handle_GetBoundaryPoints(self,req):
         
-        inflated_map=np.array(req.inflated_map.data).reshape((req.inflated_map.info.height, req.inflated_map.info.width))
+        inflated_map=np.array(req.map.data).reshape((req.map.info.height, req.map.info.width))
         inflated_map = np.uint8(inflated_map)
         x=cv2.Sobel(inflated_map,cv2.CV_16S,1,0)
         y=cv2.Sobel(inflated_map,cv2.CV_16S,0,1)
@@ -31,8 +31,8 @@ class Server():
         borders=cv2.dilate(borders,kernel)
         borders=cv2.erode(borders,kernel)
         borders=cv2.erode(borders,kernel)
-        borders_y=(np.where(borders==255)[0])*req.inflated_map.info.resolution
-        borders_x=(np.where(borders==255)[1])*req.inflated_map.info.resolution
+        borders_y=(np.where(borders==255)[0])*req.map.info.resolution
+        borders_x=(np.where(borders==255)[1])*req.map.info.resolution
         for i in range(len(borders_x)):
             p=Point()
             p.x=borders_x[i]

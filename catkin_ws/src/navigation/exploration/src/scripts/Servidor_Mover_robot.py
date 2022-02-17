@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
-from exploration.srv import Mover_robot, Mover_robotResponse, GetPointsVisualization, GetPosRobot
+from exploration.srv import Mover_robot, Mover_robotResponse, GetPointsVisualization
 from time import time
 
 class Servicio:
@@ -36,6 +36,7 @@ class Servicio:
         self.resolution=0
         self.mover_robot()
         
+        
 
     def callback_scan(self,msg):
         
@@ -44,19 +45,22 @@ class Servicio:
             self.laser_readings[i] = [msg.ranges[i], msg.angle_min + i*msg.angle_increment]
         
 
-    def GetPosRobot(self):
-        print("Establishing the connection with Pos Robot Server")
-        rospy.wait_for_service('/navigation/localization/get_pos_robot')#Espero hasta que el servicio este habilitado
+    def getPosRobot(self,map_origin_pos_x,map_origin_pos_y):
+
         try:
+            (trans, rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
+            self.robot_a = 2*math.atan2(rot[2], rot[3])
+            if self.robot_a > math.pi:
+                self.robot_a = self.robot_a- 2*math.pi
+            elif self.robot_a<=-math.pi:
+                self.robot_a = self.robot_a+ 2*math.pi
+
             
-            self.cliente_posicion_robot=rospy.ServiceProxy('/navigation/localization/get_pos_robot',GetPosRobot)#Creo un handler para poder llamar al servicio
-            self.dato_pr=self.cliente_posicion_robot(posicion_x=self.posicion_x,posicion_y=self.posicion_y,width=self.width,height=self.height,resolution=self.resolution)
-            self.robot_x=self.dato_pr.posicion_x_robot
-            self.robot_y=self.dato_pr.posicion_y_robot
-            self.robot_a=self.dato_pr.robot_a
-        except rospy.ServiceException as e:
-            print("Fallo la solicitud del servidor posicion del robot: %s"%e)
+            self.pos_x_robot = (abs(map_origin_pos_x))+(trans[0])+(0.7*math.cos(self.robot_a))
+            self.pos_y_robot = (abs(map_origin_pos_y))+(trans[1])+(0.7*math.sin(self.robot_a))
             
+        except:
+            pass
         rospy.Subscriber('/scan',LaserScan,self.callback_scan,queue_size=10)
     
     def GetPointsVisualization(self):
