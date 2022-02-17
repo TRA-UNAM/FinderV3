@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
-from exploration.srv import Mover_robot, Mover_robotResponse, Visualizar_Puntos, Posicion_robot
+from exploration.srv import Mover_robot, Mover_robotResponse, GetPointsVisualization, GetPosRobot
 from time import time
 
 class Servicio:
@@ -44,12 +44,12 @@ class Servicio:
             self.laser_readings[i] = [msg.ranges[i], msg.angle_min + i*msg.angle_increment]
         
 
-    def obtener_pos_robot(self):
-        print("Esperando al servicio_posicion_robot")
-        rospy.wait_for_service('/servicio_posicion_robot')#Espero hasta que el servicio este habilitado
+    def GetPosRobot(self):
+        print("Establishing the connection with Pos Robot Server")
+        rospy.wait_for_service('/navigation/localization/get_pos_robot')#Espero hasta que el servicio este habilitado
         try:
             
-            self.cliente_posicion_robot=rospy.ServiceProxy('/servicio_posicion_robot',Posicion_robot)#Creo un handler para poder llamar al servicio
+            self.cliente_posicion_robot=rospy.ServiceProxy('/navigation/localization/get_pos_robot',GetPosRobot)#Creo un handler para poder llamar al servicio
             self.dato_pr=self.cliente_posicion_robot(posicion_x=self.posicion_x,posicion_y=self.posicion_y,width=self.width,height=self.height,resolution=self.resolution)
             self.robot_x=self.dato_pr.posicion_x_robot
             self.robot_y=self.dato_pr.posicion_y_robot
@@ -59,12 +59,12 @@ class Servicio:
             
         rospy.Subscriber('/scan',LaserScan,self.callback_scan,queue_size=10)
     
-    def visualizar_puntos(self):
-        print("Esperando al servicio_visualizacion")
-        rospy.wait_for_service('/servicio_visualizacion')#Espero hasta que el servicio este habilitado
+    def GetPointsVisualization(self):
+        print("Establishing the connection with Points Visualization Server")
+        rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
         try:
             
-            self.cliente_visualizacion=rospy.ServiceProxy('/servicio_visualizacion',Visualizar_Puntos)#Creo un handler para poder llamar al servicio
+            self.cliente_visualizacion=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
             self.dato_v=self.cliente_visualizacion(posicion_x=self.posicion_x,posicion_y=self.posicion_y,coord_x=self.obj_x,coord_y=self.obj_y,posicion_x_robot=self.robot_x,posicion_y_robot=self.robot_y)
             
         
@@ -167,7 +167,7 @@ class Servicio:
         #id0=0
         idx=0
         #[robot_x,robot_y]=self.path[id0]
-        self.obtener_pos_robot()
+        self.GetPosRobot()
         #[goal_x,goal_y]=self.path[idx]#Se trata del punto objetivo
         epsilon=0.5
         dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
@@ -181,10 +181,10 @@ class Servicio:
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
             [px,py]=[self.robot_x-epsilon*fx,self.robot_y-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
             msg_cmd_vel=self.calculate_control(self.robot_x,self.robot_y,self.robot_a,px,py)
-            #self.visualizar_puntos()
+            #self.GetPointsVisualization()
             self.pub_cmd_vel.publish(msg_cmd_vel)
             self.loop.sleep()
-            self.obtener_pos_robot()
+            self.GetPosRobot()
             dist_to_goal=math.sqrt((self.obj_x[0] - self.robot_x)**2 + (self.obj_y[0] - self.robot_y)**2)
             
             if (time()-inicio)>15:

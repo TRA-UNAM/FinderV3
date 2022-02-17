@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   nav_msgs
+  visualization_msgs
   tf2
   message_generation
   tf
@@ -60,14 +61,13 @@ find_package(catkin REQUIRED COMPONENTS
 #Generate services in the 'srv' folder
  add_service_files(
    FILES
-   Datos_rviz_mapeo.srv
-   Posicion_robot.srv
-   Inflar_mapa.srv
-   Mapa_Costos.srv
-   Puntos_Frontera.srv
-   Visualizar_Puntos.srv
+   GetMap.srv
+   GetPosRobot.srv
+   GetInflatedMap.srv
+   GetBoundaryPoints.srv
+   GetPointsVisualization.srv
    Objetivo.srv
-   Centroides.srv
+   GetCentroids.srv
    Mover_robot.srv
 
  )
@@ -83,6 +83,8 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs
+   nav_msgs
+   visualization_msgs
  )
 
 ################################################
@@ -171,7 +173,7 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/Servidor_Mapa.py src/scripts/Servidor_Mapa_Inflado.py src/scripts/Prueba_Exploracion_Client.py src/scripts/Servidor_Posicion_robot.py src/scripts/Servidor_Mapa_Costos.py src/scripts/Servidor_Puntos_Frontera.py src/scripts/Servidor_Puntos_Frontera_FS.py src/scripts/Servidor_Visualizacion_de_puntos.py src/scripts/Servidor_K_means_skl.py src/scripts/Servidor_Seleccion_Objetivo.py src/scripts/Servidor_Mover_robot.py
+catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/pos_robot_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/points_visualization_server.py src/scripts/centroids_server.py src/scripts/Servidor_Seleccion_Objetivo.py src/scripts/Servidor_Mover_robot.py src/scripts/autonomous_exploration_client.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

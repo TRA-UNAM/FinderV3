@@ -2,5 +2,5 @@
 <include file="$(find finder_gazebo)/launch/finder_apartment_fast_base.launch" />
 <include file="$(find finder_bringup)/launch/finder_gmapping.launch" />
 <include file="$(find exploration)/launch/Exploration_Services.launch" />
-<node pkg="exploration" type="Prueba_Exploracion_Client.py" name="Exploration_and_Mapping" respawn="false" output="screen"></node>
+<node pkg="exploration" type="autonomous_exploration_client.py" name="autonomous_exploration_client" respawn="false" output="screen"></node>
 </launch>

@@ -1,12 +1,17 @@
 <launch>
-<node pkg="exploration" type="Servidor_Mapa.py" name="Servidor_Mapa" respawn="false" output="screen"></node>
-<node pkg="exploration" type="Servidor_Mapa_Inflado.py" name="Servidor_Mapa_Inflado" respawn="false" output="screen"></node>
-<node pkg="exploration" type="Servidor_Posicion_robot.py" name="Servidor_Posicion_robot" respawn="false" output="screen"></node>
-<!--<node pkg="exploration" type="Servidor_Mapa_Costos.py" name="Servidor_Mapa_Costos" respawn="false" output="screen"></node>-->
-<!--<node pkg="exploration" type="Servidor_Puntos_Frontera.py" name="Servidor_Puntos_Frontera" respawn="false" output="screen"></node>-->
-<node pkg="exploration" type="Servidor_Puntos_Frontera_FS.py" name="Servidor_Puntos_Frontera_FS" respawn="false" output="screen"></node>
-<node pkg="exploration" type="Servidor_Visualizacion_de_puntos.py" name="Servidor_Visualizar" respawn="false" output="screen"></node>
-<node pkg="exploration" type="Servidor_K_means_skl.py" name="Servidor_Puntos_Objetivo" respawn="false" output="screen"></node>
+<node pkg="exploration" type="map_server.py" name="map_server" respawn="false" output="screen"></node>
+
+<node pkg="exploration" type="pos_robot_server.py" name="pos_robot_server" respawn="false" output="screen"></node>
+
+<node pkg="exploration" type="inflated_map_server.py" name="inflated_map_server" respawn="false" output="screen"></node>
+
+<node pkg="exploration" type="boundary_points_server.py" name="boundary_points_server" respawn="false" output="screen"></node>
+
+<node pkg="exploration" type="points_visualization_server.py" name="points_visualization_server" respawn="false" output="screen"></node>
+
+<node pkg="exploration" type="centroids_server.py" name="centroids_server" respawn="false" output="screen"></node>
+
 <node pkg="exploration" type="Servidor_Seleccion_Objetivo.py" name="Servidor_Objetivo" respawn="false" output="screen"></node>
+
 <node pkg="exploration" type="Servidor_Mover_robot.py" name="Servidor_Mover_robot" respawn="false" output="screen"></node>
 </launch>
