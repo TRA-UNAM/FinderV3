@@ -1,7 +1,0 @@
-
-float32[] coord_x
-float32[] coord_y
------------------------------
-float32[] centroides_x
-float32[] centroides_y
-int8 	  k

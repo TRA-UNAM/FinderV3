@@ -10,11 +10,7 @@ from geometry_msgs.msg import Point
 
 class Server():
 
-    def __init__(self):
-
-        self.boundary_points=[]
-        
-        
+    
         
 
     def handle_GetBoundaryPoints(self,req):
@@ -33,18 +29,20 @@ class Server():
         borders=cv2.erode(borders,kernel)
         borders_y=(np.where(borders==255)[0])*req.map.info.resolution
         borders_x=(np.where(borders==255)[1])*req.map.info.resolution
+        boundary_points=[]
         for i in range(len(borders_x)):
             p=Point()
             p.x=borders_x[i]
             p.y=borders_y[i]
             p.z=0
-            self.boundary_points.append(p)
+            
+            boundary_points.append(p)
             
             
         
         
         print("We already get the boundary points")
-        return GetBoundaryPointsResponse(points=self.boundary_points,k=0)#Devolver todo en [m] 
+        return GetBoundaryPointsResponse(points=boundary_points,k=0)#Devolver todo en [m] 
 
         
 

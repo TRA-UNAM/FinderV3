@@ -64,8 +64,7 @@ find_package(catkin REQUIRED COMPONENTS
    GetInflatedMap.srv
    GetBoundaryPoints.srv
    GetPointsVisualization.srv
-   Objetivo.srv
-   GetCentroids.srv
+   GetObjectivePoint.srv
    Mover_robot.srv
 
  )
@@ -171,7 +170,7 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/points_visualization_server.py src/scripts/centroids_server.py src/scripts/Servidor_Seleccion_Objetivo.py src/scripts/Servidor_Mover_robot.py src/scripts/autonomous_exploration_client.py
+catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/points_visualization_server.py src/scripts/centroids_server.py src/scripts/objective_point_server.py src/scripts/Servidor_Mover_robot.py src/scripts/autonomous_exploration_client.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

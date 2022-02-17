@@ -1,0 +1,9 @@
+float32 pos_x_robot
+float32 pos_y_robot
+float32 robot_a
+geometry_msgs/Point[] points
+float32 last_obj_x
+float32 last_obj_y
+-----------------
+
+geometry_msgs/Point objective

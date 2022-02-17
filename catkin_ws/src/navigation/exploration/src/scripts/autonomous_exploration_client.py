@@ -4,9 +4,9 @@
 
 
 import rospy
-from exploration.srv import GetInflatedMap, GetBoundaryPoints, GetPointsVisualization, Objetivo, Mover_robot
+from exploration.srv import GetInflatedMap, GetBoundaryPoints, GetPointsVisualization, GetObjectivePoint, Mover_robot
 import os
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 from nav_msgs.srv import GetMap
 import math
 import tf
@@ -26,7 +26,7 @@ class Node:
         self.inflated_cells=0.2#metros a inflar, depende de la resolucion, pero usualmente cada celda son 0.05 m o 5 cm
         self.last_pos_x_robot=-10
         self.last_pos_y_robot=-10
-        self.last_robot_a=2
+        self.last_robot_a=20
         self.client_map=0
         self.client_pos_robot=0
         self.client_inflated_map=0
@@ -43,6 +43,7 @@ class Node:
         self.pos_x_robot=0
         self.pos_y_robot=0
         self.listener=tf.TransformListener()
+        
         
     def getPosRobot(self,map_origin_pos_x,map_origin_pos_y):
 
@@ -63,7 +64,7 @@ class Node:
     def autonomous_exploration_client(self):
 
         
-        #os.system("clear")#Limpiar terminal
+        os.system("clear")#Limpiar terminal
 
         #---------------Map Client------------------------------------
         print("Establishing the connection with Map Server")
@@ -131,32 +132,16 @@ class Node:
             #---------------------------------------------------------------------
 
         
-            
-        
-            
-            
-            #----------------Points Visualization Client--------------------------------
-            print("Establishing the connection with Points Visualization Server")
-            rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
-            try:
-                if self.client_visualization==0:
-                    self.client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
-                    
-                    
-                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.data_pr.pos_x_robot,pos_y_robot=self.data_pr.pos_y_robot,points=self.data_bp.points)
-                
-            
-            except rospy.ServiceException as e:
-                print("The request for the points visualization server failed: %s"%e)
-
-            
-            print("Already we get the visualizarion related with the GetPointsVisualization service\n")
-        
-        
-            #---------------------------------------------------------------------
-        
             """
+            #--------------------------GetRobotPos---------------------------------
         
+            self.getPosRobot(self.data_mp.map.info.origin.position.x,self.data_mp.map.info.origin.position.y)
+
+            print("Already we get the data related with the GetPosRobot service\n")
+            print("The position of the robot in [m] is: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
+            #----------------------------------------------------------------------
+        
+
             #----------------K-Means Client--------------------------------
             print("Establishing the connection with K-Means Server")
             rospy.wait_for_service('/navigation/mapping/get_boundary_points_clustered')#Espero hasta que el servicio este habilitado
@@ -177,7 +162,7 @@ class Node:
             
             #---------------------------------------------------------------------
             
-
+            """
             
             #----------------Points Visualization Client--------------------------------
             print("Establishing the connection with Points Visualization Server")
@@ -201,34 +186,53 @@ class Node:
         
             """
             
-            #----------------Obtener el punto objetivo--------------------------------
-            print("Esperando al servicio punto objetivo")
-            rospy.wait_for_service('/servicio_objetivo')#Espero hasta que el servicio este habilitado
+            #----------------Objective Point Client--------------------------------
+            print("Establishing the connection with Objective Point Server")
+            rospy.wait_for_service('/navigation/mapping/get_objective_point')#Espero hasta que el servicio este habilitado
             try:
-                if self.cliente_objetivo==0:
-                    self.cliente_objetivo=rospy.ServiceProxy('/servicio_objetivo',Objetivo)#Creo un handler para poder llamar al servicio
+                if self.client_objetive==0:
+                    self.client_objetive=rospy.ServiceProxy('/navigation/mapping/get_objective_point',GetObjectivePoint)#Creo un handler para poder llamar al servicio
 
-                self.dato_o=self.cliente_objetivo(centroides_x=self.dato_km.centroides_x,centroides_y=self.dato_km.centroides_y,posicion_x_robot=self.dato_pr.posicion_x_robot,posicion_y_robot=self.dato_pr.posicion_y_robot,robot_a=self.dato_pr.robot_a,obj_ant_x=self.obj_ant_x,obj_ant_y=self.obj_ant_y) 
+                self.data_o=self.client_objetive(pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,robot_a=self.robot_a,points=self.data_centroids.points,last_obj_x=self.last_obj_x,last_obj_y=self.last_obj_y)
                 
             
             except rospy.ServiceException as e:
-                print("Fallo la solicitud de obtener un punto objetivo: %s"%e)
+                print("The request for the objective point server failed: %s"%e)
 
             
-            print("Ya se tienen el punto objetivo: {},{}".format(self.dato_o.obj_x,self.dato_o.obj_y)) 
-            #self.centroides_x=self.dato_o.centroides_x
-            #self.centroides_y=self.dato_o.centroides_y
-            obj_x=[self.dato_o.obj_x]
-            obj_y=[self.dato_o.obj_y]
+            print("Already we get the objective: {},{}".format(self.data_o.objective.x,self.data_o.objective.y)) 
+            
+            objective=[self.data_o.objective]
             
             
             
+             
+            #----------------Points Visualization Client--------------------------------
+            print("Establishing the connection with Points Visualization Server")
+            rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
+            try:
+                if self.client_visualization==0:
+                    self.client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
+                    
+                    
+                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,points=objective)
+                
+            
+            except rospy.ServiceException as e:
+                print("The request for the points visualization server failed: %s"%e)
+
+            
+            print("Already we get the visualizarion related with the GetPointsVisualization service\n")
+        
+        
+            #---------------------------------------------------------------------
+        
             
 
             
             #---------------------------------------------------------------------
         
-      
+            """
 
            
             
@@ -260,22 +264,24 @@ class Node:
             
             #---------------------------------------------------------------------
             
-        """
-            #-----------------------Refresco la posicion del robot anterior----------------------------------------
-            self.pos_x_robot_ant=self.pos_x_robot
-            self.pos_y_robot_ant=self.pos_y_robot
-            self.robot_a_ant=self.robot_a
-            #self.obj_ant_x=self.dato_o.obj_x
-            #self.obj_ant_y=self.dato_o.obj_y
-
-            #---------------------------------------------------------------------
-            #--------------------------GetRobotPos---------------------------------
+            """
+            
         
-            self.getPosRobot(self.data_mp.map.info.origin.position.x,self.data_mp.map.info.origin.position.y)
+        #-----------------------Update the last pose----------------------------------------
+            self.last_pos_x_robot=self.pos_x_robot
+            self.last_pos_y_robot=self.pos_y_robot
+            self.last_robot_a=self.robot_a
+            self.last_obj_x=self.data_o.objective.x
+            self.last_obj_y=self.data_o.objective.y
 
-            print("Already we get the data related with the GetPosRobot service\n")
-            print("The position of the robot in [m] is: "+str((self.pos_x_robot,self.pos_y_robot))+"\n")
-            #----------------------------------------------------------------------
+        #---------------------------------------------------------------------
+
+        #--------------------------GetRobotPos---------------------------------
+
+        self.getPosRobot(self.data_mp.map.info.origin.position.x,self.data_mp.map.info.origin.position.y)
+
+        #----------------------------------------------------------------------
+    
                 
         """
         #----------------Pos Robot Client [m]--------------------------------
