@@ -147,7 +147,7 @@ class Node:
         #
         force_x=0
         force_y=0
-        d0=0.8#A partir de 1 metros del robot empezara la repulsion
+        d0=0.6#A partir de 1 metros del robot empezara la repulsion
         rejection_intensity=3
         i=0
         
