@@ -212,7 +212,6 @@ class Node:
 
             
             print("Already we get the objective: [{} , {}]".format(self.data_o.goal.x,self.data_o.goal.y)) 
-            print(self.last_obj_x,self.last_obj_y)
             goal=[self.data_o.goal]
             
             

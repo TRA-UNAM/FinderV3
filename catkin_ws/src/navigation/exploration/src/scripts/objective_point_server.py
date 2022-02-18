@@ -37,8 +37,8 @@ class Server:
         (goal_x,goal_y)=heapq.heappop(h)[1]
         
         
-        if goal_x==req.last_obj_x and goal_y==req.last_obj_y:
-            (goal_x,goal_y)=heapq.heappop(h)[1]
+        if abs(goal_x-req.last_obj_x)<0.1 and abs(goal_y-req.last_obj_y)<0.1:
+            (goal_x,goal_y)=heapq.heappop(h)[-1]
         
         
         goal=Point()
