@@ -16,7 +16,7 @@ class Server:
     def __init__(self):
         
         self.boundary_points=[]
-        self.centroids=[]
+        
         
 
 
@@ -71,14 +71,15 @@ class Server:
         kmeans.fit(points)
         centroids_x=kmeans.cluster_centers_[:,0]
         centroids_y=kmeans.cluster_centers_[:,1]
+        centroids=[]
         for i in range(len(centroids_x)):
             p=Point()
             p.x=centroids_x[i]
             p.y=centroids_y[i]
             p.z=0
-            self.centroids.append(p)
-        print("We already get the centroids")
-        return GetBoundaryPointsResponse(points=self.centroids,k=k)
+            centroids.append(p)
+        print("We already get the centroids\n")
+        return GetBoundaryPointsResponse(points=centroids,k=k)
         
 
     def GetCentroids(self):

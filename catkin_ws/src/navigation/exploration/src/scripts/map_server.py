@@ -32,7 +32,7 @@ class Server:
 
     def handle_GetMap(self,req):
         
-        print("We already get the nav_msgs/OccupancyGrid message")
+        print("We already get the nav_msgs/OccupancyGrid message\n")
         
         return GetMapResponse(map=self.map)
 

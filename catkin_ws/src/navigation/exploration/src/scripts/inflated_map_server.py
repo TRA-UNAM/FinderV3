@@ -19,7 +19,7 @@ class Server:
         
         map=np.array(req.map.data).reshape((req.map.info.height, req.map.info.width))
         inflated_cells=int(req.inflated_cells/req.map.info.resolution)
-        print ("Getting the inflated map with " +str(inflated_cells) + " inflated cells")
+        print ("Getting the inflated map with " +str(inflated_cells) + " inflated cells\n")
         pub_inflated=rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
         c, l=np.shape(map)
         self.inflated_map=np.copy(map)

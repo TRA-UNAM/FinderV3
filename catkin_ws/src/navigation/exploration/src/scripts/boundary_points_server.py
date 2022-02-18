@@ -41,7 +41,7 @@ class Server():
             
         
         
-        print("We already get the boundary points")
+        print("We already get the boundary points\n")
         return GetBoundaryPointsResponse(points=boundary_points,k=0)#Devolver todo en [m] 
 
         
