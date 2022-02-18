@@ -6,4 +6,4 @@ float32 last_obj_x
 float32 last_obj_y
 -----------------
 
-geometry_msgs/Point objective
+geometry_msgs/Point goal

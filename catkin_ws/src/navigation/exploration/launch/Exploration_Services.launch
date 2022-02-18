@@ -13,5 +13,5 @@
 
 <node pkg="exploration" type="objective_point_server.py" name="objective_point_server" respawn="false" output="screen"></node>
 
-<node pkg="exploration" type="Servidor_Mover_robot.py" name="Servidor_Mover_robot" respawn="false" output="screen"></node>
+<node pkg="exploration" type="move_robot.py" name="move_robot" respawn="false" output="screen"></node>
 </launch>
