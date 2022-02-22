@@ -3,7 +3,7 @@
 #Autor: Axel Javier Rojas Mosqueda
 
 import rospy
-from exploration.srv import GetObjectivePoint,GetObjectivePointResponse
+from exploration.srv import GetGoalPoint,GetGoalPointResponse
 import numpy as np
 import math
 from geometry_msgs.msg import Point
@@ -15,13 +15,13 @@ class Server:
 
 
     
-    def handle_GetObjectivePoint(self,req):
-        alpha=0.6
-        betha=0.4
+    def handle_GetGoalPoint(self,req):
+        alpha=0.7
+        betha=0.3
         h=[]
         for i in range(len(req.points)):
             
-            a_error=(math.atan2(req.points[i].y-req.pos_y_robot,req.points[i].x-req.pos_x_robot))-req.robot_a#Obtengo el error de angulo
+            a_error=(math.atan2(req.points[i].y-req.pos_y_robot,req.points[i].x-req.pos_x_robot))-req.pos_a_robot#Obtengo el error de angulo
             if a_error>math.pi:
                 a_error=a_error-2*math.pi
         
@@ -37,7 +37,7 @@ class Server:
         (goal_x,goal_y)=heapq.heappop(h)[1]
         
         
-        if abs(goal_x-req.last_obj_x)<0.1 and abs(goal_y-req.last_obj_y)<0.1:
+        if abs(goal_x-req.last_objective.x)<0.05 and abs(goal_y-req.last_objective.y)<0.05:
             (goal_x,goal_y)=heapq.heappop(h)[1]
         
         
@@ -45,13 +45,13 @@ class Server:
         goal.x=goal_x
         goal.y=goal_y
         
-        return GetObjectivePointResponse(goal=goal)
+        return GetGoalPointResponse(goal=goal)
         
 
-    def GetObjectivePoint(self):
+    def GetGoalPoint(self):
             
-        rospy.Service('/navigation/mapping/get_objective_point', GetObjectivePoint, self.handle_GetObjectivePoint)
-        print("The Objective Point Server is ready for the request")
+        rospy.Service('/navigation/mapping/get_goal_point', GetGoalPoint, self.handle_GetGoalPoint)
+        print("The Goal Point Server is ready for the request")
             
 
 
@@ -59,8 +59,8 @@ class Server:
             #------------------------------------------------------------------   
     
 if __name__ == "__main__":
-    rospy.init_node('objective_point_server')
+    rospy.init_node('goal_point_server')
     server=Server()
-    server.GetObjectivePoint()
+    server.GetGoalPoint()
     rospy.spin()
     

@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   nav_msgs
-  visualization_msgs
   tf2
   message_generation
   tf
@@ -52,19 +51,18 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   PotentialFields.msg
+# add_message_files(
+#   FILES
 
-)
+
+#)
 
 #Generate services in the 'srv' folder
  add_service_files(
    FILES
    GetInflatedMap.srv
    GetBoundaryPoints.srv
-   GetPointsVisualization.srv
-   GetObjectivePoint.srv
+   GetGoalPoint.srv
 
  )
 
@@ -80,7 +78,6 @@ find_package(catkin REQUIRED COMPONENTS
    DEPENDENCIES
    std_msgs
    nav_msgs
-   visualization_msgs
  )
 
 ################################################
@@ -169,7 +166,7 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/points_visualization_server.py src/scripts/centroids_server.py src/scripts/objective_point_server.py src/scripts/move_robot.py src/scripts/autonomous_exploration_client.py
+catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/centroids_server.py src/scripts/goal_point_server.py src/scripts/move_robot.py src/scripts/autonomous_exploration_client.py
 	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -36,14 +36,13 @@ class Server:
 
             
             print("Already we get the data related with the GetBoundaryPoints service\n")
-            print("The number of Boundary Points founded are "+str(len(data_bp.points))+"\n")
+            print("The number of Boundary Points founded are "+str(len(self.boundary_points))+"\n")
 
 
    
     def handle_GetCentroids(self,req):
 
         
-
         self.GetBoundaryPoints(req)
         points=[]
         std_dev=[]
@@ -59,13 +58,11 @@ class Server:
             std_dev.append(math.sqrt(kmeans.inertia_/len(points)))#kmeans.inertia_ calcula la suma de los cuadrados de las distancias que existe entre los vectores de cada cluster a su centroide y al dividirlo entre n y sacar raiz obtengo la std_devandar de los datos
         #wcss contiene dichas sumas, y entre mas clusters tengamos, menor seran esas distancias.
         
-        for i in range(8):
+        for i in range(8):#Busco tener clusters cercanos a 1 m en su tamaño promedio
             
             if std_dev[i]>1:
                 k=i+2
             
-            
-
 
         kmeans = KMeans(n_clusters = k, init="k-means++", max_iter = 300, n_init = 10, random_state = 0)
         kmeans.fit(points)

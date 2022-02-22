@@ -3,15 +3,14 @@
 #Autor: Axel Javier Rojas Mosqueda
 
 import math
-from sys import float_repr_style
 import tf
 import os
 import rospy
-from exploration.srv import GetInflatedMap, GetBoundaryPoints, GetPointsVisualization, GetObjectivePoint
+from exploration.srv import GetInflatedMap, GetBoundaryPoints, GetGoalPoint
 from nav_msgs.srv import GetMap
-from exploration.msg import PotentialFields
 from std_msgs.msg import Bool as Flag
 from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
 
 
 
@@ -19,7 +18,7 @@ class Node:
 
     def __init__(self):
         self.init_node=rospy.init_node("autonomous_exploration_client")
-        self.move_to_goal=rospy.Publisher('/navigation/move_base_simple/reach_goal',PotentialFields,queue_size=100)
+        self.move_to_goal=rospy.Publisher('/navigation/move_base_simple/goal',Point,queue_size=10)
         self.data_mp=0
         self.data_im=0
         self.data_bp=0
@@ -38,29 +37,52 @@ class Node:
         self.cliente_mr=0
         self.centroid_x=[]
         self.centroid_y=[]
-        self.last_obj_x=0
-        self.last_obj_y=0
-        self.robot_a=0
+        self.last_objective=Point()
+        self.last_objective.x=100
+        self.last_objective.y=100
+        self.pos_a_robot=0
         self.pos_x_robot=0
         self.pos_y_robot=0
         self.flag=False
         self.listener=tf.TransformListener()
-        self.pot_fields=PotentialFields()
+        
+    def visualization_points(self,points):
+
+        pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
+        markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+        markers.header.stamp=rospy.Time()
+        markers.header.frame_id="/map"
+        markers.pose.orientation.w=1.0
+        #Esta es la posicion de la marca
+        markers.pose.position.x=0 
+        markers.pose.position.y=0
+        markers.pose.position.z=0
+        #markers
+        markers.scale.x=0.2#Tamaño de los markers
+        markers.scale.y=0.2
+        markers.scale.z=0.2
+        #Los markers seran Azules
+        #markers.color.r=1.0#Color  
+        markers.color.r=1.0#Color 
+        markers.color.a=1.0#Nitidez
+        
+        markers.points=points
         
         
-    def getPosRobot(self,map_origin_pos_x,map_origin_pos_y):
+        
+        pub.publish(markers)   
+        
+        
+    def getPosRobot(self):
 
         try:
-            ([x, y, z], rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
-            self.robot_a = 2*math.atan2(rot[2], rot[3])
-            if self.robot_a > math.pi:
-                self.robot_a = self.robot_a- 2*math.pi
-            elif self.robot_a<=-math.pi:
-                self.robot_a = self.robot_a+ 2*math.pi
+            ([self.pos_x_robot, self.pos_y_robot, z], rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
+            self.pos_a_robot = 2*math.atan2(rot[2], rot[3])
+            if self.pos_a_robot > math.pi:
+                self.pos_a_robot = self.pos_a_robot- 2*math.pi
+            elif self.pos_a_robot<=-math.pi:
+                self.pos_a_robot = self.pos_a_robot+ 2*math.pi
 
-            
-            self.pos_x_robot = (abs(map_origin_pos_x))+(x)+(0.7*math.cos(self.robot_a))
-            self.pos_y_robot = (abs(map_origin_pos_y))+(y)+(0.7*math.sin(self.robot_a))
         except:
             pass
 
@@ -72,9 +94,6 @@ class Node:
     def autonomous_exploration_client(self):
 
         
-        
-        
-    
         if self.flag==False:
             os.system("clear")#Limpiar terminal
 
@@ -144,8 +163,7 @@ class Node:
             """
             #--------------------------GetRobotPos---------------------------------
         
-            self.getPosRobot(self.data_mp.map.info.origin.position.x,self.data_mp.map.info.origin.position.y)
-
+            self.getPosRobot()
             print("Already we get the data related with the GetPosRobot service\n")
             print("The position of the robot in [m] is: "+str([self.pos_x_robot,self.pos_y_robot])+"\n")
             #----------------------------------------------------------------------
@@ -155,8 +173,8 @@ class Node:
             
             
 
-            #----------------K-Means Client--------------------------------
-            print("Establishing the connection with K-Means Server")
+            #----------------centroids Client--------------------------------
+            print("Establishing the connection with Centroids Server")
             rospy.wait_for_service('/navigation/mapping/get_boundary_points_clustered')#Espero hasta que el servicio este habilitado
             try:
                 if self.client_centroids==0:
@@ -173,38 +191,16 @@ class Node:
             
             
             
-            #---------------------------------------------------------------------
-            """
-            #----------------Points Visualization Client--------------------------------
-            print("Establishing the connection with Points Visualization Server")
-            rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
-            try:
-                if self.client_visualization==0:
-                    self.client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
-                    
-                    
-                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,points=self.data_centroids.points)
-                
             
-            except rospy.ServiceException as e:
-                print("The request for the points visualization server failed: %s"%e)
-
             
-            print("Already we get the visualizarion related with the GetPointsVisualization service\n")
-        
-        
-            #---------------------------------------------------------------------
-        
-            """
-            
-            #----------------Objective Point Client--------------------------------
-            print("Establishing the connection with Objective Point Server")
-            rospy.wait_for_service('/navigation/mapping/get_objective_point')#Espero hasta que el servicio este habilitado
+            #----------------Goal Point Client--------------------------------
+            print("Establishing the connection with Goal Point Server")
+            rospy.wait_for_service('/navigation/mapping/get_goal_point')#Espero hasta que el servicio este habilitado
             try:
                 if self.client_objetive==0:
-                    self.client_objetive=rospy.ServiceProxy('/navigation/mapping/get_objective_point',GetObjectivePoint)#Creo un handler para poder llamar al servicio
+                    self.client_objetive=rospy.ServiceProxy('/navigation/mapping/get_goal_point',GetGoalPoint)#Creo un handler para poder llamar al servicio
 
-                self.data_o=self.client_objetive(pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,robot_a=self.robot_a,points=self.data_centroids.points,last_obj_x=self.last_obj_x,last_obj_y=self.last_obj_y)
+                self.data_o=self.client_objetive(pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,pos_a_robot=self.pos_a_robot,points=self.data_centroids.points,last_objective=self.last_objective,method="angle_and_distance")
                 
             
             except rospy.ServiceException as e:
@@ -212,40 +208,13 @@ class Node:
 
             
             print("Already we get the objective: [{} , {}]".format(self.data_o.goal.x,self.data_o.goal.y)) 
-            goal=[self.data_o.goal]
             
+            #self.visualization_points([self.data_o.goal])
             
-            """
-                
-            #----------------Points Visualization Client--------------------------------
-            print("Establishing the connection with Points Visualization Server")
-            rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
-            try:
-                if self.client_visualization==0:
-                    self.client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
-                    
-                    
-                self.data_v=self.client_visualization(map_origin_pos_x=self.data_mp.map.info.origin.position.x,map_origin_pos_y=self.data_mp.map.info.origin.position.y,pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,points=goal)
-                
-            
-            except rospy.ServiceException as e:
-                print("The request for the points visualization server failed: %s"%e)
-
-            
-            print("Already we get the visualizarion related with the GetPointsVisualization service\n")
-        
-        
-            #---------------------------------------------------------------------
-            """
-            
-        
             #----------------Move Robot by Potential Fields--------------------------------
         
             self.flag=True
-            self.pot_fields.map_origin_pos_x=self.data_mp.map.info.origin.position.x
-            self.pot_fields.map_origin_pos_y=self.data_mp.map.info.origin.position.y
-            self.pot_fields.goal=self.data_o.goal
-            self.move_to_goal.publish(self.pot_fields)
+            self.move_to_goal.publish(self.data_o.goal)
             print("\nEstablishing the connection with Potential Fields Node")
             print("Wating to reach the goal")
             
@@ -253,11 +222,11 @@ class Node:
             #---------------------------------------------------------------------
                 
                 
-                
+            
             
             #-----------------------Update the last pose----------------------------------------
-            self.last_obj_x=self.data_o.goal.x
-            self.last_obj_y=self.data_o.goal.y
+            self.last_objective=self.data_o.goal
+            
             
             #---------------------------------------------------------------------
                 
@@ -270,7 +239,7 @@ if __name__== "__main__":
     while not rospy.is_shutdown():
         try:
             node.autonomous_exploration_client()
-            rospy.Subscriber('/navigation/move_base_simple/reach_goal_response',Flag, node.callback_move_robot_response)
+            rospy.Subscriber('/move_base_simple/goal_response',Flag, node.callback_move_robot_response)
             loop.sleep()
         except:
             pass 

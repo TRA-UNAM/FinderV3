@@ -9,9 +9,8 @@ from time import time
 import tf
 from geometry_msgs.msg import Twist, Point
 from sensor_msgs.msg import LaserScan
-from exploration.msg import PotentialFields
-from exploration.srv import GetPointsVisualization
 from std_msgs.msg import Bool as Flag
+from visualization_msgs.msg import Marker
 
 class Node:
 
@@ -23,12 +22,10 @@ class Node:
         self.goal_x=0
         self.goal_y=0
         self.laser_readings=[]
-        self.map_origin_pos_x=0
-        self.map_origin_pos_y=0
         self.listener=tf.TransformListener()
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.flag=Flag()
-        self.response=rospy.Publisher('/navigation/move_base_simple/reach_goal_response',Flag,queue_size=10)
+        self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)
         
         
     
@@ -39,57 +36,56 @@ class Node:
             self.laser_readings[i] = [msg.ranges[i], msg.angle_min + i*msg.angle_increment]
 
     def callback_potential_fields(self,msg):
-
-        self.map_origin_pos_x=msg.map_origin_pos_x
-        self.map_origin_pos_y=msg.map_origin_pos_y
-        self.goal_x=msg.goal.x
-        self.goal_y=msg.goal.y
+        self.goal_x=msg.x
+        self.goal_y=msg.y
         self.potential_fields()
         
         
         
         
         
-    def visualization_points(self,map_origin_pos_x,map_origin_pos_y,pos_x_robot, pos_y_robot,points):
+    def visualization_points(self,points):
 
-            #----------------Points Visualization Client--------------------------------
-            
-            rospy.wait_for_service('/navigation/mapping/get_points_visalization')#Espero hasta que el servicio este habilitado
-            try:
-                
-                client_visualization=rospy.ServiceProxy('/navigation/mapping/get_points_visalization',GetPointsVisualization)#Creo un handler para poder llamar al servicio
-                    
-                    
-                data_v=client_visualization(map_origin_pos_x=map_origin_pos_x,map_origin_pos_y=map_origin_pos_y,pos_x_robot=pos_x_robot,pos_y_robot=pos_y_robot,points=points)
-                
-            
-            except rospy.ServiceException as e:
-                print("The request for the points visualization server failed: %s"%e)
-
-            
-            
+        pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
+        markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+        markers.header.stamp=rospy.Time()
+        markers.header.frame_id="/map"
+        markers.pose.orientation.w=1.0
+        #Esta es la posicion de la marca
+        markers.pose.position.x=0 
+        markers.pose.position.y=0
+        markers.pose.position.z=0
+        #markers
+        markers.scale.x=0.2#Tamaño de los markers
+        markers.scale.y=0.2
+        markers.scale.z=0.2
+        #Los markers seran Azules
+        #markers.color.r=1.0#Color  
+        markers.color.r=1.0#Color 
+        markers.color.a=1.0#Nitidez
+        
+        markers.points=points
         
         
-            #---------------------------------------------------------------------
         
+        pub.publish(markers)
     
-    def getPosRobot(self,map_origin_pos_x,map_origin_pos_y):
+    def getPosRobot(self):
 
         try:
-            ([x, y, z], rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
-            robot_a = 2*math.atan2(rot[2], rot[3])
-            if robot_a > math.pi:
-                robot_a = robot_a- 2*math.pi
-            elif robot_a<=-math.pi:
-                robot_a = robot_a+ 2*math.pi
+            ([pos_x_robot, pos_y_robot, z], rot) = self.listener.lookupTransform('map', 'base_link', rospy.Time(0))
+            pos_a_robot = 2*math.atan2(rot[2], rot[3])
+            if pos_a_robot > math.pi:
+                pos_a_robot = pos_a_robot- 2*math.pi
+            elif pos_a_robot<=-math.pi:
+                pos_a_robot = pos_a_robot+ 2*math.pi
 
             
-            pos_x_robot = (abs(map_origin_pos_x))+(x)+(0.7*math.cos(robot_a))
-            pos_y_robot = (abs(map_origin_pos_y))+(y)+(0.7*math.sin(robot_a))
+            
         except:
             pass
 
-        return pos_x_robot,pos_y_robot,robot_a
+        return pos_x_robot,pos_y_robot,pos_a_robot
 
 
     def calculate_control(self,pos_x_robot,pos_y_robot,robot_a,goal_x,goal_y):
@@ -179,32 +175,28 @@ class Node:
         
         
         print ("Moving to goal point " + str([self.goal_x, self.goal_y]) + " by potential fields\n")
-        pos_x_robot, pos_y_robot, robot_a=self.getPosRobot(self.map_origin_pos_x,self.map_origin_pos_y)
+        pos_x_robot, pos_y_robot, pos_a_robot=self.getPosRobot()
         epsilon=0.5
         dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
         start=time()
-        
-        while dist_to_goal>0.5:
+        p=Point()
+        while dist_to_goal>1 or dist_to_goal<0.1:
 
             
             [fax, fay] = self.attraction_force(pos_x_robot, pos_y_robot, self.goal_x, self.goal_y)#Calculamos la fuerza de atraccion
-            [frx, fry] = self.rejection_force(pos_x_robot, pos_y_robot, robot_a,self.laser_readings)#Calculamos la fuerza de repulsion
+            [frx, fry] = self.rejection_force(pos_x_robot, pos_y_robot, pos_a_robot,self.laser_readings)#Calculamos la fuerza de repulsion
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
             [px,py]=[pos_x_robot-epsilon*fx,pos_y_robot-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
-            msg_cmd_vel=self.calculate_control(pos_x_robot,pos_y_robot,robot_a,px,py)
+            msg_cmd_vel=self.calculate_control(pos_x_robot,pos_y_robot,pos_a_robot,px,py)
             self.pub_cmd_vel.publish(msg_cmd_vel)
-            p2=Point()
-            p2.x=pos_x_robot
-            p2.y=pos_y_robot
-            p3=Point()
-            p3.x=self.goal_x
-            p3.y=self.goal_y
-            self.visualization_points(self.map_origin_pos_x,self.map_origin_pos_y,pos_x_robot, pos_y_robot,[p2,p3])
+            p.x=self.goal_x
+            p.y=self.goal_y
+            self.visualization_points([p])
             self.loop.sleep()
-            pos_x_robot, pos_y_robot, robot_a=self.getPosRobot(self.map_origin_pos_x,self.map_origin_pos_y)
+            pos_x_robot, pos_y_robot, pos_a_robot=self.getPosRobot()
             dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
             
-            if (time()-start)>20:
+            if (time()-start)>15:
                 self.pub_cmd_vel.publish(Twist())
                 break
             
@@ -217,7 +209,7 @@ class Node:
 
     
     def main(self):    
-        rospy.Subscriber('/navigation/move_base_simple/reach_goal',PotentialFields,self.callback_potential_fields)
+        rospy.Subscriber('/navigation/move_base_simple/goal',Point,self.callback_potential_fields)
         rospy.Subscriber('/scan',LaserScan,self.callback_scan)
         rospy.spin()
 

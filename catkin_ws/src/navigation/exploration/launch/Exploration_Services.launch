@@ -1,17 +1,13 @@
 <launch>
 <node pkg="exploration" type="map_server.py" name="map_server" respawn="false" output="screen"></node>
 
-<!-- <node pkg="exploration" type="pos_robot_server.py" name="pos_robot_server" respawn="false" output="screen"></node> -->
-
 <node pkg="exploration" type="inflated_map_server.py" name="inflated_map_server" respawn="false" output="screen"></node>
 
 <node pkg="exploration" type="boundary_points_server.py" name="boundary_points_server" respawn="false" output="screen"></node>
 
-<node pkg="exploration" type="points_visualization_server.py" name="points_visualization_server" respawn="false" output="screen"></node>
-
 <node pkg="exploration" type="centroids_server.py" name="centroids_server" respawn="false" output="screen"></node>
 
-<node pkg="exploration" type="objective_point_server.py" name="objective_point_server" respawn="false" output="screen"></node>
+<node pkg="exploration" type="goal_point_server.py" name="goal_point_server" respawn="false" output="screen"></node>
 
 <node pkg="exploration" type="move_robot.py" name="move_robot" respawn="false" output="screen"></node>
 </launch>

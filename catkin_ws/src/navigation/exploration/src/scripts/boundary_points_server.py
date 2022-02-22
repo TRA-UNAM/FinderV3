@@ -27,15 +27,13 @@ class Server():
         borders=cv2.dilate(borders,kernel)
         borders=cv2.erode(borders,kernel)
         borders=cv2.erode(borders,kernel)
-        borders_y=(np.where(borders==255)[0])*req.map.info.resolution
-        borders_x=(np.where(borders==255)[1])*req.map.info.resolution
+        borders_y=(np.where(borders==255)[0])*req.map.info.resolution+req.map.info.origin.position.y
+        borders_x=(np.where(borders==255)[1])*req.map.info.resolution+req.map.info.origin.position.x
         boundary_points=[]
         for i in range(len(borders_x)):
             p=Point()
             p.x=borders_x[i]
             p.y=borders_y[i]
-            p.z=0
-            
             boundary_points.append(p)
             
             

@@ -1,9 +1,9 @@
 float32 pos_x_robot
 float32 pos_y_robot
-float32 robot_a
+float32 pos_a_robot
 geometry_msgs/Point[] points
-float32 last_obj_x
-float32 last_obj_y
+geometry_msgs/Point last_objective
+string method
 -----------------
 
 geometry_msgs/Point goal
