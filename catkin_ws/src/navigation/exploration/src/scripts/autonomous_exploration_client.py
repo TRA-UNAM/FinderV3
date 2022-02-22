@@ -19,6 +19,23 @@ class Node:
     def __init__(self):
         self.init_node=rospy.init_node("autonomous_exploration_client")
         self.move_to_goal=rospy.Publisher('/navigation/move_base_simple/goal',Point,queue_size=10)
+        self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)
+        self.markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+        self.markers.header.stamp=rospy.Time()
+        self.markers.header.frame_id="/map"
+        self.markers.pose.orientation.w=1.0
+        #Esta es la posicion de la marca
+        self.markers.pose.position.x=0 
+        self.markers.pose.position.y=0
+        self.markers.pose.position.z=0
+        #self.markers
+        self.markers.scale.x=0.2#Tamaño de los self.markers
+        self.markers.scale.y=0.2
+        self.markers.scale.z=0.2
+        #Los self.markers seran Azules
+        #self.markers.color.r=1.0#Color  
+        self.markers.color.r=1.0#Color 
+        self.markers.color.a=1.0#Nitidez
         self.data_mp=0
         self.data_im=0
         self.data_bp=0
@@ -48,29 +65,9 @@ class Node:
         
     def visualization_points(self,points):
 
-        pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
-        markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
-        markers.header.stamp=rospy.Time()
-        markers.header.frame_id="/map"
-        markers.pose.orientation.w=1.0
-        #Esta es la posicion de la marca
-        markers.pose.position.x=0 
-        markers.pose.position.y=0
-        markers.pose.position.z=0
-        #markers
-        markers.scale.x=0.2#Tamaño de los markers
-        markers.scale.y=0.2
-        markers.scale.z=0.2
-        #Los markers seran Azules
-        #markers.color.r=1.0#Color  
-        markers.color.r=1.0#Color 
-        markers.color.a=1.0#Nitidez
+        self.markers.points=points
         
-        markers.points=points
-        
-        
-        
-        pub.publish(markers)   
+        self.pub_vis.publish(self.markers)   
         
         
     def getPosRobot(self):
@@ -93,7 +90,7 @@ class Node:
 
     def autonomous_exploration_client(self):
 
-        
+        rospy.Subscriber('/move_base_simple/goal_response',Flag, self.callback_move_robot_response)
         if self.flag==False:
             os.system("clear")#Limpiar terminal
 
@@ -173,7 +170,7 @@ class Node:
             
             
 
-            #----------------centroids Client--------------------------------
+            #----------------Centroids Client--------------------------------
             print("Establishing the connection with Centroids Server")
             rospy.wait_for_service('/navigation/mapping/get_boundary_points_clustered')#Espero hasta que el servicio este habilitado
             try:
@@ -190,7 +187,7 @@ class Node:
             print("Already we get {0} clusters from the boundary points\n".format(self.data_centroids.k)) 
             
             
-            
+            #self.visualization_points(self.data_centroids.points)
             
             
             #----------------Goal Point Client--------------------------------
@@ -209,7 +206,7 @@ class Node:
             
             print("Already we get the objective: [{} , {}]".format(self.data_o.goal.x,self.data_o.goal.y)) 
             
-            #self.visualization_points([self.data_o.goal])
+            
             
             #----------------Move Robot by Potential Fields--------------------------------
         
@@ -239,7 +236,6 @@ if __name__== "__main__":
     while not rospy.is_shutdown():
         try:
             node.autonomous_exploration_client()
-            rospy.Subscriber('/move_base_simple/goal_response',Flag, node.callback_move_robot_response)
             loop.sleep()
         except:
             pass 

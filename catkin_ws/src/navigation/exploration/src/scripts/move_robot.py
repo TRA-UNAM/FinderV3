@@ -26,8 +26,23 @@ class Node:
         self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.flag=Flag()
         self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)
-        
-        
+        self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)
+        self.markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
+        self.markers.header.stamp=rospy.Time()
+        self.markers.header.frame_id="/map"
+        self.markers.pose.orientation.w=1.0
+        #Esta es la posicion de la marca
+        self.markers.pose.position.x=0 
+        self.markers.pose.position.y=0
+        self.markers.pose.position.z=0
+        #self.markers
+        self.markers.scale.x=0.2#Tamaño de los self.markers
+        self.markers.scale.y=0.2
+        self.markers.scale.z=0.2
+        #Los self.markers seran Azules
+        #self.markers.color.r=1.0#Color  
+        self.markers.color.r=1.0#Color 
+        self.markers.color.a=1.0#Nitidez
     
     def callback_scan(self,msg):
         
@@ -41,34 +56,11 @@ class Node:
         self.potential_fields()
         
         
-        
-        
-        
     def visualization_points(self,points):
 
-        pub =rospy.Publisher('/visualization_marker',Marker, queue_size=100)
-        markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
-        markers.header.stamp=rospy.Time()
-        markers.header.frame_id="/map"
-        markers.pose.orientation.w=1.0
-        #Esta es la posicion de la marca
-        markers.pose.position.x=0 
-        markers.pose.position.y=0
-        markers.pose.position.z=0
-        #markers
-        markers.scale.x=0.2#Tamaño de los markers
-        markers.scale.y=0.2
-        markers.scale.z=0.2
-        #Los markers seran Azules
-        #markers.color.r=1.0#Color  
-        markers.color.r=1.0#Color 
-        markers.color.a=1.0#Nitidez
-        
-        markers.points=points
-        
-        
-        
-        pub.publish(markers)
+        self.markers.points=points
+
+        self.pub_vis.publish(self.markers)
     
     def getPosRobot(self):
 
@@ -180,9 +172,8 @@ class Node:
         dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
         start=time()
         p=Point()
-        while dist_to_goal>1 or dist_to_goal<0.1:
+        while dist_to_goal>1:
 
-            
             [fax, fay] = self.attraction_force(pos_x_robot, pos_y_robot, self.goal_x, self.goal_y)#Calculamos la fuerza de atraccion
             [frx, fry] = self.rejection_force(pos_x_robot, pos_y_robot, pos_a_robot,self.laser_readings)#Calculamos la fuerza de repulsion
             [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
