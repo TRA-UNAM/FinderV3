@@ -204,7 +204,7 @@ class Node:
             pos_x_robot, pos_y_robot, robot_a=self.getPosRobot(self.map_origin_pos_x,self.map_origin_pos_y)
             dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
             
-            if (time()-start)>15:
+            if (time()-start)>20:
                 self.pub_cmd_vel.publish(Twist())
                 break
             
@@ -218,7 +218,7 @@ class Node:
     
     def main(self):    
         rospy.Subscriber('/navigation/move_base_simple/reach_goal',PotentialFields,self.callback_potential_fields)
-        rospy.Subscriber('scan',LaserScan,self.callback_scan)
+        rospy.Subscriber('/scan',LaserScan,self.callback_scan)
         rospy.spin()
 
 if __name__ == "__main__":
