@@ -71,7 +71,7 @@ class Node:
 
     def autonomous_exploration_client(self):
 
-        self.move_to_goal.publish(self.pot_fields)
+        
         
         
     
@@ -245,6 +245,7 @@ class Node:
             self.pot_fields.map_origin_pos_x=self.data_mp.map.info.origin.position.x
             self.pot_fields.map_origin_pos_y=self.data_mp.map.info.origin.position.y
             self.pot_fields.goal=self.data_o.goal
+            self.move_to_goal.publish(self.pot_fields)
             print("\nEstablishing the connection with Potential Fields Node")
             print("Wating to reach the goal")
             
