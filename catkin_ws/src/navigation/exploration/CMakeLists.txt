@@ -166,9 +166,9 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS src/scripts/map_server.py src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/centroids_server.py src/scripts/goal_point_server.py src/scripts/move_robot.py src/scripts/autonomous_exploration_client.py
-	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#catkin_install_python(PROGRAMS src/scripts/inflated_map_server.py src/scripts/boundary_points_server.py src/scripts/centroids_server.py src/scripts/goal_point_server.py src/scripts/move_robot.py src/scripts/autonomous_exploration_client.py
+#	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

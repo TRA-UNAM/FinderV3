@@ -16,33 +16,30 @@ class Node:
 
     def __init__(self):
 
-        rospy.init_node('move_robot')
+        rospy.init_node('move_pf')#We initialize the node
         self.loop=rospy.Rate(5)
-        self.points=[]
+        #We define the attributes that save the coordinates of the goal point
         self.goal_x=0
         self.goal_y=0
-        self.laser_readings=[]
-        self.listener=tf.TransformListener()
-        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-        self.flag=Flag()
-        self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)
-        self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)
+        self.laser_readings=[]#We define the array that will contain the laser_readings
+        self.listener=tf.TransformListener()#Transformation to get the attributes related with the position of the robot in the getPosRobot method
+        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
+        self.flag=Flag()#Constructing the Bool object that contains the flag value
+        self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)#We define the publisher that publish the flag to inform of the reach of the goal point
+        self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)#We define the publisher that publish the points to be visualized in rviz
+        #Constructing the object Marker with the features of the visualizated points 
         self.markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
         self.markers.header.stamp=rospy.Time()
         self.markers.header.frame_id="/map"
         self.markers.pose.orientation.w=1.0
-        #Esta es la posicion de la marca
         self.markers.pose.position.x=0 
         self.markers.pose.position.y=0
         self.markers.pose.position.z=0
-        #self.markers
-        self.markers.scale.x=0.2#Tamaño de los self.markers
+        self.markers.scale.x=0.2
         self.markers.scale.y=0.2
-        self.markers.scale.z=0.2
-        #Los self.markers seran Azules
-        #self.markers.color.r=1.0#Color  
-        self.markers.color.r=1.0#Color 
-        self.markers.color.a=1.0#Nitidez
+        self.markers.scale.z=0.2  
+        self.markers.color.r=1.0#Setting the Color
+        self.markers.color.a=1.0
     
     def callback_scan(self,msg):
         
@@ -81,12 +78,9 @@ class Node:
 
 
     def calculate_control(self,pos_x_robot,pos_y_robot,robot_a,goal_x,goal_y):
+
         cmd_vel = Twist()
-        
-        #
-        # Implement the control law given by:
-        #
-        a_error=(math.atan2(goal_y-pos_y_robot,goal_x-pos_x_robot))-robot_a#Obtengo el error de angulo
+        a_error=(math.atan2(goal_y-pos_y_robot,goal_x-pos_x_robot))-robot_a#Getting the angular error
         alpha=0.5
         beta=0.5
         
@@ -135,17 +129,17 @@ class Node:
         #
         force_x=0
         force_y=0
-        d0=0.8#A partir de 1 metros del robot empezara la repulsion
+        d0=0.8#The rejection force will be establish from 0.8 meters
         rejection_intensity=2
         i=0
         
         for lectura_ls in laser_readings:
-            d=lectura_ls[0]#Corresponde a la distancia d, desde el robot hasta el obstaculo
+            d=lectura_ls[0]
             
             
             if d>0 and d<d0 and np.isfinite(d) and not np.isnan(d):
                 i+=1  
-                theta_obs=robot_a+lectura_ls[1]#Obtengo el angulo del obstaculo con respecto al sistema de referencia general, ya que al angulo del robot le sumo el angulo del obstaculo con respecto al robot
+                theta_obs=robot_a+lectura_ls[1]
                 obs_point_x=pos_x_robot+d*math.cos(theta_obs)
                 obs_point_y=pos_y_robot+d*math.sin(theta_obs)
                 force_x+=((rejection_intensity*math.sqrt((1/d)-(1/d0)))/d)*(obs_point_x-pos_x_robot)
@@ -174,10 +168,10 @@ class Node:
         p=Point()
         while dist_to_goal>1:
 
-            [fax, fay] = self.attraction_force(pos_x_robot, pos_y_robot, self.goal_x, self.goal_y)#Calculamos la fuerza de atraccion
-            [frx, fry] = self.rejection_force(pos_x_robot, pos_y_robot, pos_a_robot,self.laser_readings)#Calculamos la fuerza de repulsion
-            [fx,fy]=[fax+frx,fay+fry]#Obtenemos la fuerza resultante
-            [px,py]=[pos_x_robot-epsilon*fx,pos_y_robot-epsilon*fy]#Obtenemos los puntos objetivo locales con la fuerza neta restada multiplicada por epsilon
+            [fax, fay] = self.attraction_force(pos_x_robot, pos_y_robot, self.goal_x, self.goal_y)#Calculating the attraction force
+            [frx, fry] = self.rejection_force(pos_x_robot, pos_y_robot, pos_a_robot,self.laser_readings)#Calculating the rejection force
+            [fx,fy]=[fax+frx,fay+fry]#Getting the resultant force
+            [px,py]=[pos_x_robot-epsilon*fx,pos_y_robot-epsilon*fy]
             msg_cmd_vel=self.calculate_control(pos_x_robot,pos_y_robot,pos_a_robot,px,py)
             self.pub_cmd_vel.publish(msg_cmd_vel)
             p.x=self.goal_x
@@ -187,14 +181,17 @@ class Node:
             pos_x_robot, pos_y_robot, pos_a_robot=self.getPosRobot()
             dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
             
-            if (time()-start)>15:
+            #If the node takes more than 30 seconds to reach the goal point, the process is interrupted and the autonomous exploration algorithm repeat all the process
+            if (time()-start)>30:
                 self.pub_cmd_vel.publish(Twist())
                 break
             
                 
-        
-        self.flag.data=False
+        #We change the value of the flag, because the goal point has been reached
+        self.flag.data=True
+        #We publish the value of the flag
         self.response.publish(self.flag)
+        #We publish the Twist message to be sure that the robot will be static
         self.pub_cmd_vel.publish(Twist())
         print("Goal point reached\n")
 

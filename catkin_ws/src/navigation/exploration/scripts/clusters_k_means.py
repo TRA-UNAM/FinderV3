@@ -24,11 +24,11 @@ class Server:
         
             #----------------Boundary Points Client--------------------------------
             print("Establishing the connection with Boundary Points Server")
-            rospy.wait_for_service('/navigation/mapping/get_boundary_points')#Espero hasta que el servicio este habilitado
+            rospy.wait_for_service('/navigation/mapping/get_boundary_points')#We are waiting to the connection with the server
             try:
                 
-                client_boundary_points=rospy.ServiceProxy('/navigation/mapping/get_boundary_points',GetBoundaryPoints)#Creo un handler para poder llamar al servicio
-                data_bp=client_boundary_points(map=req.map)
+                client_boundary_points=rospy.ServiceProxy('/navigation/mapping/get_boundary_points',GetBoundaryPoints)#We create the handler of the Service
+                data_bp=client_boundary_points(map=req.map)#We call the service
                 self.boundary_points=data_bp.points
         
             except rospy.ServiceException as e:
@@ -52,37 +52,39 @@ class Server:
         np.asarray(points)
 
 
-        for i in range(1, 9):#Los 9 representa que como maximo tendria 8 grupos
-            kmeans = KMeans(n_clusters = i, init = "k-means++", max_iter = 300, n_init = 10, random_state = 0)#n_init representa el numero de veces que el algoritmo de k-means correra con diferente semilla de centroide diferentes. Los resultados finales seran la mejor salida de ejecuciones ejecutivas en terminos de inercia.
+        for i in range(1, 9):#We will adjust the model to different values of k, in order to select the best number of clusters
+            kmeans = KMeans(n_clusters = i, init = "k-means++", max_iter = 300, n_init = 10, random_state = 0)
             kmeans.fit(points)
-            std_dev.append(math.sqrt(kmeans.inertia_/len(points)))#kmeans.inertia_ calcula la suma de los cuadrados de las distancias que existe entre los vectores de cada cluster a su centroide y al dividirlo entre n y sacar raiz obtengo la std_devandar de los datos
-        #wcss contiene dichas sumas, y entre mas clusters tengamos, menor seran esas distancias.
+            std_dev.append(math.sqrt(kmeans.inertia_/len(points)))#We are calculating the standard deviation of each model depending of the number of clusters k
         
-        for i in range(8):#Busco tener clusters cercanos a 1 m en su tamaño promedio
-            
+        
+        for i in range(len(std_dev)):
+            #We will select the number of clusters based on the standard deviation, in this case, we want clusters close to 1 meter
             if std_dev[i]>1:
                 k=i+2
             
-
+        #We will adjust the model to the number of clusters selected
         kmeans = KMeans(n_clusters = k, init="k-means++", max_iter = 300, n_init = 10, random_state = 0)
         kmeans.fit(points)
         centroids_x=kmeans.cluster_centers_[:,0]
         centroids_y=kmeans.cluster_centers_[:,1]
         centroids=[]
+        #We will define the Points that will have the coordinates of the centroids found
         for i in range(len(centroids_x)):
             p=Point()
             p.x=centroids_x[i]
             p.y=centroids_y[i]
             p.z=0
             centroids.append(p)
+            
         print("We already get the centroids\n")
-        return GetBoundaryPointsResponse(points=centroids,k=k)
+        return GetBoundaryPointsResponse(points=centroids)
         
 
     def GetCentroids(self):
             
         rospy.Service('/navigation/mapping/get_boundary_points_clustered', GetBoundaryPoints, self.handle_GetCentroids)
-        print("The Centroids Server is ready for the request")
+        print("The Clusters K Means Server is ready for the request")
             
     
 
@@ -90,7 +92,7 @@ class Server:
             #------------------------------------------------------------------   
     
 if __name__ == "__main__":
-    rospy.init_node('centroids_server')
+    rospy.init_node('clusters_k_means')
     server=Server()
     server.GetCentroids()
     rospy.spin()
