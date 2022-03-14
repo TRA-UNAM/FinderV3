@@ -17,8 +17,8 @@ class Server:
     
     def handle_GetGoalPoint(self,req):
         #We define the weights of the cost function alpha*(a_error**2)+betha*d_error
-        alpha=0.8
-        betha=0.2
+        alpha=0.4
+        betha=0.6
         h=[]
         for i in range(len(req.points)):
             
