@@ -1,14 +1,11 @@
 <launch>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro "/>
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro"/>
 
-  	<!-- Starting Joint state publisher node which will publish the joint values /-->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-	    <remap from="/joint_states" to="/finder_base/joint_states"/>
+    <remap from="/joint_states" to="/finder_base/joint_states"/>
   </node>
-
 
   <!-- SLAM gmapping -->
   <node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan" output="screen">
