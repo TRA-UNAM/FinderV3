@@ -26,7 +26,7 @@ class Node:
         """Simulated robot"""
         #self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
         """Fisical robot"""
-        self.pub_cmd_vel = rospy.Publisher('/base_controller/command', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
+        self.pub_cmd_vel = rospy.Publisher('/base_controller/command', Twist, queue_size=1)#We define the publisher that publish the linear and angular velocity of the robot
         self.flag=Flag()#Constructing the Bool object that contains the flag value
         self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)#We define the publisher that publish the flag to inform of the reach of the goal point
         self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)#We define the publisher that publish the points to be visualized in rviz
@@ -93,15 +93,15 @@ class Node:
         elif a_error<=-math.pi:
             a_error=a_error+2*math.pi
 
-        
-        v = 0.5*math.exp(-a_error*a_error/alpha)
-        w = 0.5*(2/(1 + math.exp(-a_error/beta)) - 1)
+        print(a_error)
+        v = 2*math.exp(-a_error*a_error/alpha)
+        w = 2*(2/(1 + math.exp(-a_error/beta)) - 1)
         
         
 
         cmd_vel.linear.x=v
         cmd_vel.angular.z=w
-
+        
         return cmd_vel
 
 
