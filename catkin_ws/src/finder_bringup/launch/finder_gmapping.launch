@@ -1,6 +1,6 @@
 <launch>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro "/>
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base.urdf.xacro "/>
 
   	<!-- Starting Joint state publisher node which will publish the joint values /-->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
@@ -9,10 +9,29 @@
 	    <remap from="/joint_states" to="/finder_base/joint_states"/>
   </node>
 
+  
+<!-- Transformations to tf on rviz -->
+
+  <node name="static_transform_publisher_1655915617832587195" type="static_transform_publisher" pkg="tf" args="static0.4 0 0.18 0 0 0 base_link laser_roll 100"/>
+
+	
+   <node name="static_transform_publisher_1655915619698689924" type="static_transform_publisher" pkg="tf"  args="0.05 0 0 0 0 0 laser_roll laser_pitch 100"/>
+
+
+<!-- Odometry of the robot -->
+
+   <node name="odom_node" pkg="odometry" type="odometry.py" output="screen"/>
+
+
 
   <!-- SLAM gmapping -->
-  <node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan" output="screen">
+
+<node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/scan" output="screen">
     <rosparam file="$(find finder_bringup)/params/gmapping_params.yaml" command="load"/>
+  </node>
+
+
+    <node name="static_transform_publisher" pkg="tf" type="static_transform_publisher"  output="screen">
   </node>
 
   <!-- rviz -->

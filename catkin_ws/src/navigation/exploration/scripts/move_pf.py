@@ -23,7 +23,10 @@ class Node:
         self.goal_y=0
         self.laser_readings=[]#We define the array that will contain the laser_readings
         self.listener=tf.TransformListener()#Transformation to get the attributes related with the position of the robot in the getPosRobot method
-        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
+        """Simulated robot"""
+        #self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
+        """Fisical robot"""
+        self.pub_cmd_vel = rospy.Publisher('/base_controller/command', Twist, queue_size=10)#We define the publisher that publish the linear and angular velocity of the robot
         self.flag=Flag()#Constructing the Bool object that contains the flag value
         self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)#We define the publisher that publish the flag to inform of the reach of the goal point
         self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)#We define the publisher that publish the points to be visualized in rviz

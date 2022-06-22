@@ -1,6 +1,6 @@
 <launch>
 
-  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base_8w.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro $(find finder_description)/robot/finder_base.urdf.xacro"/>
 
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">

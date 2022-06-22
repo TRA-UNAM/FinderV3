@@ -167,7 +167,7 @@ class Node:
                     self.client_objetive=rospy.ServiceProxy('/navigation/mapping/get_goal_point',GetGoalPoint)#We create the handler of the Service
 
                 self.data_o=self.client_objetive(pos_x_robot=self.pos_x_robot,pos_y_robot=self.pos_y_robot,pos_a_robot=self.pos_a_robot,points=self.data_centroids.points,last_objective=self.last_objective,method="angle_and_distance")#We call the service
-                
+                self.markers.points=self.data_o.goal
             
             except rospy.ServiceException as e:
                 print("The request for the objective point server failed: %s"%e)
