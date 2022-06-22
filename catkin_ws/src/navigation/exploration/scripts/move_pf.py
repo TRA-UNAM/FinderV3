@@ -94,13 +94,13 @@ class Node:
             a_error=a_error+2*math.pi
 
         print(a_error)
-        v = 2*math.exp(-a_error*a_error/alpha)
+        v = 0.5*math.exp(-a_error*a_error/alpha)
         w = 2*(2/(1 + math.exp(-a_error/beta)) - 1)
         
         
 
         cmd_vel.linear.x=v
-        cmd_vel.angular.z=w
+        cmd_vel.angular.z=-w
         
         return cmd_vel
 
