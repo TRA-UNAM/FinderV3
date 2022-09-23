@@ -11,17 +11,21 @@ from nav_msgs.srv import GetMap
 from std_msgs.msg import Bool as Flag
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Twist
 
 
 
 class Node:
 
     def __init__(self):
+        
         self.init_node=rospy.init_node("autonomous_exploration")#We initialize the node
         #Constructing the publisher to pass the goal point to the move_pf server
         self.move_to_goal=rospy.Publisher('/navigation/move_base_simple/goal',Point,queue_size=10)
         #Constructing the publisher to pass the points for the visualization in rviz
         self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)
+        #We define the publisher that publish the linear and angular velocity of the robot
+        self.pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         #Constructing the object Marker with the features of the visualizated points 
         self.markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
         self.markers.header.stamp=rospy.Time()
@@ -62,6 +66,7 @@ class Node:
         self.pos_x_robot=0
         self.pos_y_robot=0
         self.flag=True#Definition of the flag value to know when the goal point has been reached
+        self.stuck=False#Definition of the flag value to know when the goal point has been reached (in case the robot is stuck)
         self.listener=tf.TransformListener()#Transformation to get the attributes related with the position of the robot in the getPosRobot method
         
     def visualization_points(self,points):
@@ -87,14 +92,28 @@ class Node:
     def callback_move_robot_response(self,msg):
         self.flag=msg.data
 
+    def callback_objective_point_reached(self,msg):
+        self.stuck=msg.data
 
     def autonomous_exploration(self):
         #Defining the Subscriber that listen the value of the Flag to changing it when the goal point is reached
         rospy.Subscriber('/move_base_simple/goal_response',Flag, self.callback_move_robot_response)
+        rospy.Subscriber('/move_base_simple/stuck_response',Flag, self.callback_objective_point_reached)
 
-        if self.flag==True:#Just when the goal point is reached, we repeat all the process
+        
+        if self.stuck==True:
+            self.pub_cmd_vel.publish(Twist())
+            self.flag=False#Change the value of the flag, because the goal point hasn't been reached
+            self.stuck=False#Change the value of the flag, because the goal point hasn't been reached (or we don't know if the robot is going to be stuck)
+            self.move_to_goal.publish(self.last_objective)#We publish the goal point to move the robot by potential fields
+            print("\nWe are stuck, we return to the last point reached")
+        
+        
+        if self.flag==True and self.stuck==False:#Just when the goal point is reached, we repeat all the process
+
             os.system("clear")#Command to clean the terminal
 
+            
             #-------------........--Map Client------------------------------------
             print("Establishing the connection with Map Server")
             rospy.wait_for_service('/dynamic_map')#We are waiting to the connection with the server
@@ -180,17 +199,18 @@ class Node:
             #----------------------Move Robot by Potential Fields--------------------------------
         
             self.flag=False#Change the value of the flag, because the goal point hasn't been reached
+            self.stuck=False#Change the value of the flag, because the goal point hasn't been reached (or we don't know if the robot is going to be stuck)
             self.move_to_goal.publish(self.data_o.goal)#We publish the goal point to move the robot by potential fields
             print("\nEstablishing the connection with Potential Fields Node")
             print("Wating to reach the goal")
             
-    
             #------------------------------------------------------------------------------------
-         
+
             #-----------------------Update the last pose----------------------------------------
             self.last_objective=self.data_o.goal#We update the last objective point   
             #------------------------------------------------------------------------------------
-                
+
+            
     
 
 if __name__== "__main__":

@@ -28,7 +28,9 @@ class Node:
         """Fisical robot"""
         #self.pub_cmd_vel = rospy.Publisher('/base_controller/command', Twist, queue_size=1)#We define the publisher that publish the linear and angular velocity of the robot
         self.flag=Flag()#Constructing the Bool object that contains the flag value
+        self.stuck=Flag()#Constructing the Bool object that contains the flag value to know if the robot is stuck
         self.response=rospy.Publisher('/move_base_simple/goal_response',Flag,queue_size=10)#We define the publisher that publish the flag to inform of the reach of the goal point
+        self.stuck_response=rospy.Publisher('/move_base_simple/stuck_response',Flag,queue_size=10)#We define the publisher that publish the flag to inform if the robot is stuck
         self.pub_vis =rospy.Publisher('/visualization_marker',Marker, queue_size=10)#We define the publisher that publish the points to be visualized in rviz
         #Constructing the object Marker with the features of the visualizated points 
         self.markers=Marker(ns="points",type=Marker.POINTS,action=Marker.ADD,lifetime=rospy.Duration(),id=0)
@@ -93,14 +95,14 @@ class Node:
         elif a_error<=-math.pi:
             a_error=a_error+2*math.pi
 
-        print(a_error)
+        
         v = 0.5*math.exp(-a_error*a_error/alpha)
         w = 2*(2/(1 + math.exp(-a_error/beta)) - 1)
         
         
 
         cmd_vel.linear.x=v
-        cmd_vel.angular.z=-w
+        cmd_vel.angular.z=w
         
         return cmd_vel
 
@@ -162,7 +164,7 @@ class Node:
     def potential_fields(self):
 
         
-        
+        self.stuck.data=False
         print ("Moving to goal point " + str([self.goal_x, self.goal_y]) + " by potential fields\n")
         pos_x_robot, pos_y_robot, pos_a_robot=self.getPosRobot()
         epsilon=0.5
@@ -185,15 +187,17 @@ class Node:
             dist_to_goal=math.sqrt((self.goal_x - pos_x_robot)**2 + (self.goal_y - pos_y_robot)**2)
             
             #If the node takes more than 30 seconds to reach the goal point, the process is interrupted and the autonomous exploration algorithm repeat all the process
-            if (time()-start)>30:
+            if (time()-start)>5:
                 self.pub_cmd_vel.publish(Twist())
+                self.stuck.data=True
                 break
             
-                
+        
         #We change the value of the flag, because the goal point has been reached
         self.flag.data=True
         #We publish the value of the flag
         self.response.publish(self.flag)
+        self.stuck_response.publish(self.stuck)
         #We publish the Twist message to be sure that the robot will be static
         self.pub_cmd_vel.publish(Twist())
         print("Goal point reached\n")
