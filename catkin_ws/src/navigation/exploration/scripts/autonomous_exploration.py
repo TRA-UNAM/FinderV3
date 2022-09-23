@@ -100,16 +100,16 @@ class Node:
         rospy.Subscriber('/move_base_simple/goal_response',Flag, self.callback_move_robot_response)
         rospy.Subscriber('/move_base_simple/stuck_response',Flag, self.callback_objective_point_reached)
 
-        
+        """
         if self.stuck==True:
             self.pub_cmd_vel.publish(Twist())
             self.flag=False#Change the value of the flag, because the goal point hasn't been reached
             self.stuck=False#Change the value of the flag, because the goal point hasn't been reached (or we don't know if the robot is going to be stuck)
             self.move_to_goal.publish(self.last_objective)#We publish the goal point to move the robot by potential fields
             print("\nWe are stuck, we return to the last point reached")
+        """
         
-        
-        if self.flag==True and self.stuck==False:#Just when the goal point is reached, we repeat all the process
+        if self.flag==True:# and self.stuck==False:#Just when the goal point is reached, we repeat all the process
 
             os.system("clear")#Command to clean the terminal
 
